@@ -57,7 +57,7 @@ For the detailed app layout, planned `views.py`/`forms.py`/`urls.py` files, and 
 Campus-Equipment-Borrowing-System/
 ├── .agents/                  # Shared MCP configuration and project skills
 ├── accounts/                 # Custom User/Profile models and migrations
-├── assets/                   # Source files discovered by Django staticfiles
+├── static/                   # Source files discovered by Django staticfiles
 │   ├── css/
 │   │   ├── app.css           # Tailwind entry point and font theme
 │   │   └── fonts.css         # Local font declarations and typography
@@ -110,7 +110,7 @@ Campus-Equipment-Borrowing-System/
 └── requirements-dev.txt     # Tested development pins
 ```
 
-`assets/` is a valid source directory: Django maps `assets/fonts/...` to `/static/fonts/...`. The shared `base.html` loads compiled Tailwind CSS with DM Sans body text and Poppins headings; see [frontend setup](DEV.md#frontend-assets-tailwind-and-axios). Keep the font license notices. Role templates and feature pages will be added in their owners' tasks. Generated `assets/build/`, `node_modules/`, and `staticfiles/` remain ignored; build assets before collecting static files or preparing a runnable submission.
+`static/` contains shared source files: Django maps `static/fonts/...` to `/static/fonts/...`. The shared `base.html` loads compiled Tailwind CSS with DM Sans body text and Poppins headings; see [frontend setup](DEV.md#frontend-assets-tailwind-and-axios). Keep the font license notices. Role templates and feature pages will be added in their owners' tasks. Generated `static/build/`, `node_modules/`, and `staticfiles/` remain ignored; build assets before collecting static files or preparing a runnable submission.
 
 ## Project scope
 

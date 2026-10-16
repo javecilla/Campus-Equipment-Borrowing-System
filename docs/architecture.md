@@ -63,7 +63,7 @@ The browser receives HTML, printable HTML, and CSV exports. Small JavaScript enh
 
 For the detailed existing/planned directory tree and page placement examples, see [Project Folder Architecture](project-folder-architecture.md). The coding guide remains authoritative for each file's responsibilities.
 
-The five Python app/config directories, shared `assets/`, and common template shell below exist. Role templates and feature-specific layers are created when their owners implement the corresponding tasks.
+The five Python app/config directories, shared `static/`, and common template shell below exist. Role templates and feature-specific layers are created when their owners implement the corresponding tasks.
 
 | Module | Responsibility | Primary owner |
 | --- | --- | --- |
@@ -73,7 +73,7 @@ The five Python app/config directories, shared `assets/`, and common template sh
 | `borrowing/` | Requests/items, allocations, loans/loan units, returns, workflow services | Jerome defines shared models; Ralph owns submission/tracking; Margareth owns approval/release/return |
 | `operations/` | Audit logs, settings, dashboard/report queries, exports | Jerome for audit/settings; Alex for dashboard/reports |
 | `templates/` | Shared `base.html` shell; planned role layouts, components, and feature templates | Feature owners; Ellyssa and Ralph coordinate integration |
-| `assets/` | Source fonts/images/CSS/JavaScript and ignored generated `build/` assets; discovered through STATICFILES_DIRS | Feature owners |
+| `static/` | Source fonts/images/CSS/JavaScript and ignored generated `build/` assets; discovered through STATICFILES_DIRS | Feature owners |
 
 Each Django app keeps models, forms, function-based views, URLs, service/query functions, migrations, and tests close to its feature. Split further only when actual file size or responsibility warrants it. Avoid a generic CRUD framework or unnecessary repository abstraction over Django ORM.
 

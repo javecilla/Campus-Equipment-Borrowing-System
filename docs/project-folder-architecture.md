@@ -83,7 +83,7 @@ Campus-Equipment-Borrowing-System/
 │   │   └── portal/                              [planned] submission and own history pages
 │   └── operations/manage/                       [planned] settings, audit, dashboard, reports
 │
-├── assets/                                      [existing] shared source static files
+├── static/                                      [existing] shared source static files
 │   ├── css/fonts.css                            [existing] local font declarations and typography
 │   ├── css/app.css                              [existing] Tailwind entry point/theme/source scan
 │   ├── fonts/                                   [existing] DM Sans/Poppins and license notices
@@ -148,7 +148,7 @@ For a form that changes data, the view binds the app's `forms.py` and calls the 
 2. Choose the feature app from the page table. Add its request handler in `views.py`. Put allowed form fields in `forms.py`, reads in `queries.py`, and the complete write action in `services.py` as needed. Create only the layers this feature uses.
 3. Add the named route and mount it through `config/urls.py`. Management namespaces such as `inventory_manage` and `borrowing_manage` are separate from their `/manage/` path prefix. The `portal:*` names span accounts, inventory, and borrowing: coordinate one shared `portal` namespace in the root routing, referring to those feature views. Do not independently mount several competing `portal` namespaces.
 4. Create the feature HTML under the matching `templates/<app>/manage/` or `templates/<app>/portal/` path, extending its role base. Add reusable fragments under `templates/components/`. The base-template owners establish shared block names and navigation as their tasks are implemented.
-5. Add CSS/images/scripts under `assets/` when needed. Custom base templates load the existing `css/fonts.css` through Django's static tag; the exact include and font paths are in [DEV.md](../DEV.md#fonts-and-static-assets).
+5. Add CSS/images/scripts under `static/` when needed. Custom base templates load the existing `css/fonts.css` through Django's static tag; the exact include and font paths are in [DEV.md](../DEV.md#fonts-and-static-assets).
 6. Add meaningful checks beside the feature in its `tests/` directory, run [the configured commands](../DEV.md#before-handing-over-work), then follow the [handoff workflow](../.agents/skills/project-handoff/SKILL.md). A new persistent field or constraint also needs an app migration.
 
 The shared Django authentication/access contract belongs to T04. Views for later tasks use that accepted interface once available; this folder guide does not supply temporary authentication helpers or unlock blocked features.
@@ -164,7 +164,7 @@ The shared Django authentication/access contract belongs to T04. Views for later
 | Read/filter/search/paginate related data | App `queries.py` |
 | Perform one business action and audit it atomically | App `services.py` |
 | Change stored fields, indexes, or row constraints | App `models.py` plus a new migration |
-| Change shared typography or static styling | `assets/css/`; font usage is documented in DEV.md |
+| Change shared typography or static styling | `static/css/`; font usage is documented in DEV.md |
 | Verify a feature's observable behavior | App `tests/`; existing foundation tests are in `operations/tests/` |
 
 Use [coding-standards.md](coding-standards.md) for the detailed rules and [Project-Members.txt](Project-Members.txt) for ownership. This map adds no new app, role, endpoint, or feature implementation.

@@ -3,7 +3,7 @@
 **/*.py
 .venv/
 node_modules/
-assets/build/
+static/build/
 staticfiles/
-assets/fonts/
+static/fonts/
 .env*

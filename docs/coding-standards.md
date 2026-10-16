@@ -21,7 +21,7 @@ Forms, service functions, and query functions support this project's MTV structu
 | `services.py` | One named business action, authoritative state validation, explicit ORM writes, transactions, locking, and audit completeness | Template rendering, session-dependent implicit inputs, or one generic operation controlled by mode flags |
 | `queries.py` | Read-only ORM selection, owner-scoped data, related-object loading, pagination inputs, and aggregates | State changes, request approval, side-effecting reads, or bypassing view authorization |
 | `urls.py` | Named, namespaced routes mapped to views | Queries, mutation logic, or duplicated request-processing code |
-| `assets/` | Source CSS, fonts, images, and small JavaScript enhancements; ignored build output | Deciding server permissions, authoritative due dates, or stock availability |
+| `static/` | Source CSS, fonts, images, and small JavaScript enhancements; ignored build output | Deciding server permissions, authoritative due dates, or stock availability |
 | Feature tests | Observable access boundaries, business transitions, transaction behavior, and report correctness | Reimplementing the application or asserting incidental source text |
 
 Do not build a parallel `controllers/` hierarchy, generic repository layer over Django ORM, service-class framework, or separate REST backend just to match another pattern. Use Django's native forms, authentication, ORM, migrations, templates, and named URLs. The course-specific prohibition on Django admin remains in AGENTS.md even when a general Django tutorial demonstrates it.
@@ -98,11 +98,11 @@ The project uses a **server-rendered command/query HTTP pattern**: GET reads or 
 
 ## Axios calling pattern
 
-Use the shared [http client](../assets/js/http.js) as the single transport configuration. Page modules orchestrate browser behavior; domain decisions remain on the server. Add a feature-specific request function only when the feature actually makes a call, with one action and explicit inputs/return type. Avoid a generic API service class or duplicated Axios instances.
+Use the shared [http client](../static/js/http.js) as the single transport configuration. Page modules orchestrate browser behavior; domain decisions remain on the server. Add a feature-specific request function only when the feature actually makes a call, with one action and explicit inputs/return type. Avoid a generic API service class or duplicated Axios instances.
 
 | Concern | Convention |
 | --- | --- |
-| Files and imports | Top-level browser entries such as assets/js/inventory.js import `{ http }` from `./http.js`; load their compiled build/*.js using Django static tags. Follow the current build's entry layout |
+| Files and imports | Top-level browser entries such as static/js/inventory.js import `{ http }` from `./http.js`; load their compiled build/*.js using Django static tags. Follow the current build's entry layout |
 | Names | Use action-specific camelCase names such as loadEquipment or approveRequest, handlers such as handleApprovalSubmit, and semantic variables such as approvalForm. Use stable kebab-case data-testid values for automation |
 | URLs and GET filters | Render URLs with Django reverse/static facilities into escaped data attributes; do not hardcode role paths or trust a client URL to establish ownership. Pass allowlisted GET filters through Axios params rather than concatenating a query string |
 | POST encoding | Use normal browser form submission by default. For an authorized enhanced form, use URLSearchParams with validated string fields for the contracted URL-encoded body. FormData/multipart is reserved for a contract that accepts it; JSON is not interchangeable with request.POST |
@@ -116,13 +116,13 @@ Axios is for optional enhancements; it does not turn HTML responses into a JSON 
 
 ## Tailwind styling pattern
 
-Use [app.css](../assets/css/app.css) as the single Tailwind entry/theme and [base.html](../templates/base.html) as the document/asset shell. The two role layouts extend that shell; feature pages extend their role layout and reuse real navigation/form/table/message components. Do not duplicate complete page shells, create an admin generator, or add a second CSS framework.
+Use [app.css](../static/css/app.css) as the single Tailwind entry/theme and [base.html](../templates/base.html) as the document/asset shell. The two role layouts extend that shell; feature pages extend their role layout and reuse real navigation/form/table/message components. Do not duplicate complete page shells, create an admin generator, or add a second CSS framework.
 
 - Prefer utilities directly on semantic, accessible HTML. Reuse established components and spacing/typography decisions before inventing new ones. Use font-sans (DM Sans) for body/control text and font-heading (Poppins) for headings; keep shared design values in the existing theme when a real repeated need appears.
 - Write complete literal utility names, including every conditional alternative, in the configured template/Python/JS sources. Never concatenate utility fragments such as bg-{{ color }}-500, and never derive arbitrary classes directly from submitted values. Forms can provide complete widget class strings; visible markup remains in templates.
 - Use a stable human grouping: layout/display, positioning/sizing, spacing, typography, colors/borders, effects, then responsive/state variants. Use mobile defaults with explicit breakpoint changes, visible focus-visible styles, disabled/pending states, readable contrast, and text/ARIA feedback in addition to color. Tailwind class sorting is a review convention here; the configured formatters do not automatically sort Django class attributes.
 - Project-authored component names, IDs, and data attributes are kebab-case; keep Tailwind's own utility names unchanged. Use explicit data-action-url/data-testid attributes for behavior and automation rather than binding JavaScript to a styling class or visible label.
-- Use the standard spacing/color/type scales first. Add arbitrary values or custom selectors only for an actual requirement that the existing scale/component cannot express. Keep necessary reusable CSS in assets/css/app.css and use layers so utility overrides remain predictable; do not introduce repeated style attributes, scattered CSS files, or speculative @apply component systems.
+- Use the standard spacing/color/type scales first. Add arbitrary values or custom selectors only for an actual requirement that the existing scale/component cannot express. Keep necessary reusable CSS in static/css/app.css and use layers so utility overrides remain predictable; do not introduce repeated style attributes, scattered CSS files, or speculative @apply component systems.
 - Keep scripts and styles in their source files rather than embedding large blocks in Django HTML. Load compiled modules in the scripts block and compiled CSS through the shared shell. Build output and third-party font/license files are generated/vendor material and must not be hand-formatted.
 
 ## Formatting ownership

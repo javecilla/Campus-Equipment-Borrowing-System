@@ -181,13 +181,13 @@ All declared dependency and optional-dependency references in this application l
 
 | Asset / tool | Declaration / notice | Scope |
 | --- | --- | --- |
-| DM Sans | [Supplied OFL notice](../assets/fonts/DM_Sans/OFL.txt) | Local typography; supplied static/variable font files |
-| Poppins | [Supplied OFL notice](../assets/fonts/Poppins/OFL.txt) | Local typography; supplied weights/styles |
+| DM Sans | [Supplied OFL notice](../static/fonts/DM_Sans/OFL.txt) | Local typography; supplied static/variable font files |
+| Poppins | [Supplied OFL notice](../static/fonts/Poppins/OFL.txt) | Local typography; supplied weights/styles |
 | @bytebase/dbhub 1.5.0 | MIT; [versioned npm metadata](https://registry.npmjs.org/@bytebase%2Fdbhub/1.5.0) and [upstream repository](https://github.com/bytebase/dbhub) | Optional read-only MCP tool in npm execution cache, outside application locks |
 
 DBHub's published 1.5.0 manifest declares zod ^4.2.0, ssh2 ^1.16.0, dotenv ^16.4.7, express ^4.18.2, ssh-config ^5.0.3, @iarna/toml ^2.2.5, @modelcontextprotocol/node ^2.0.0, and @modelcontextprotocol/server ^2.0.0. Its execution-cache resolution is separate from package-lock.json; this document does not invent resolved versions or a complete lock for that optional tool. Use its linked published dependency/license declarations and DEV.md's pinned launch. It is not bundled with the application.
 
-Node/npm, Python/pip, Git, PostgreSQL, and the optional uv resolver are workstation tools described in DEV.md, not application package entries. The generated browser bundle retains the complete Axios license through scripts/copy-licenses.mjs. Original font notices stay in assets/fonts/.
+Node/npm, Python/pip, Git, PostgreSQL, and the optional uv resolver are workstation tools described in DEV.md, not application package entries. The generated browser bundle retains the complete Axios license through scripts/copy-licenses.mjs. Original font notices stay in static/fonts/.
 
 ## Inventory coverage
 
