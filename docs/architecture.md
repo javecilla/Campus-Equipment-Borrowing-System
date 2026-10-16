@@ -6,7 +6,26 @@ This architecture guides implementation. The T01–T03 foundation is integrated 
 
 Use a single server-rendered Django application with Python 3.13, Django 5.2 LTS, PostgreSQL 17, and Psycopg 3. Pin tested patch versions during implementation. Django 5.2 supports the proposed Python series and database; consult the [release notes](https://docs.djangoproject.com/en/5.2/releases/5.2/) and [database documentation](https://docs.djangoproject.com/en/5.2/ref/databases/).
 
-HTML/CSS and minimal JavaScript serve both roles. Bootstrap and a chart library are permitted by the brief but have not been selected. Any library must be declared, justified, and licensed appropriately. There are no required external APIs, background workers, message brokers, or separate frontend services.
+HTML/CSS and minimal JavaScript serve both roles. The user selected Tailwind CSS for styling and Axios for optional same-origin HTTP enhancements. The local npm build and shared HTML shell are implemented; role layouts and feature pages remain their owners' work. A chart library remains unselected. There are no required external APIs, background workers, message brokers, or separate frontend services.
+
+## Required patterns and selected libraries
+
+The [course brief](Project-Requirements.txt), CO2 and Parts 5–6, requires the following evidence and behavior. A service layer is our implementation choice within its allowed reusable-logic approaches; the brief does not mandate a named GoF pattern.
+
+| Requirement | Project application |
+| --- | --- |
+| Django MTV and MTV/database/workflow diagrams | Models/ORM persist data, function-based views orchestrate HTTP, and server-rendered templates present pages; the diagrams in the design documents describe those boundaries |
+| Reusable business logic | The brief allows functions, services, or model methods. This project uses explicit workflow service functions and read-only query helpers, following the coding guide |
+| Template inheritance and reusable components | Shared `templates/base.html` supplies the asset/document shell. Feature owners create `manage/base.html` and `portal/base.html` extending it, plus reusable navigation/form/table/message fragments; those role layouts are still planned |
+| Compare two suitable system options and justify one | The comparison below is design evidence, rather than a software design pattern; later course evidence must evaluate the implemented system and actual user needs |
+
+Part 5 permits third-party packages when declared and justified, and forbids generating the required custom administration side. Tailwind and Axios are not named by the brief; using them under that general rule is our interpretation. They do not generate views, forms, admin pages, or authorization.
+
+The [README dependency disclosure](../README.md#third-party-packages-and-assets) owns package purposes, tradeoffs, runtime/build roles, and license declarations. The [complete inventory](third-party-dependencies.md) lists locked indirect/optional packages as well. Keep those sources current instead of duplicating a second justification table here.
+
+Exact package pins and transitive dependencies are in [package.json](../package.json) and [package-lock.json](../package-lock.json), separate from Python requirements. Build/watch commands and usage belong in [DEV.md](../DEV.md#frontend-assets-tailwind-and-axios). Source fonts retain their OFL notices; generated JavaScript license notices travel with the build. Follow the [Tailwind CLI](https://tailwindcss.com/docs/installation/tailwind-cli), [esbuild](https://esbuild.github.io/getting-started/), and [Axios request configuration](https://github.com/axios/axios#request-config) documentation.
+
+The canonical [coding guide](coding-standards.md#http-endpoint-design) owns endpoint design, Axios calling boundaries, Tailwind styling/naming, and formatter responsibilities. These conventions retain the existing HTML/form/session interface; no new REST or JSON endpoint is implemented by documenting them.
 
 ## Options comparison
 
@@ -44,7 +63,7 @@ The browser receives HTML, printable HTML, and CSV exports. Small JavaScript enh
 
 For the detailed existing/planned directory tree and page placement examples, see [Project Folder Architecture](project-folder-architecture.md). The coding guide remains authoritative for each file's responsibilities.
 
-The five Python app/config directories and shared `assets/` source directory below exist. Templates and feature-specific layers are created when their owners implement the corresponding tasks.
+The five Python app/config directories, shared `assets/`, and common template shell below exist. Role templates and feature-specific layers are created when their owners implement the corresponding tasks.
 
 | Module | Responsibility | Primary owner |
 | --- | --- | --- |
@@ -53,8 +72,8 @@ The five Python app/config directories and shared `assets/` source directory bel
 | `inventory/` | Categories, items, units, maintenance, availability queries | Kenneth |
 | `borrowing/` | Requests/items, allocations, loans/loan units, returns, workflow services | Jerome defines shared models; Ralph owns submission/tracking; Margareth owns approval/release/return |
 | `operations/` | Audit logs, settings, dashboard/report queries, exports | Jerome for audit/settings; Alex for dashboard/reports |
-| `templates/` | `manage/base.html`, `portal/base.html`, shared components, feature templates | Feature owners; Ellyssa and Ralph coordinate integration |
-| `assets/` | Shared fonts, images, CSS, and small browser scripts; discovered through STATICFILES_DIRS | Feature owners |
+| `templates/` | Shared `base.html` shell; planned role layouts, components, and feature templates | Feature owners; Ellyssa and Ralph coordinate integration |
+| `assets/` | Source fonts/images/CSS/JavaScript and ignored generated `build/` assets; discovered through STATICFILES_DIRS | Feature owners |
 
 Each Django app keeps models, forms, function-based views, URLs, service/query functions, migrations, and tests close to its feature. Split further only when actual file size or responsibility warrants it. Avoid a generic CRUD framework or unnecessary repository abstraction over Django ORM.
 

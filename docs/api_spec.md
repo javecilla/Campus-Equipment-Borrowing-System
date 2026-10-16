@@ -2,9 +2,11 @@
 
 ## Status and interface choice
 
-Proposed contracts for the server-rendered application in [architecture.md](architecture.md). No endpoints exist yet. There is no separate frontend/backend or microservice API in this scope, so a REST/OpenAPI document would imply an interface the project does not require. This document specifies the HTML form and download interfaces instead. Add OpenAPI only if a real programmatic API is later authorized.
+Proposed feature contracts for the server-rendered application in [architecture.md](architecture.md). Feature endpoints remain unimplemented; the development preview below exists. There is no separate frontend/backend or microservice API in this scope, so a REST/OpenAPI document would imply an interface the project does not require. This document specifies the HTML form and download interfaces instead. Add OpenAPI only if a real programmatic API is later authorized.
 
 Use named Django URLs and integer primary-key path converters. `<id>` below denotes the relevant record ID. Successful mutations redirect to the related detail/list page with a message. All management pages are custom group-authored Django views/forms/templates.
+
+The [coding standards](coding-standards.md#http-endpoint-design) define endpoint implementation and [Axios calling conventions](coding-standards.md#axios-calling-pattern) within these contracts. They do not add a JSON response format or change the status table below.
 
 ## Common protocol
 
@@ -29,6 +31,15 @@ Use named Django URLs and integer primary-key path converters. `<id>` below deno
 | Invalid submitted form values | 200 with bound form errors and no writes |
 | Changed workflow state, duplicate action, or insufficient inventory | 409 with a clear conflict message and no partial writes |
 | Unexpected internal failure | 500 with a safe error page; structured internal log retains the cause without secrets |
+
+## Development preview
+
+| Method | Path | URL name | Access / result |
+| --- | --- | --- | --- |
+| GET, HEAD | `/` | `development-index` | Temporary public development index linking to `/test` with `DEBUG=True`; 404 with `DEBUG=False`; other methods return 405 |
+| GET, HEAD | `/test` | `frontend-test` | Public only with `DEBUG=True`; Tailwind/font samples with no application data; 404 with `DEBUG=False`; other methods return 405 |
+
+See [DEV.md](../DEV.md#frontend-preview) for asset build/run instructions. These utilities do not implement or bypass the role routes below. T04 will replace the temporary development index with the contracted `accounts:home` route; the account-home behavior below is still proposed.
 
 ## Shared account routes
 

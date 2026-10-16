@@ -1,6 +1,6 @@
 # Team Development Guide
 
-[First-time setup](#first-time-setup) | [Everyday startup](#everyday-startup) | [Migrations](#working-with-migrations) | [Checks](#before-handing-over-work) | [Fonts](#fonts-and-static-assets) | [Team Git](#assigned-branches-and-main-integration) | [Optional MCP](#configure-your-mcp-client) | [Troubleshooting](#troubleshooting)
+[First-time setup](#first-time-setup) | [Everyday startup](#everyday-startup) | [Frontend assets](#frontend-assets-tailwind-and-axios) | [Formatting](#formatting-and-code-consistency) | [Migrations](#working-with-migrations) | [Checks](#before-handing-over-work) | [Fonts](#fonts-and-static-assets) | [Team Git](#assigned-branches-and-main-integration) | [Optional MCP](#configure-your-mcp-client) | [Troubleshooting](#troubleshooting)
 
 Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv`, `.env.local`, and local PostgreSQL database. Git shares source and migrations, not credentials or database contents.
 
@@ -21,8 +21,9 @@ Follow these steps once, in order. Keep an existing environment, database, or pr
 | Git | Git for Windows | [Install Git](https://git-scm.com/install/windows) |
 | Python | Python 3.13 | [Windows downloads](https://www.python.org/downloads/windows/) |
 | PostgreSQL | PostgreSQL 17, including pgAdmin | [Windows installer](https://www.postgresql.org/download/windows/) |
+| Node.js with npm | Node 22+ and npm 10+; tested with Node 24.5.0/npm 11.6.2 | [Node.js downloads](https://nodejs.org/en/download) |
 
-Open a new terminal after installation. Check `git --version` and `py -3.13 --version`. Node/npm are needed only for optional MCP tooling.
+Open a new terminal after installation. Check `git --version`, `py -3.13 --version`, `node --version`, and `npm.cmd --version`. Node/npm now build the shared frontend assets as well as supporting optional MCP tooling. On PowerShell, `npm.cmd` avoids execution-policy blocks affecting the npm PowerShell shim.
 
 ### Open your copy of the project
 
@@ -45,6 +46,17 @@ py -3.13 -m venv .venv
 ```
 
 Use the explicit `.venv` interpreter below; activation is unnecessary. If `.venv` already exists, run only the install command.
+
+### Install and build frontend assets
+
+From the project root, install exactly the locked JavaScript dependencies and compile the CSS/browser modules:
+
+```powershell
+npm.cmd ci
+npm.cmd run build
+```
+
+Commit `package.json` and `package-lock.json` when dependencies change. `node_modules/` and `assets/build/` are local generated files and remain ignored. Rebuild them on each workstation; do not copy them from another member. Python dependencies remain in the requirements files. See [frontend usage](#frontend-assets-tailwind-and-axios) for watch mode and template integration.
 
 <details>
 <summary>Using uv, or fixing a missing pip command</summary>
@@ -108,28 +120,82 @@ Then start the server:
 .\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
 ```
 
-Open **<http://127.0.0.1:8000/>**. The terminal should report no system-check errors or unapplied migrations. Keep that terminal open while working; stop with Ctrl+C, or Ctrl+Break on Windows.
+Open **<http://127.0.0.1:8000/>** with `DJANGO_DEBUG=True` for the development index, then follow **Tailwind & font preview** to `/test`. The terminal should report no system-check errors or unapplied migrations. Keep that terminal open while working; stop with Ctrl+C, or Ctrl+Break on Windows.
 
 ### Expected startup screen
 
-With `DJANGO_DEBUG=True` and the current empty URL configuration, you should see Django's initial success page:
+The screenshot below records Django's initial startup before custom routes were added:
 
 ![Django initial installation success page with DEBUG=True, before custom routes are added](assets/images/inital-setup-running-success-screen.png)
 
-This confirms Django started. Login, `/manage/`, and `/portal/` pages arrive in their assigned tasks. With `DJANGO_DEBUG=False`, the current empty routes return 404 instead. The welcome screen uses Django's own styling; project fonts apply to custom templates that load our stylesheet.
+After setup and server startup, the current development index should look like this:
+
+![Current development index at / with a Tailwind and font preview link to /test](assets/images/new-inital-setup-running-success-screen.png)
+
+The current startup screen is the development index at `/`, with a navigation card for `/test`, described below. These debug-only pages replace Django's automatic welcome screen. Both return 404 when debug is disabled. The planned account home behavior, login, `/manage/`, and `/portal/` pages arrive in their assigned tasks.
 
 Migrations initialize the settings row (7 days and 3 units per item) and its system audit. They create no accounts or equipment. Admin-account provisioning is part of T04; demonstration seeding is T21.
 
 ## Everyday startup
 
-Start PostgreSQL, open the project root, then run:
+Start PostgreSQL and open the project root. In terminal 1, keep both asset watchers running:
+
+```powershell
+npm.cmd run dev
+```
+
+In terminal 2, run Django:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py migrate --noinput
 .\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
 ```
 
-After team updates, [sync your branch](#bring-main-into-your-work-before-starting) first. If requirements changed, run `.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt` before migrating. Keep your own `.env.local`; add any new required keys from the template.
+Keep both terminals open; refresh the browser after edits (no automatic browser reload is installed). Stop the watchers and Django with Ctrl+C. For a one-off run, `npm.cmd run build` can replace terminal 1.
+
+After team updates, [sync your branch](#bring-main-into-your-work-before-starting) first. If requirements changed, run `.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt` before migrating. If `package-lock.json` changed, stop the watchers, run `npm.cmd ci`, then restart them. Keep your own `.env.local`; add any new required keys from the template.
+
+## Frontend assets: Tailwind and Axios
+
+The library rationale and course-pattern requirements are in [architecture.md](docs/architecture.md#required-patterns-and-selected-libraries). This setup adds a shared template shell and asset build; feature owners still implement the role layouts and pages.
+
+| Path | Purpose |
+| --- | --- |
+| `assets/css/app.css` | Tailwind entry point, local font import, font theme, and explicit source locations |
+| `assets/css/fonts.css` | Existing local font declarations; imported into Tailwind's base layer |
+| `assets/js/http.js` | Shared Axios instance with Django CSRF names and a 10-second timeout |
+| `assets/js/*.js` | Browser page modules; the JavaScript build compiles every top-level module |
+| `assets/build/` | Generated CSS, browser ES modules/chunks, and any generated dependency license notices |
+| `templates/base.html` | Shared document shell loading `build/app.css`, favicon links, and metadata; blocks: title, meta_description, extra_head, content, scripts |
+| `assets/images/favicon/` | Supplied browser/touch icons and web manifest; manifest icon paths are relative to this directory |
+
+`npm.cmd run build` creates a minified build. `npm.cmd run dev` runs CSS and JavaScript watchers together and stops the sibling if either exits. Build before running `collectstatic` or assembling a submission; include the complete generated build, including chunks/license files, in a runnable artifact. Source control keeps the npm lockfile and source assets; the submission process must build assets explicitly because ignored files are not supplied by Git.
+
+### Frontend preview
+
+After building assets and starting Django, visit **<http://127.0.0.1:8000/>** and select **Tailwind & font preview**, or go directly to **<http://127.0.0.1:8000/test>** (no trailing slash). Set `DJANGO_DEBUG=True` in your private `.env.local`. The preview links back to the development index. Expect a pale background, rounded typography cards, green/slate/amber swatches, and the message **DM Sans and Poppins loaded successfully from local assets.** The message checks real font loading in the browser; it reports a failure if font declarations/files cannot load. If it stays at “Checking local fonts…”, check that `build/frontend-test.js` loads and rebuild assets.
+
+The page uses the shared base template and compiled assets. Typography cards sit side by side on wider screens; color swatches stack on small screens. It accepts GET/HEAD without sign-in, reads no application data, and returns 404 when debug is disabled. [config/views.py](config/views.py) owns the preview handler, [templates/dev/frontend-test.html](templates/dev/frontend-test.html) its markup, and [assets/js/frontend-test.js](assets/js/frontend-test.js) the font check. This is a development preview, not a role layout or product page.
+
+### Styling templates
+
+Feature owners make `manage/base.html` and `portal/base.html` extend `base.html`, then have feature pages extend the appropriate role layout. Role layouts are not created by this setup. Use literal Tailwind class names in templates, app Python files (including form-widget attributes), or `assets/js/`; these locations are scanned explicitly. Write complete alternative class names rather than concatenating fragments such as `bg-{{ color }}-500`. Use `font-sans` for DM Sans and `font-heading` for Poppins. The current font CSS also applies Poppins to headings.
+
+The common shell loads the compiled stylesheet, including local fonts; do not load fonts.css again when extending it. Tailwind styling does not enforce roles, active accounts, ownership, or workflow rules. Django views/forms/services remain authoritative.
+
+### Calling Django with Axios
+
+Page modules in `assets/js/` import the shared client:
+
+```javascript
+import { http } from "./http.js";
+```
+
+Load a page's compiled module in its template's `scripts` block with `<script type="module" src="{% static 'build/your-page.js' %}"></script>` and `{% load static %}` in that template. The build bundles bare npm imports and shares dependency chunks; do not serve `assets/js/http.js` directly as browser-ready JavaScript. No Axios request is made until a feature calls the client.
+
+Use named Django URLs rendered into the page and same-origin requests. Current form endpoints use the URL-encoded encoding in [api_spec.md](docs/api_spec.md#common-protocol): send string fields through URLSearchParams, rather than JSON. Use FormData/multipart only when the affected contract explicitly allows it. Render `{% csrf_token %}` in state-changing forms; that also causes Django to issue the CSRF cookie. A future page without such a form that makes POST requests must explicitly arrange for Django to set that cookie, following [Django's CSRF guidance](https://docs.djangoproject.com/en/5.2/howto/csrf/).
+
+Axios reads `csrftoken` and sends `X-CSRFToken` for same-origin browser requests. Session cookies use the browser's normal same-origin behavior; cross-origin credentials and CSRF exemptions are not enabled. Handle rejected responses/timeouts in the calling feature with visible, actionable feedback. Do not retry state-changing requests automatically. Validate any response data a feature consumes; Axios is a transport, not runtime schema validation. The [HTTP contract](docs/api_spec.md) still describes server-rendered HTML/forms/CSV, with no separate JSON API or chart endpoint added by this setup.
 
 ## Working with migrations
 
@@ -158,11 +224,37 @@ Coordinate shared model changes with their owners. For an authorized inventory c
 
 Review and include models and migrations together. Preserve applied/shared migrations; use new migrations for corrections. Reconcile conflicting migration leaves with affected owners. Do not delete another member's migration or use `--fake` to hide a mismatch. The custom user is already `accounts.User`; the settings initialization data migration is deliberately irreversible.
 
+## Formatting and code consistency
+
+Formatting is split by language so Django tags and Python keep their correct parsers:
+
+| Files | Write formatting | Check without rewriting |
+| --- | --- | --- |
+| Source JS/MJS/CSS and project JSON | `npm.cmd run format` | `npm.cmd run format:check` |
+| Django templates | `.\.venv\Scripts\djlint.exe templates --reformat` | `.\.venv\Scripts\djlint.exe templates --check` |
+| Python | `.\.venv\Scripts\ruff.exe format .` | `.\.venv\Scripts\ruff.exe format --check .` |
+
+Install both dependency sets first: `npm.cmd ci` and `.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt`. Prettier is pinned in package.json; djLint/Ruff are pinned in requirements-dev.txt. `.prettierrc.json` and pyproject.toml hold shared options; `.prettierignore` excludes Django HTML, Python, private files, dependencies, fonts, and generated output. The npm scripts target source/config files, without rewriting historical Markdown. To format a changed Markdown file deliberately, run `.\node_modules\.bin\prettier.cmd path/to/changed-file.md --write` with its actual path; prose wrapping is preserved.
+
+For a small feature, use the local formatter executable on the actual owned paths, then run the full non-writing checks. Do not use Prettier's generic HTML parser on Django templates or enable two formatters for the same language in your editor. Editor extensions are optional; the CLI is the team reference. djLint is configured as a Django template formatter; its separate optional linter rules are not a new acceptance gate. Ruff remains the Python linter. No pre-commit hook, automatic Tailwind class sorter, or CI job is installed.
+
+The [coding standards](docs/coding-standards.md#http-endpoint-design) own endpoint/calling/styling/naming rules, and [README](README.md#third-party-packages-and-assets) owns dependency justifications. Formatting does not validate those design rules.
+
+### Tailwind CSS in VS Code
+
+Install the workspace-recommended **Tailwind CSS IntelliSense** extension (`bradlc.vscode-tailwindcss`). The shared [.vscode/settings.json](.vscode/settings.json) associates only `assets/css/app.css` with its **Tailwind CSS** language mode; ordinary CSS keeps its normal parser. Open the repository root as your workspace so these settings apply.
+
+If `app.css` shows `{ expected` near `source(none)` or warnings on `@source` / `@theme`, check the bottom-right language mode: it should say **Tailwind CSS**, not **CSS**. After installing/enabling the extension, run **Developer: Reload Window** from the Command Palette and reopen the file. These are valid Tailwind v4 directives; verify compilation with `npm.cmd run build:css`. Keep CSS validation enabled. See the [official editor setup](https://tailwindcss.com/docs/editor-setup) for the supported language mode. CLI formatting remains the team reference above.
+
 ## Before handing over work
 
 Run the configured checks and any meaningful tests for your feature:
 
 ```powershell
+npm.cmd run format:check
+.\.venv\Scripts\djlint.exe templates --check
+npm.cmd run build
+npm.cmd audit
 .\.venv\Scripts\python.exe manage.py check --database default
 .\.venv\Scripts\python.exe manage.py makemigrations --check --dry-run --noinput
 .\.venv\Scripts\python.exe manage.py migrate --check
@@ -181,11 +273,11 @@ Write the required [dated handoff](.agents/skills/project-handoff/SKILL.md), upd
 
 The root `assets/` location is valid. [Django's static-files finder](https://docs.djangoproject.com/en/5.2/howto/static-files/) is configured in [config/settings.py](config/settings.py) to search it. `assets/fonts/...` is therefore served at `/static/fonts/...`; the `assets/` directory name is not part of the static URL.
 
-[assets/css/fonts.css](assets/css/fonts.css) defines the local DM Sans variable fonts and all Poppins weights/styles. It uses DM Sans for body text and Poppins for headings. In a custom template, load it once in the page's base template:
+[assets/css/fonts.css](assets/css/fonts.css) defines the local DM Sans variable fonts and all Poppins weights/styles. [app.css](assets/css/app.css) imports it into Tailwind's base layer, and [base.html](templates/base.html) loads the compiled stylesheet once:
 
 ```django
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+<link rel="stylesheet" href="{% static 'build/app.css' %}">
 ```
 
 Keep the existing font files and their `OFL.txt` notices. Use CSS-relative URLs inside the stylesheet and Django's `{% static %}` tag in templates. No fonts are downloaded from a CDN. The DM Sans variable pair covers weights 100–1000, so the included DM Sans static variants need no additional declarations.
@@ -193,7 +285,7 @@ Keep the existing font files and their `OFL.txt` notices. Use CSS-relative URLs 
 For discovery checks:
 
 ```powershell
-.\.venv\Scripts\python.exe manage.py findstatic css/fonts.css fonts/Poppins/Poppins-Regular.ttf --verbosity 2
+.\.venv\Scripts\python.exe manage.py findstatic build/app.css build/http.js fonts/Poppins/Poppins-Regular.ttf --verbosity 2
 ```
 
 Runserver serves static files during local debugging. `STATIC_ROOT` (`staticfiles/`) is generated collection output, not where source assets belong. `collectstatic` is not needed for the local setup above.
@@ -276,6 +368,8 @@ uv pip compile requirements-dev.in --output-file requirements-dev.txt
 ```
 
 Run checks before sharing updated locks. Ordinary setup installs the pins without re-resolving them. Psycopg binary avoids a C build; python-dotenv parses configuration; tzdata supplies Windows time-zone data; Ruff is development-only.
+
+JavaScript dependencies belong in package.json/package-lock.json. Use `npm.cmd install --save-exact package@version` for a runtime dependency, adding `--save-dev` for build tools; use real reviewed package/version values. Reinstall with `npm.cmd ci`, then format/check, build, and audit before sharing the lockfile. Tailwind CLI 4.3.0 currently permits the locked watcher 2.6.0, avoiding the [vulnerable braces chain](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) pinned by CLI 4.3.3. Recheck that dependency path during updates; do not run a forced audit fix without reviewing the actual change. Update [README purposes/tradeoffs](README.md#third-party-packages-and-assets) and the [full inventory](docs/third-party-dependencies.md) from lockfile/distribution metadata, including indirect/optional packages and their parent/license declarations. The JS build copies Axios's complete MIT notice beside its bundle through `scripts/copy-licenses.mjs`; extend that step if another package enters the browser bundle.
 
 ## Configure your MCP client
 
