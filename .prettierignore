@@ -1,0 +1,9 @@
+# Django templates use djLint; Python uses Ruff.
+**/*.html
+**/*.py
+.venv/
+node_modules/
+assets/build/
+staticfiles/
+assets/fonts/
+.env*
