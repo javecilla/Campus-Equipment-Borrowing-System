@@ -52,7 +52,7 @@ git remote -v
 
 For an existing working copy, open its project root and verify that `origin` points to that URL; do not initialize Git or add another origin blindly. Never put a GitHub token in the remote URL. Git for Windows can authenticate through Git Credential Manager. Open the folder containing `README.md`, `DEV.md`, `.env.example`, and `.agents/`. Run the remaining commands from that root.
 
-Read [AGENTS.md](AGENTS.md), [CONTRIBUTING.md](CONTRIBUTING.md), [coding standards](docs/coding-standards.md), [HANDOFF.md](HANDOFF.md), and your assigned task in [docs/tasks.md](docs/tasks.md) before changes. The handoff describes observed state on the current workstation; it does not prove another machine is configured.
+Read [AGENTS.md](AGENTS.md), [PLAN.md](PLAN.md), [CONTRIBUTING.md](CONTRIBUTING.md), [coding standards](docs/coding-standards.md), [HANDOFF.md](HANDOFF.md), and your assigned task in [docs/tasks.md](docs/tasks.md) before changes. Use PLAN.md's readiness gates and the backlog's integration evidence before consuming another member's work. The handoff describes observed state on the current workstation; it does not prove another machine is configured.
 
 ## Assigned branches and main integration
 
