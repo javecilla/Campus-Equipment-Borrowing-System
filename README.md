@@ -6,7 +6,7 @@ Private team repository: [javecilla/Campus-Equipment-Borrowing-System](https://g
 
 The system tracks individual physical units by asset code, preserves their transaction history, and prevents the same unit from being reserved or issued to multiple borrowers simultaneously.
 
-**Current phase:** Django foundation implemented locally on `jerome` (T01–T03), pending review and main integration. Configuration, shared models/migrations, audit/settings services, validation, and PostgreSQL integration tests exist. Login and feature pages remain unimplemented; see [current readiness](HANDOFF.md).
+**Current phase:** Django foundation (T01–T03) integrated into `main` through [PR #3](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/3). Configuration, shared models/migrations, audit/settings services, validation, and PostgreSQL integration tests exist. Login and feature pages remain unimplemented; see [current readiness](HANDOFF.md).
 
 ## Run locally
 
