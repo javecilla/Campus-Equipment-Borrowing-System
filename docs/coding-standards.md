@@ -21,7 +21,7 @@ Forms, service functions, and query functions support this project's MTV structu
 | `services.py` | One named business action, authoritative state validation, explicit ORM writes, transactions, locking, and audit completeness | Template rendering, session-dependent implicit inputs, or one generic operation controlled by mode flags |
 | `queries.py` | Read-only ORM selection, owner-scoped data, related-object loading, pagination inputs, and aggregates | State changes, request approval, side-effecting reads, or bypassing view authorization |
 | `urls.py` | Named, namespaced routes mapped to views | Queries, mutation logic, or duplicated request-processing code |
-| `static/` | CSS and small JavaScript enhancements | Deciding server permissions, authoritative due dates, or stock availability |
+| `assets/` | Source CSS, fonts, images, and small JavaScript enhancements; ignored build output | Deciding server permissions, authoritative due dates, or stock availability |
 | Feature tests | Observable access boundaries, business transitions, transaction behavior, and report correctness | Reimplementing the application or asserting incidental source text |
 
 Do not build a parallel `controllers/` hierarchy, generic repository layer over Django ORM, service-class framework, or separate REST backend just to match another pattern. Use Django's native forms, authentication, ORM, migrations, templates, and named URLs. The course-specific prohibition on Django admin remains in AGENTS.md even when a general Django tutorial demonstrates it.
@@ -50,8 +50,8 @@ Apply the same responsibility split to cancellation, release, return, maintenanc
 
 - Match existing project style and make the smallest useful diff. Inspect existing logic first; preserve unrelated changes. Follow DRY, KISS, and YAGNI.
 - Use English comments and docstrings. Prefer clear names and short functions with one purpose. Document non-obvious decisions where the code lives rather than adding parallel explanation files.
-- Python modules, functions, variables, and model fields use `snake_case`; classes use `PascalCase`; constants and enum values use `UPPER_SNAKE_CASE`. Preserve the exact URL names/namespaces in api_spec.md, such as `borrowing_manage:request-approve`. JavaScript uses `camelCase`; HTML IDs and CSS classes use lowercase hyphenated names.
-- Use four spaces in Python, explicit imports, and a consistent standard-library / third-party / project import grouping. Prefer readable expressions to deeply nested or compressed code. Do not declare a new formatter/linter mandatory until the team configures it.
+- Python modules, functions, variables, and model fields use `snake_case`; classes use `PascalCase`; named constants and enum values use `UPPER_SNAKE_CASE`. Preserve the exact URL names/namespaces in api_spec.md, such as `borrowing_manage:request-approve`. JavaScript identifiers use `camelCase`, browser module filenames use `kebab-case.js`, and project-authored HTML IDs/data attributes use lowercase hyphenated names. Tailwind utilities retain the library's syntax, including responsive/state prefixes.
+- Use four spaces in Python, explicit imports, and a consistent standard-library / third-party / project import grouping. Prefer readable expressions to deeply nested or compressed code. Use the configured formatter for each language, as described below.
 - Type function parameters, returns, variables, collections, and structured internal data. Use concrete models, enums, typed records, or dataclasses as appropriate. Avoid `Any`, broad `object`, loose dictionary payloads, and untyped collections for domain contracts. A small explicit template context mapping is a presentation boundary, not a substitute for typed business data.
 - Runtime-validate forms, formsets, environment configuration, and external input. Type annotations do not validate submitted data. Require needed fields and ignore unrelated extras without assigning them to a model.
 - Do not define default values for parameters of project-authored functions. Supply every argument explicitly. This does not prohibit Django model/field configuration defaults required by the schema; those are persistence declarations, not optional function parameters.
@@ -80,13 +80,65 @@ Read-only queries never repair data or change overdue status. Derive reports/sta
 
 ## Dependencies and compatibility
 
-Use the compatible stack in architecture.md and native Django patterns. Add dependencies only to the project environment and declared configuration, never globally. Record tested versions and justify extra packages. Read an installed package's source when behavior is uncertain rather than guessing its API. Do not create a frontend build system, generated admin, ORM wrapper, or new deployment target without a task that needs it.
+Use the compatible stack in architecture.md and native Django patterns. Add dependencies only to the project environment and declared configuration, never globally. Record tested versions and justify extra packages. Read an installed package's source when behavior is uncertain rather than guessing its API. The Tailwind/Axios build is configured; do not add another frontend framework, generated admin, ORM wrapper, or new deployment target without a task that needs it.
+
+Every dependency change updates the appropriate Python input/pins or npm manifest/lockfile, the [README disclosure](../README.md#third-party-packages-and-assets), and the complete [dependency inventory](third-party-dependencies.md), including indirect/optional packages and license metadata. Explain the need, runtime versus development role, and relevant limitation. Preserve supplied notices, add required notices for new browser-bundled packages to the license-copy step, rebuild, and run the configured package/build checks; an inventory/lockfile does not replace those notices or the justification.
 
 Do not change a shared field, enum, URL contract, or workflow in one feature without updating its canonical contract and coordinating with affected feature owners. Before the first migration, confirm the custom authentication model. Once migrations exist, preserve shared history and add appropriate migrations rather than independently rewriting another member's schema.
 
+## HTTP endpoint design
+
+The project uses a **server-rendered command/query HTTP pattern**: GET reads or displays a form; a named POST action validates a form and invokes one workflow service. This is the project's API/interface design convention within MTV. [api_spec.md](api_spec.md#common-protocol) owns request encodings, status codes, redirects, fields, pagination, and access rules. Adding calling conventions does not authorize a separate REST backend, Django REST Framework, JWT authentication, or undocumented JSON endpoints.
+
+- Reuse the contracted paths/namespaces. Use integer path converters, noun-based list/detail paths, and explicit action routes such as request approval or maintenance closure. Match the existing kebab-case URL names; Python view/service names remain snake_case. Do not rename routes to impose a second convention.
+- Keep one endpoint action and service per business operation. Never introduce a generic status setter, a mode-switching endpoint, or arbitrary model-field updates. HTTP method checks, active/role/owner authorization, form parsing, and rendering belong at their existing MTV boundaries.
+- Bind Django forms/formsets with explicit field allowlists; GET filters and path values also require validation. Derive actors, owners, roles, and operational state server-side. Reuse query helpers and workflow services rather than implementing a second AJAX business path.
+- Follow the response/status table exactly. In particular, invalid bound forms return 200 HTML, successful mutations return a named 302 redirect, and workflow conflicts return 409. Do not globally change these to 422/JSON or convert failures to successful empty responses. Wrong methods, permissions, missing objects, and unexpected errors retain the documented semantics.
+- New programmatic response formats require an explicitly authorized feature and a corresponding HTTP-contract update: document method/name, access, accepted fields, content type, success/error shape, and checks before implementation. Use snake_case for newly agreed JSON field names to match server/form fields; do not add a universal envelope or serializer framework for a hypothetical API.
+
+## Axios calling pattern
+
+Use the shared [http client](../assets/js/http.js) as the single transport configuration. Page modules orchestrate browser behavior; domain decisions remain on the server. Add a feature-specific request function only when the feature actually makes a call, with one action and explicit inputs/return type. Avoid a generic API service class or duplicated Axios instances.
+
+| Concern | Convention |
+| --- | --- |
+| Files and imports | Top-level browser entries such as assets/js/inventory.js import `{ http }` from `./http.js`; load their compiled build/*.js using Django static tags. Follow the current build's entry layout |
+| Names | Use action-specific camelCase names such as loadEquipment or approveRequest, handlers such as handleApprovalSubmit, and semantic variables such as approvalForm. Use stable kebab-case data-testid values for automation |
+| URLs and GET filters | Render URLs with Django reverse/static facilities into escaped data attributes; do not hardcode role paths or trust a client URL to establish ownership. Pass allowlisted GET filters through Axios params rather than concatenating a query string |
+| POST encoding | Use normal browser form submission by default. For an authorized enhanced form, use URLSearchParams with validated string fields for the contracted URL-encoded body. FormData/multipart is reserved for a contract that accepts it; JSON is not interchangeable with request.POST |
+| Sessions and CSRF | Keep same-origin session authentication and the shared csrftoken/X-CSRFToken names. State-changing forms render csrf_token, or their feature explicitly ensures cookie issuance. Do not turn on cross-origin credentials, force tokens to external origins, or exempt views from CSRF |
+| Responses | Set responseType to the contracted format. HTML remains HTML; a resolved Axios promise or status 200 is not proof of a successful mutation because invalid forms also use 200 and browser HTTP redirects are followed. The feature must preserve bound-form/error/redirect behavior; use native navigation when that behavior has no implemented enhancement contract |
+| Types and validation | Use JSDoc parameter/return/structured typedefs in JavaScript. Generic Axios types do not validate incoming data; runtime-check any agreed JSON fields before using them, require the fields consumed, and ignore unrelated extras. Never insert untrusted response values through innerHTML |
+| Failures and UI state | Keep the finite shared timeout. Catch recognized Axios/network errors at the page boundary, present actionable feedback in an accessible error region, and restore pending controls in finally. Distinguish permission/conflict/network/server failures without exposing private response details; preserve unexpected failures rather than hiding them |
+| Repeated calls | Do not install global interceptors that silently return empty data, redirect every error, swallow exceptions, or retry mutations. Disable duplicate submissions for usability while keeping the server's transaction checks authoritative. Safe read retries, if needed by an authorized external integration, follow the existing bounded-retry rule |
+
+Axios is for optional enhancements; it does not turn HTML responses into a JSON API. Downloads can remain ordinary authorized links, and normal forms retain their named actions and server-side validation. Keep browser event/DOM wiring in the feature entry module and reusable pure calculations separate from network effects.
+
+## Tailwind styling pattern
+
+Use [app.css](../assets/css/app.css) as the single Tailwind entry/theme and [base.html](../templates/base.html) as the document/asset shell. The two role layouts extend that shell; feature pages extend their role layout and reuse real navigation/form/table/message components. Do not duplicate complete page shells, create an admin generator, or add a second CSS framework.
+
+- Prefer utilities directly on semantic, accessible HTML. Reuse established components and spacing/typography decisions before inventing new ones. Use font-sans (DM Sans) for body/control text and font-heading (Poppins) for headings; keep shared design values in the existing theme when a real repeated need appears.
+- Write complete literal utility names, including every conditional alternative, in the configured template/Python/JS sources. Never concatenate utility fragments such as bg-{{ color }}-500, and never derive arbitrary classes directly from submitted values. Forms can provide complete widget class strings; visible markup remains in templates.
+- Use a stable human grouping: layout/display, positioning/sizing, spacing, typography, colors/borders, effects, then responsive/state variants. Use mobile defaults with explicit breakpoint changes, visible focus-visible styles, disabled/pending states, readable contrast, and text/ARIA feedback in addition to color. Tailwind class sorting is a review convention here; the configured formatters do not automatically sort Django class attributes.
+- Project-authored component names, IDs, and data attributes are kebab-case; keep Tailwind's own utility names unchanged. Use explicit data-action-url/data-testid attributes for behavior and automation rather than binding JavaScript to a styling class or visible label.
+- Use the standard spacing/color/type scales first. Add arbitrary values or custom selectors only for an actual requirement that the existing scale/component cannot express. Keep necessary reusable CSS in assets/css/app.css and use layers so utility overrides remain predictable; do not introduce repeated style attributes, scattered CSS files, or speculative @apply component systems.
+- Keep scripts and styles in their source files rather than embedding large blocks in Django HTML. Load compiled modules in the scripts block and compiled CSS through the shared shell. Build output and third-party font/license files are generated/vendor material and must not be hand-formatted.
+
+## Formatting ownership
+
+| Files | Configured formatter | Team rule |
+| --- | --- | --- |
+| Python | Ruff in pyproject.toml | Four spaces and the existing import/lint rules; Prettier does not format Python |
+| JavaScript/MJS, CSS, project JSON | Prettier in .prettierrc.json | Four spaces for JS/CSS, two for JSON, 100-column wrapping, double quotes, semicolons, and LF output |
+| Django HTML templates | djLint's Django profile in pyproject.toml | Four spaces and 100-column wrapping; Prettier explicitly ignores HTML to avoid treating Django tags as plain HTML |
+| Markdown | Prettier supports explicitly selected files | Preserve prose wrapping; do not reformat archived handoffs, source briefs, or unrelated documents as part of a feature |
+
+Run the [format/check commands in DEV.md](../DEV.md#formatting-and-code-consistency). Use the pinned project tools, not globally installed versions or an editor's generic HTML formatter. Keep large JavaScript/CSS in separate files; djLint does not format embedded scripts/styles in this configuration. Run formatters on owned files and inspect the diff, especially around template tags. Formatting normalizes whitespace; it does not enforce architecture, access control, Tailwind class ordering, runtime types, or workflow correctness. No formatter hook or CI enforcement is installed by these configuration files.
+
 ## Minimum verification and review
 
-Use the minimum useful real integration checks for the changed behavior. The foundation configures Django tests and Ruff; follow the commands in [DEV.md](../DEV.md#application-migrations-checks-and-local-server) and applicable project instructions. Do not claim a check ran without its actual result.
+Use the minimum useful real integration checks for the changed behavior. Django tests, Ruff, Prettier source checks, and djLint template-format checks are configured; follow the commands in [DEV.md](../DEV.md#before-handing-over-work) and applicable project instructions. Do not claim a check ran without its actual result.
 
 | Change | Appropriate evidence |
 | --- | --- |

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Frontend test · Campus Equipment{% endblock %}
+{% block content %}
+    <main class="min-h-screen bg-slate-50 px-6 py-12 text-slate-900 sm:px-10 sm:py-16"
+          data-testid="frontend-test-page">
+        <div class="mx-auto max-w-5xl">
+            <nav class="mb-8" aria-label="Development pages">
+                <a href="{% url 'development-index' %}"
+                   class="rounded text-sm font-semibold text-emerald-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-700"
+                   data-testid="development-index-link">← Development index</a>
+            </nav>
+            <header class="mb-10 border-b border-slate-200 pb-8">
+                <p class="mb-5 text-xs font-semibold tracking-widest text-emerald-700 uppercase">Campus Equipment / Development</p>
+                <h1 class="mb-4 font-heading text-4xl font-semibold tracking-tight sm:text-5xl"
+                    data-testid="heading-font-sample">A little style check.</h1>
+                <p class="max-w-2xl text-lg leading-relaxed text-slate-600">
+                    A simple playground for Tailwind CSS and our locally served fonts.
+                    You should see a pale background, rounded cards, and green accents.
+                </p>
+            </header>
+            <section aria-labelledby="typography-title">
+                <h2 id="typography-title"
+                    class="mb-4 font-heading text-xl font-semibold">01 / Typography</h2>
+                <p class="mb-4 text-sm text-slate-600"
+                   role="status"
+                   data-testid="font-load-status">Checking local fonts…</p>
+                <div class="grid gap-6 md:grid-cols-2" data-testid="font-sample-grid">
+                    <article class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+                        <p class="mb-6 text-xs font-semibold tracking-widest text-emerald-700 uppercase">DM Sans · Body</p>
+                        <p class="mb-4 font-sans text-3xl leading-snug"
+                           data-testid="body-font-sample">Good tools. Great possibilities.</p>
+                        <p class="mb-6 text-sm leading-relaxed text-slate-600">Used for paragraphs, labels, and controls. Readable at every size.</p>
+                        <p class="font-sans text-lg tracking-wide">Aa Bb Cc 0123456789</p>
+                    </article>
+                    <article class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+                        <p class="mb-6 text-xs font-semibold tracking-widest text-emerald-700 uppercase">Poppins · Headings</p>
+                        <p class="mb-4 font-heading text-3xl font-semibold leading-snug">Good tools. Great possibilities.</p>
+                        <p class="mb-6 text-sm leading-relaxed text-slate-600">Used for headings and titles. Compare its rounded letter shapes with DM Sans.</p>
+                        <p class="font-heading text-lg tracking-wide">Aa Bb Cc 0123456789</p>
+                    </article>
+                </div>
+            </section>
+            <section class="mt-10" aria-labelledby="utilities-title">
+                <h2 id="utilities-title"
+                    class="mb-4 font-heading text-xl font-semibold">02 / Color &amp; layout</h2>
+                <div class="grid gap-4 sm:grid-cols-3" data-testid="color-sample-grid">
+                    <div class="rounded-xl bg-emerald-700 p-6 text-white"
+                         data-testid="emerald-sample">
+                        <p class="font-semibold">Emerald</p>
+                        <p class="mt-1 text-sm text-emerald-100">Primary accent</p>
+                    </div>
+                    <div class="rounded-xl bg-slate-900 p-6 text-white">
+                        <p class="font-semibold">Slate</p>
+                        <p class="mt-1 text-sm text-slate-300">Text &amp; contrast</p>
+                    </div>
+                    <div class="rounded-xl border border-amber-200 bg-amber-50 p-6 text-amber-900">
+                        <p class="font-semibold">Amber</p>
+                        <p class="mt-1 text-sm">Supporting color</p>
+                    </div>
+                </div>
+                <p class="mt-4 text-sm text-slate-600">Resize the window: these three swatches stack on small screens.</p>
+            </section>
+            <footer class="mt-10 border-t border-slate-200 pt-6 text-sm text-slate-500">
+                Development preview only · No application data is shown · Available when DEBUG is enabled
+            </footer>
+        </div>
+    </main>
+{% endblock %}
+{% block scripts %}
+    <script type="module" src="{% static 'build/frontend-test.js' %}"></script>
+{% endblock %}

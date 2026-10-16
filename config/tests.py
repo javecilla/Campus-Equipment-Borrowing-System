@@ -119,8 +119,8 @@ class EnvironmentTests(SimpleTestCase):
 
 
 class BootstrapTests(SimpleTestCase):
-    def test_unimplemented_routes_and_admin_are_unavailable(self) -> None:
-        with self.settings(ALLOWED_HOSTS=["testserver"]):
+    def test_development_and_unimplemented_routes_are_unavailable_without_debug(self) -> None:
+        with self.settings(DEBUG=False, ALLOWED_HOSTS=["testserver"]):
             for path in ("/", "/admin/", "/manage/", "/portal/"):
                 with self.subTest(path=path):
                     self.assertEqual(self.client.get(path).status_code, 404)

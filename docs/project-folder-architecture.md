@@ -2,7 +2,7 @@
 
 Use this guide to find the files involved in a page and decide where a new feature belongs. It describes file placement; [architecture.md](architecture.md) owns system design, [coding-standards.md](coding-standards.md#what-mtv-means) owns MTV responsibilities, and [api_spec.md](api_spec.md) owns route names and form contracts.
 
-**Existing** means the path is present in this checkout. **Planned** means a proposed location to create when the assigned feature needs it. The planned files below have not been scaffolded. Check [HANDOFF.md](../HANDOFF.md) and [the backlog](tasks.md) for implementation and main-integration readiness.
+**Existing** means the path is present in this checkout. **Planned** means a proposed location to create when the assigned feature needs it. **Generated** means local build output, excluded from Git. The planned files below have not been scaffolded. Check [HANDOFF.md](../HANDOFF.md) and [the backlog](tasks.md) for implementation and main-integration readiness.
 
 ## Folder map
 
@@ -13,7 +13,8 @@ Campus-Equipment-Borrowing-System/
 ├── config/                                      [existing]
 │   ├── environment.py                           [existing] private configuration reader
 │   ├── settings.py                              [existing] installed apps, DB, templates, assets
-│   ├── urls.py                                  [existing] root routing; currently empty
+│   ├── urls.py                                  [existing] development index / and preview /test
+│   ├── views.py                                 [existing] debug-only index and frontend preview
 │   ├── tests.py                                 [existing] configuration/bootstrap checks
 │   ├── asgi.py                                  [existing]
 │   └── wsgi.py                                  [existing]
@@ -63,7 +64,10 @@ Campus-Equipment-Borrowing-System/
 │   ├── forms.py                                 [planned] settings and filter inputs
 │   └── urls.py                                  [planned] operations routes
 │
-├── templates/                                   [planned] shared root template directory
+├── templates/                                   [existing] shared root template directory
+│   ├── base.html                                [existing] document shell and compiled CSS
+│   ├── dev/frontend-test.html                    [existing] Tailwind/font preview
+│   ├── dev/index.html                            [existing] development navigation
 │   ├── manage/base.html                         [planned] custom administrator layout
 │   ├── portal/base.html                         [planned] basic-user layout
 │   ├── components/                              [planned] shared form/table/message fragments
@@ -81,9 +85,15 @@ Campus-Equipment-Borrowing-System/
 │
 ├── assets/                                      [existing] shared source static files
 │   ├── css/fonts.css                            [existing] local font declarations and typography
+│   ├── css/app.css                              [existing] Tailwind entry point/theme/source scan
 │   ├── fonts/                                   [existing] DM Sans/Poppins and license notices
 │   ├── images/                                  [existing] includes setup success screenshot
-│   └── js/                                      [planned] small page enhancements when needed
+│   ├── js/http.js                               [existing] shared Axios client source
+│   ├── js/frontend-test.js                       [existing] preview font-load check
+│   └── build/                                   [generated] ignored CSS/browser modules/chunks
+├── package.json                                 [existing] npm dependencies/build/watch commands
+├── package-lock.json                            [existing] exact npm dependency graph
+├── scripts/copy-licenses.mjs                     [existing] copies Axios notice into build output
 ├── docs/                                        [existing] canonical requirements/design guides
 ├── handoffs/                                    [existing] dated work evidence
 └── manage.py                                    [existing] Django management entry point
@@ -95,7 +105,7 @@ The root also contains the setup/review documents, dependency files, and private
 
 A **view** is a Python request handler in the relevant app's `views.py`. The page's **HTML** is a template. For example, an inventory management page uses `inventory/views.py` and a template under `templates/inventory/manage/`.
 
-The role prefix selects the audience; the feature app selects the Python module. A basic-user equipment page still uses `inventory/`, and a basic-user borrowing page still uses `borrowing/`. The shared layouts are `templates/manage/base.html` and `templates/portal/base.html`.
+The role prefix selects the audience; the feature app selects the Python module. A basic-user equipment page still uses `inventory/`, and a basic-user borrowing page still uses `borrowing/`. Feature owners create `templates/manage/base.html` and `templates/portal/base.html` extending the existing `templates/base.html` document/asset shell. The shell's blocks are documented in [DEV.md](../DEV.md#frontend-assets-tailwind-and-axios).
 
 These page placements are planned examples; route names already come from the HTTP contract:
 

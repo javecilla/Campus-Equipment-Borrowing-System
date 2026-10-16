@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Development index · Campus Equipment{% endblock %}
+{% block content %}
+    <main class="min-h-screen bg-slate-50 px-6 py-12 text-slate-900 sm:px-10 sm:py-16"
+          data-testid="development-index">
+        <div class="mx-auto max-w-3xl">
+            <p class="mb-5 text-xs font-semibold tracking-widest text-emerald-700 uppercase">Campus Equipment / Development</p>
+            <h1 class="mb-4 font-heading text-4xl font-semibold tracking-tight sm:text-5xl">Start here.</h1>
+            <p class="mb-10 text-lg leading-relaxed text-slate-600">A shared starting point for the team while the application pages are being built.</p>
+            <nav aria-label="Development pages">
+                <a href="{% url 'frontend-test' %}"
+                   class="block rounded-2xl border border-slate-200 bg-white p-8 transition hover:border-emerald-700 hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-700"
+                   data-testid="frontend-preview-link">
+                    <span class="mb-2 block text-xs font-semibold tracking-widest text-emerald-700 uppercase">/test</span>
+                    <span class="mb-3 block font-heading text-2xl font-semibold">Tailwind &amp; font preview →</span>
+                    <span class="block leading-relaxed text-slate-600">Check responsive layouts, color utilities, and local DM Sans/Poppins font loading.</span>
+                </a>
+            </nav>
+            <p class="mt-8 text-sm leading-relaxed text-slate-500">Development only. Login and role pages are still being built. This index is available when DEBUG is enabled.</p>
+        </div>
+    </main>
+{% endblock %}

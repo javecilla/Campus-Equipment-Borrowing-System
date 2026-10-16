@@ -4,3 +4,10 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.djlint]
+profile = "django"
+indent = 4
+max_line_length = 100
+format_css = false
+format_js = false
