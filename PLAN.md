@@ -82,10 +82,10 @@ This is a future example, not completed work. Jerome implements and verifies T01
 
 After Jerome integrates T02 into main, the current handoff points to the actual main revision and says **Alex / T04 is ready**, provided Alex has requested that implementation. Alex's agent syncs `alex` with main, reads T02's evidence and real user model, and implements only T04. Jerome can work on T03 alongside that task. Ellyssa's T09 can start after T04 integrates; Kenneth's T07 needs both T03 and T04 integrated. Jerome's later settings/audit UI task T06 does not hold up Alex's initial authentication work.
 
-For a readiness-only session, a member can use:
+## Prompts for team coding agents
+
+To start implementation, copy your member's complete prompt from [Team AI implementation prompts](docs/team-agent-prompts.md). It explicitly authorizes the agent to implement ready assigned backlog work, run checks, and complete the handoff, while preserving this plan's prerequisite and main-integration gates. Send it again after integration to continue with newly ready work. The prompt guide owns the reusable templates; task ownership and acceptance remain in the backlog.
+
+For a readiness-only session, a member can instead use:
 
 > I am Alex, assigned branch alex. Read AGENTS.md, PLAN.md, HANDOFF.md, and my backlog entries. Inspect integrated prerequisite evidence and tell me my next ready task and blockers. Do not implement anything yet.
-
-For a separately authorized implementation session, the member can name the task:
-
-> Implement T04 only on alex, following AGENTS.md and PLAN.md. First verify T02 is integrated into main and inspect its actual interfaces. If it is missing, report the blocker. Follow the MTV and handoff skills, run the configured relevant checks, and leave changes uncommitted for review.

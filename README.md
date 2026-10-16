@@ -136,6 +136,7 @@ Assignments come from [Project-Members.txt](docs/Project-Members.txt). All membe
 | [Project-Requirements.txt](docs/Project-Requirements.txt) | Original course requirements |
 | [Project-Members.txt](docs/Project-Members.txt) | Original team assignments and schedule |
 | [PLAN.md](PLAN.md) | Full-system delivery order, member handoff gates, and agent task selection |
+| [team-agent-prompts.md](docs/team-agent-prompts.md) | Copy-and-paste implementation prompts for each member's coding agent |
 | [PRD.md](docs/PRD.md) | Product goals, audiences, scope, and success criteria |
 | [SRS.md](docs/SRS.md) | Functional requirements, business rules, and acceptance criteria |
 | [architecture.md](docs/architecture.md) | Proposed components, responsibilities, and concurrency design |
