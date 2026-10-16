@@ -56,7 +56,7 @@ npm.cmd ci
 npm.cmd run build
 ```
 
-Commit `package.json` and `package-lock.json` when dependencies change. `node_modules/` and `assets/build/` are local generated files and remain ignored. Rebuild them on each workstation; do not copy them from another member. Python dependencies remain in the requirements files. See [frontend usage](#frontend-assets-tailwind-and-axios) for watch mode and template integration.
+Commit `package.json` and `package-lock.json` when dependencies change. `node_modules/` and `static/build/` are local generated files and remain ignored. Rebuild them on each workstation; do not copy them from another member. Python dependencies remain in the requirements files. See [frontend usage](#frontend-assets-tailwind-and-axios) for watch mode and template integration.
 
 <details>
 <summary>Using uv, or fixing a missing pip command</summary>
@@ -126,11 +126,11 @@ Open **<http://127.0.0.1:8000/>** with `DJANGO_DEBUG=True` for the development i
 
 The screenshot below records Django's initial startup before custom routes were added:
 
-![Django initial installation success page with DEBUG=True, before custom routes are added](assets/images/inital-setup-running-success-screen.png)
+![Django initial installation success page with DEBUG=True, before custom routes are added](static/images/inital-setup-running-success-screen.png)
 
 After setup and server startup, the current development index should look like this:
 
-![Current development index at / with a Tailwind and font preview link to /test](assets/images/new-inital-setup-running-success-screen.png)
+![Current development index at / with a Tailwind and font preview link to /test](static/images/new-inital-setup-running-success-screen.png)
 
 The current startup screen is the development index at `/`, with a navigation card for `/test`, described below. These debug-only pages replace Django's automatic welcome screen. Both return 404 when debug is disabled. The planned account home behavior, login, `/manage/`, and `/portal/` pages arrive in their assigned tasks.
 
@@ -153,6 +153,8 @@ In terminal 2, run Django:
 
 Keep both terminals open; refresh the browser after edits (no automatic browser reload is installed). Stop the watchers and Django with Ctrl+C. For a one-off run, `npm.cmd run build` can replace terminal 1.
 
+Stop asset watchers before syncing a branch update that moves source directories, then restart them using the updated package scripts. The shared source directory is `static/`; generated bundles stay in `static/build/` and collection output in `staticfiles/`.
+
 After team updates, [sync your branch](#bring-main-into-your-work-before-starting) first. If requirements changed, run `.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt` before migrating. If `package-lock.json` changed, stop the watchers, run `npm.cmd ci`, then restart them. Keep your own `.env.local`; add any new required keys from the template.
 
 ## Frontend assets: Tailwind and Axios
@@ -161,13 +163,13 @@ The library rationale and course-pattern requirements are in [architecture.md](d
 
 | Path | Purpose |
 | --- | --- |
-| `assets/css/app.css` | Tailwind entry point, local font import, font theme, and explicit source locations |
-| `assets/css/fonts.css` | Existing local font declarations; imported into Tailwind's base layer |
-| `assets/js/http.js` | Shared Axios instance with Django CSRF names and a 10-second timeout |
-| `assets/js/*.js` | Browser page modules; the JavaScript build compiles every top-level module |
-| `assets/build/` | Generated CSS, browser ES modules/chunks, and any generated dependency license notices |
+| `static/css/app.css` | Tailwind entry point, local font import, font theme, and explicit source locations |
+| `static/css/fonts.css` | Existing local font declarations; imported into Tailwind's base layer |
+| `static/js/http.js` | Shared Axios instance with Django CSRF names and a 10-second timeout |
+| `static/js/*.js` | Browser page modules; the JavaScript build compiles every top-level module |
+| `static/build/` | Generated CSS, browser ES modules/chunks, and any generated dependency license notices |
 | `templates/base.html` | Shared document shell loading `build/app.css`, favicon links, and metadata; blocks: title, meta_description, extra_head, content, scripts |
-| `assets/images/favicon/` | Supplied browser/touch icons and web manifest; manifest icon paths are relative to this directory |
+| `static/images/favicon/` | Supplied browser/touch icons and web manifest; manifest icon paths are relative to this directory |
 
 `npm.cmd run build` creates a minified build. `npm.cmd run dev` runs CSS and JavaScript watchers together and stops the sibling if either exits. Build before running `collectstatic` or assembling a submission; include the complete generated build, including chunks/license files, in a runnable artifact. Source control keeps the npm lockfile and source assets; the submission process must build assets explicitly because ignored files are not supplied by Git.
 
@@ -175,23 +177,23 @@ The library rationale and course-pattern requirements are in [architecture.md](d
 
 After building assets and starting Django, visit **<http://127.0.0.1:8000/>** and select **Tailwind & font preview**, or go directly to **<http://127.0.0.1:8000/test>** (no trailing slash). Set `DJANGO_DEBUG=True` in your private `.env.local`. The preview links back to the development index. Expect a pale background, rounded typography cards, green/slate/amber swatches, and the message **DM Sans and Poppins loaded successfully from local assets.** The message checks real font loading in the browser; it reports a failure if font declarations/files cannot load. If it stays at “Checking local fonts…”, check that `build/frontend-test.js` loads and rebuild assets.
 
-The page uses the shared base template and compiled assets. Typography cards sit side by side on wider screens; color swatches stack on small screens. It accepts GET/HEAD without sign-in, reads no application data, and returns 404 when debug is disabled. [config/views.py](config/views.py) owns the preview handler, [templates/dev/frontend-test.html](templates/dev/frontend-test.html) its markup, and [assets/js/frontend-test.js](assets/js/frontend-test.js) the font check. This is a development preview, not a role layout or product page.
+The page uses the shared base template and compiled assets. Typography cards sit side by side on wider screens; color swatches stack on small screens. It accepts GET/HEAD without sign-in, reads no application data, and returns 404 when debug is disabled. [config/views.py](config/views.py) owns the preview handler, [templates/dev/frontend-test.html](templates/dev/frontend-test.html) its markup, and [static/js/frontend-test.js](static/js/frontend-test.js) the font check. This is a development preview, not a role layout or product page.
 
 ### Styling templates
 
-Feature owners make `manage/base.html` and `portal/base.html` extend `base.html`, then have feature pages extend the appropriate role layout. Role layouts are not created by this setup. Use literal Tailwind class names in templates, app Python files (including form-widget attributes), or `assets/js/`; these locations are scanned explicitly. Write complete alternative class names rather than concatenating fragments such as `bg-{{ color }}-500`. Use `font-sans` for DM Sans and `font-heading` for Poppins. The current font CSS also applies Poppins to headings.
+Feature owners make `manage/base.html` and `portal/base.html` extend `base.html`, then have feature pages extend the appropriate role layout. Role layouts are not created by this setup. Use literal Tailwind class names in templates, app Python files (including form-widget attributes), or `static/js/`; these locations are scanned explicitly. Write complete alternative class names rather than concatenating fragments such as `bg-{{ color }}-500`. Use `font-sans` for DM Sans and `font-heading` for Poppins. The current font CSS also applies Poppins to headings.
 
 The common shell loads the compiled stylesheet, including local fonts; do not load fonts.css again when extending it. Tailwind styling does not enforce roles, active accounts, ownership, or workflow rules. Django views/forms/services remain authoritative.
 
 ### Calling Django with Axios
 
-Page modules in `assets/js/` import the shared client:
+Page modules in `static/js/` import the shared client:
 
 ```javascript
 import { http } from "./http.js";
 ```
 
-Load a page's compiled module in its template's `scripts` block with `<script type="module" src="{% static 'build/your-page.js' %}"></script>` and `{% load static %}` in that template. The build bundles bare npm imports and shares dependency chunks; do not serve `assets/js/http.js` directly as browser-ready JavaScript. No Axios request is made until a feature calls the client.
+Load a page's compiled module in its template's `scripts` block with `<script type="module" src="{% static 'build/your-page.js' %}"></script>` and `{% load static %}` in that template. The build bundles bare npm imports and shares dependency chunks; do not serve `static/js/http.js` directly as browser-ready JavaScript. No Axios request is made until a feature calls the client.
 
 Use named Django URLs rendered into the page and same-origin requests. Current form endpoints use the URL-encoded encoding in [api_spec.md](docs/api_spec.md#common-protocol): send string fields through URLSearchParams, rather than JSON. Use FormData/multipart only when the affected contract explicitly allows it. Render `{% csrf_token %}` in state-changing forms; that also causes Django to issue the CSRF cookie. A future page without such a form that makes POST requests must explicitly arrange for Django to set that cookie, following [Django's CSRF guidance](https://docs.djangoproject.com/en/5.2/howto/csrf/).
 
@@ -242,7 +244,7 @@ The [coding standards](docs/coding-standards.md#http-endpoint-design) own endpoi
 
 ### Tailwind CSS in VS Code
 
-Install the workspace-recommended **Tailwind CSS IntelliSense** extension (`bradlc.vscode-tailwindcss`). The shared [.vscode/settings.json](.vscode/settings.json) associates only `assets/css/app.css` with its **Tailwind CSS** language mode; ordinary CSS keeps its normal parser. Open the repository root as your workspace so these settings apply.
+Install the workspace-recommended **Tailwind CSS IntelliSense** extension (`bradlc.vscode-tailwindcss`). The shared [.vscode/settings.json](.vscode/settings.json) associates only `static/css/app.css` with its **Tailwind CSS** language mode; ordinary CSS keeps its normal parser. Open the repository root as your workspace so these settings apply.
 
 If `app.css` shows `{ expected` near `source(none)` or warnings on `@source` / `@theme`, check the bottom-right language mode: it should say **Tailwind CSS**, not **CSS**. After installing/enabling the extension, run **Developer: Reload Window** from the Command Palette and reopen the file. These are valid Tailwind v4 directives; verify compilation with `npm.cmd run build:css`. Keep CSS validation enabled. See the [official editor setup](https://tailwindcss.com/docs/editor-setup) for the supported language mode. CLI formatting remains the team reference above.
 
@@ -271,9 +273,9 @@ Write the required [dated handoff](.agents/skills/project-handoff/SKILL.md), upd
 
 ## Fonts and static assets
 
-The root `assets/` location is valid. [Django's static-files finder](https://docs.djangoproject.com/en/5.2/howto/static-files/) is configured in [config/settings.py](config/settings.py) to search it. `assets/fonts/...` is therefore served at `/static/fonts/...`; the `assets/` directory name is not part of the static URL.
+The root `static/` directory contains shared source files. [Django's static-files finder](https://docs.djangoproject.com/en/5.2/howto/static-files/) searches it through `STATICFILES_DIRS` in [config/settings.py](config/settings.py). `STATIC_URL` defines the browser prefix `/static/`, so `static/fonts/...` is served at `/static/fonts/...`. Keep `STATIC_ROOT` (`staticfiles/`) separate for generated collection output.
 
-[assets/css/fonts.css](assets/css/fonts.css) defines the local DM Sans variable fonts and all Poppins weights/styles. [app.css](assets/css/app.css) imports it into Tailwind's base layer, and [base.html](templates/base.html) loads the compiled stylesheet once:
+[static/css/fonts.css](static/css/fonts.css) defines the local DM Sans variable fonts and all Poppins weights/styles. [app.css](static/css/app.css) imports it into Tailwind's base layer, and [base.html](templates/base.html) loads the compiled stylesheet once:
 
 ```django
 {% load static %}
@@ -466,7 +468,7 @@ Expected: database `campus_equipment`, your own account, PostgreSQL 17.x, and `r
 | Database login fails | Verify the local account, raw `DB_PASSWORD`, and database ownership |
 | Tables missing or migrations pending | Check `DB_NAME`, then inspect/apply [existing migrations](#apply-existing-migrations) |
 | Welcome screen or 404 | Expected until custom routes exist; use `DJANGO_DEBUG=True` locally to see the supplied success screen |
-| Font or CSS returns 404 | Use `DJANGO_DEBUG=True` with runserver; run `findstatic` and use paths relative to `assets/` |
+| Font or CSS returns 404 | Use `DJANGO_DEBUG=True` with runserver; run `findstatic` and use paths relative to `static/` |
 | Port 8000 is busy | Stop your previous server or choose another port and update CSRF origins if needed |
 | pip missing | Run `.\.venv\Scripts\python.exe -m ensurepip --upgrade` |
 | Tests cannot create a database | Use a local account permitted to create `test_<DB_NAME>` |

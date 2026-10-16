@@ -9,4 +9,4 @@ __pycache__/
 staticfiles/
 .ruff_cache/
 node_modules/
-assets/build/
+static/build/
