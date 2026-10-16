@@ -1,0 +1,14 @@
+@import "tailwindcss" source(none);
+@import "./fonts.css" layer(base);
+
+@source "../../templates";
+@source "../../accounts";
+@source "../../inventory";
+@source "../../borrowing";
+@source "../../operations";
+@source "../js";
+
+@theme {
+    --font-sans: "DM Sans", sans-serif;
+    --font-heading: "Poppins", sans-serif;
+}

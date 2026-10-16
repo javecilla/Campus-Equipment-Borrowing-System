@@ -1,0 +1,27 @@
+{
+  "name": "campus-equipment-borrowing-system",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "build": "npm run build:css && npm run build:js",
+    "build:css": "tailwindcss -i assets/css/app.css -o assets/build/app.css --minify",
+    "build:js": "node scripts/copy-licenses.mjs && esbuild assets/js/*.js --bundle --splitting --format=esm --platform=browser --target=es2022 --minify --outdir=assets/build",
+    "dev": "concurrently --kill-others --names css,js \"npm:watch:css\" \"npm:watch:js\"",
+    "watch:css": "npm run build:css -- --watch",
+    "watch:js": "npm run build:js -- --watch"
+  },
+  "dependencies": {
+    "axios": "1.20.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.3.0",
+    "concurrently": "10.0.6",
+    "esbuild": "0.28.2",
+    "tailwindcss": "4.3.0"
+  }
+}

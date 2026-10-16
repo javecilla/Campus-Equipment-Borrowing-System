@@ -1,0 +1,15 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}Campus Equipment Borrowing System{% endblock %}</title>
+        <link rel="stylesheet" href="{% static 'build/app.css' %}">
+        {% block extra_head %}{% endblock %}
+    </head>
+    <body class="font-sans antialiased">
+        {% block content %}{% endblock %}
+        {% block scripts %}{% endblock %}
+    </body>
+</html>
