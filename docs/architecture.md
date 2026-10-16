@@ -2,7 +2,7 @@
 
 ## Status and proposed stack
 
-This is the proposed architecture for future implementation. No modules shown here have been scaffolded. Behavioral authority is [SRS.md](SRS.md); persistence is specified in [db_design.md](db_design.md). The canonical [coding standards](coding-standards.md) define MTV responsibility boundaries and implementation/review rules.
+This architecture guides implementation. The T01–T03 foundation now exists locally in the modules below; workflow features and HTTP interfaces remain planned. Behavioral authority is [SRS.md](SRS.md); persistence is specified in [db_design.md](db_design.md) and the actual models/migrations. The canonical [coding standards](coding-standards.md) define MTV responsibility boundaries and implementation/review rules.
 
 Use a single server-rendered Django application with Python 3.13, Django 5.2 LTS, PostgreSQL 17, and Psycopg 3. Pin tested patch versions during implementation. Django 5.2 supports the proposed Python series and database; consult the [release notes](https://docs.djangoproject.com/en/5.2/releases/5.2/) and [database documentation](https://docs.djangoproject.com/en/5.2/ref/databases/).
 
@@ -42,7 +42,9 @@ The browser receives HTML, printable HTML, and CSV exports. Small JavaScript enh
 
 ## Proposed modules and ownership
 
-The following directory names are design contracts, not existing files.
+For the detailed existing/planned directory tree and page placement examples, see [Project Folder Architecture](project-folder-architecture.md). The coding guide remains authoritative for each file's responsibilities.
+
+The five Python app/config directories and shared `assets/` source directory below exist. Templates and feature-specific layers are created when their owners implement the corresponding tasks.
 
 | Module | Responsibility | Primary owner |
 | --- | --- | --- |
@@ -52,7 +54,7 @@ The following directory names are design contracts, not existing files.
 | `borrowing/` | Requests/items, allocations, loans/loan units, returns, workflow services | Jerome defines shared models; Ralph owns submission/tracking; Margareth owns approval/release/return |
 | `operations/` | Audit logs, settings, dashboard/report queries, exports | Jerome for audit/settings; Alex for dashboard/reports |
 | `templates/` | `manage/base.html`, `portal/base.html`, shared components, feature templates | Feature owners; Ellyssa and Ralph coordinate integration |
-| `static/` | CSS and small browser scripts | Feature owners |
+| `assets/` | Shared fonts, images, CSS, and small browser scripts; discovered through STATICFILES_DIRS | Feature owners |
 
 Each Django app keeps models, forms, function-based views, URLs, service/query functions, migrations, and tests close to its feature. Split further only when actual file size or responsibility warrants it. Avoid a generic CRUD framework or unnecessary repository abstraction over Django ORM.
 
@@ -106,8 +108,8 @@ Portal query functions take the signed-in owner explicitly and return only allow
 
 ## Configuration and technical limits
 
-[.env.example](../.env.example) is the canonical environment-key inventory. [DEV.md](../DEV.md) explains the private `.env.local` and shared local MCP setup. The MCP launch command explicitly loads that file through Node; its `MCP_DATABASE_URL` is separate from the future application's DB_* settings. No Django configuration loader or application settings code exists yet; placing values in `.env.local` alone does not configure Django.
+[.env.example](../.env.example) is the canonical environment-key inventory. [DEV.md](../DEV.md) explains the private `.env.local` and shared local MCP setup. [config/environment.py](../config/environment.py) validates Django configuration without modifying process values; [config/settings.py](../config/settings.py) selects the custom user, PostgreSQL, and Asia/Manila. The MCP separately loads the file through Node; its `MCP_DATABASE_URL` does not configure Django.
 
 Use timezone-aware timestamps and Asia/Manila calendar dates for due dates. Quantity/duration limits are persisted SystemSetting values, not duplicated environment variables. A single local database-backed demonstration is sufficient; high availability and hosting are outside this design.
 
-PostgreSQL is required to validate the selected locking strategy. SQLite-only tests cannot establish row-lock correctness. Use separate database connections and `TransactionTestCase` for competing approvals. Workflows, migrations, schema constraints, performance, and backup/restore remain unverified until implementation and execution.
+PostgreSQL is required to validate the selected locking strategy. SQLite-only tests cannot establish row-lock correctness. Shared locks are implemented in [operations/locking.py](../operations/locking.py), audit writes in [operations/audit.py](../operations/audit.py), settings reads/changes in [operations/queries.py](../operations/queries.py) and [operations/services.py](../operations/services.py), and pure limit/date rules in [operations/validation.py](../operations/validation.py). Foundation integration evidence is in [the backlog](tasks.md#verified-task-evidence). Competing approvals still require T13/T14; workflows, performance, and backup/restore remain unverified.

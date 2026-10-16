@@ -2,7 +2,9 @@
 
 ## Current authorization and context
 
-The current phase is documentation only. Do not scaffold the application, install project dependencies, create migrations, run a database, or implement features until the user explicitly requests implementation. Design files and the environment template are planned contracts, not working software. Do not add development setup instructions to the README during this phase.
+The user authorized implementation of Jerome Avecilla's assigned work on `jerome`, and explicitly allowed T01–T03 as one local, uncommitted batch before main integration. This exception does not unlock tasks requiring other members' features or authorize commits, pushes, PRs, or merges. The user also requested runnable setup steps in README.md and detailed migrations/team guidance in DEV.md. Follow the backlog and current handoff for verified scope; remaining feature designs are contracts, not delivered software.
+
+The user subsequently authorized committing all completed foundation/documentation/assets changes with `Co-authored-by: Codex <codex@openai.com>`, pushing `jerome`, and opening a PR into `main`. This publication request does not authorize merging that PR or starting another member's features.
 
 The user separately authorized local PostgreSQL MCP tooling, shareable MCP configuration, DEV.md setup guidance, and a private `.env.local` for `campus_equipment`. The connection is read-only; this does not authorize schema changes, seed data, or application implementation. Credentials belong only in ignored private files. Shared configuration and setup instructions are defined in [DEV.md](DEV.md); see [HANDOFF.md](HANDOFF.md) for verified connection state.
 
@@ -26,7 +28,7 @@ Follow the existing architecture, SRS, database, and HTTP contracts for the affe
 
 ## Verification and documentation
 
-Follow the coding guide's verification table and actual commands recorded in DEV.md/project configuration. Run applicable required checks after code changes and report unrun checks honestly. No application test/lint configuration exists yet.
+Follow the coding guide's verification table and actual commands recorded in DEV.md/project configuration. Run applicable required checks after code changes and report unrun checks honestly. Django integration tests and Ruff checks are configured for the foundation.
 
 For documentation-only work, check links, internal consistency, source coverage, and skill metadata where relevant. Do not install a test suite or add code just to validate prose. Report exactly what was checked and what was not run.
 

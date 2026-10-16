@@ -86,7 +86,7 @@ Do not change a shared field, enum, URL contract, or workflow in one feature wit
 
 ## Minimum verification and review
 
-Follow the eventual repository test strategy and use the minimum useful real integration checks for the changed behavior. Do not invent existing test/lint commands or claim a test ran when no application/test configuration exists. Once configured, follow the commands in DEV.md and applicable project instructions.
+Use the minimum useful real integration checks for the changed behavior. The foundation configures Django tests and Ruff; follow the commands in [DEV.md](../DEV.md#application-migrations-checks-and-local-server) and applicable project instructions. Do not claim a check ran without its actual result.
 
 | Change | Appropriate evidence |
 | --- | --- |

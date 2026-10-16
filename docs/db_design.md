@@ -2,7 +2,7 @@
 
 ## Status and conventions
 
-Proposed Django ORM model contract; no models, SQL schema, or migrations exist yet. Django migrations will become the executable schema authority when implemented. Workflow rules are maintained in [SRS.md](SRS.md); transaction boundaries in [architecture.md](architecture.md).
+The shared schema is implemented in [accounts/models.py](../accounts/models.py), [inventory/models.py](../inventory/models.py), [borrowing/models.py](../borrowing/models.py), and [operations/models.py](../operations/models.py), with Django migrations as executable schema authority. Full workflow services remain future owners' work. Workflow rules are maintained in [SRS.md](SRS.md); transaction boundaries in [architecture.md](architecture.md). Acceptance and main integration evidence remain separate in [tasks.md](tasks.md#verified-task-evidence).
 
 Use PostgreSQL, `BigAutoField`/bigint primary keys, timezone-aware `DateTimeField`/timestamptz, and `DateField`/date for calendar dates. All fields are required and NOT NULL unless marked nullable. Text may be blank only when explicitly allowed. Every foreign key is indexed. Transactional references use `PROTECT` deletion behavior; the application has no hard-delete workflow for users, catalog, units, or historical transactions. Profile's one-to-one user relation may use CASCADE but accounts are deactivated, not deleted.
 
@@ -224,7 +224,7 @@ One typed singleton row, not an arbitrary key/value store.
 | `updated_at` | timestamptz | Modification time |
 | `updated_by_id` | bigint, nullable | FK to User; null only for initial system initialization |
 
-A migration/controlled seed creates the singleton. A missing row is a configuration error, not a signal to silently invent settings. The maximum of three distinct catalog items is a fixed brief constraint, not a third setting.
+[The initialization migration](../operations/migrations/0002_initial_settings.py) creates the singleton and a SYSTEM/SETTINGS_INITIALIZED audit entry atomically. Its data operation is explicitly irreversible; later schema changes use new migrations. A missing row is a configuration error, not a signal to silently invent settings. The maximum of three distinct catalog items is a fixed brief constraint, not a third setting.
 
 ### AuditLog
 
@@ -239,7 +239,7 @@ A migration/controlled seed creates the singleton. A missing row is a configurat
 | `target_id` | bigint | Referenced primary key; preserved historical reference |
 | `summary` | text | Sanitized action description, reason, and relevant before/after values |
 
-Action values include REQUEST_APPROVED, REQUEST_REJECTED, REQUEST_CANCELLED, DUE_DATE_REVISED, LOAN_RELEASED, UNIT_RETURNED, MAINTENANCE_OPENED, MAINTENANCE_CLOSED, ACCOUNT_CREATED, ACCOUNT_UPDATED, ACCOUNT_ACTIVATED, ACCOUNT_DEACTIVATED, CATEGORY_CREATED, CATEGORY_UPDATED, CATEGORY_ARCHIVED, ITEM_CREATED, ITEM_UPDATED, ITEM_ARCHIVED, UNIT_CREATED, UNIT_UPDATED, and SETTINGS_UPDATED.
+Action values are the `AuditAction` enum in [operations/models.py](../operations/models.py). SETTINGS_INITIALIZED identifies the migration-only SYSTEM event; the remaining values cover the business actions described above. `AuditTarget` allowlists actual app/model labels, and [the audit writer](../operations/audit.py) checks action/target compatibility and target existence.
 
 `target_model`/`target_id` are a validated historical reference, not a polymorphic database FK; services check the target at creation. Do not store secrets, password hashes, tokens, or unnecessary contact information in summaries. Append only through business services; no ordinary edit/delete routes. SYSTEM is an audit actor kind, not a third user role.
 

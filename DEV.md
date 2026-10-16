@@ -1,64 +1,206 @@
-# Developer Preparation and Local Database/MCP Setup
+# Team Development Guide
 
-## What is available now
+[First-time setup](#first-time-setup) | [Everyday startup](#everyday-startup) | [Migrations](#working-with-migrations) | [Checks](#before-handing-over-work) | [Fonts](#fonts-and-static-assets) | [Team Git](#assigned-branches-and-main-integration) | [Optional MCP](#configure-your-mcp-client) | [Troubleshooting](#troubleshooting)
 
-This guide prepares a developer's workstation, local PostgreSQL database, private environment file, and AI database connection. The repository currently contains documentation and MCP configuration, with no Django application, `manage.py`, migrations, or `requirements.txt`. Application installation/start/test commands will be documented when the team implements and verifies them. Keep the README focused on the project overview.
+Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv`, `.env.local`, and local PostgreSQL database. Git shares source and migrations, not credentials or database contents.
 
-Each member runs their own local PostgreSQL database. `localhost` refers to the machine running the MCP process; it does not connect to another member's computer or synchronize team data. The MCP runs locally over stdio and provides read-only inspection. It is separate from Django's future database connection.
+The T01–T03 foundation is currently local on `jerome`, pending main integration. Check [HANDOFF.md](HANDOFF.md) for availability on other branches. Login and feature pages remain pending.
 
-## Tools to download
+For where to add views, models, forms, URLs, and page templates, use [Project Folder Architecture](docs/project-folder-architecture.md).
 
-These steps target Windows, matching the tested workstation. Other operating systems need their equivalent paths/installers.
+## First-time setup
 
-| Tool | Version / purpose | Official download |
+Follow these steps once, in order. Keep an existing environment, database, or private configuration.
+
+### Tools to download
+
+| Required tool | Version | Download |
 | --- | --- | --- |
-| Git | Source sharing and version control | [Git for Windows](https://git-scm.com/install/windows) |
-| Python | Latest patched Python 3.13 release for the proposed Django application | [Python Windows releases](https://www.python.org/downloads/windows/) |
-| PostgreSQL | Latest patched PostgreSQL 17 release; include server and command-line tools | [PostgreSQL Windows installer](https://www.postgresql.org/download/windows/) |
-| pgAdmin | Optional GUI bundled with the PostgreSQL installer; convenient for database creation and SQL checks | [PostgreSQL installer components](https://www.postgresql.org/download/windows/) |
-| Node.js and npm | Node.js 24 LTS with bundled npm; DBHub 1.5.0 requires Node >= 22.5 | [Node.js downloads](https://nodejs.org/en/download) |
-| Editor and AI client | Your editor plus an MCP-capable desktop/CLI client; Codex configuration is described below | [Codex MCP documentation](https://learn.chatgpt.com/docs/extend/mcp) |
+| Git | Git for Windows | [Install Git](https://git-scm.com/install/windows) |
+| Python | Python 3.13 | [Windows downloads](https://www.python.org/downloads/windows/) |
+| PostgreSQL | PostgreSQL 17, including pgAdmin | [Windows installer](https://www.postgresql.org/download/windows/) |
 
-Use current security patches within the agreed series. Django 5.2 LTS and Psycopg 3 remain proposed application dependencies; do not install them globally. The MCP package is pinned in the shared configuration and runs through npm's per-user execution cache, so there is no global DBHub installation or Node application dependency manifest.
+Open a new terminal after installation. Check `git --version` and `py -3.13 --version`. Node/npm are needed only for optional MCP tooling.
 
-After installing tools, reopen your terminal/client so PATH changes are visible. In PowerShell, check:
+### Open your copy of the project
 
-```powershell
-git --version
-py -3.13 --version
-node --version
-npm --version
-```
-
-For PostgreSQL installed in its standard location:
-
-```powershell
-& 'C:/Program Files/PostgreSQL/17/bin/psql.exe' --version
-```
-
-If a command is missing, fix its installation/PATH before continuing. Select Python 3.13 explicitly rather than assuming `python` points to the correct interpreter.
-
-## Open your copy of the project
-
-The shared private repository is [javecilla/Campus-Equipment-Borrowing-System](https://github.com/javecilla/Campus-Equipment-Borrowing-System). Jerome (`@javecilla`) manages repository access and integration into `main`; this responsibility does not make the team's project his individual work. Accept the collaborator invitation using your own GitHub account before cloning. Collaborator invitations are managed separately from these setup files.
-
-For a new working copy:
+Accept your invitation to the private team repository, then clone it:
 
 ```powershell
 git clone https://github.com/javecilla/Campus-Equipment-Borrowing-System.git
 Set-Location Campus-Equipment-Borrowing-System
-git remote -v
 ```
 
-For an existing working copy, open its project root and verify that `origin` points to that URL; do not initialize Git or add another origin blindly. Never put a GitHub token in the remote URL. Git for Windows can authenticate through Git Credential Manager. Open the folder containing `README.md`, `DEV.md`, `.env.example`, and `.agents/`. Run the remaining commands from that root.
+Already cloned? Open that folder instead. Choose your [assigned branch](#assigned-branches-and-main-integration) using the [first-checkout steps](#first-checkout-of-your-member-branch) before editing. Read [PLAN.md](PLAN.md), [HANDOFF.md](HANDOFF.md), and your [task](docs/tasks.md) to check prerequisites.
 
-Read [AGENTS.md](AGENTS.md), [PLAN.md](PLAN.md), [CONTRIBUTING.md](CONTRIBUTING.md), [coding standards](docs/coding-standards.md), [HANDOFF.md](HANDOFF.md), and your assigned task in [docs/tasks.md](docs/tasks.md) before changes. Use PLAN.md's readiness gates and the backlog's integration evidence before consuming another member's work. The handoff describes observed state on the current workstation; it does not prove another machine is configured.
+### Prepare the Python environment
+
+Create `.venv` once, then install the pinned development dependencies:
+
+```powershell
+py -3.13 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+```
+
+Use the explicit `.venv` interpreter below; activation is unnecessary. If `.venv` already exists, run only the install command.
+
+<details>
+<summary>Using uv, or fixing a missing pip command</summary>
+
+This workstation uses Python 3.13.12 through an existing uv installation. With uv installed, create a new environment using `uv venv --python 3.13 --seed .venv`. If an existing environment has no pip, run `.\.venv\Scripts\python.exe -m ensurepip --upgrade`, then install `requirements-dev.txt`.
+
+</details>
+
+### Create your local database
+
+1. Start PostgreSQL 17 and connect in pgAdmin using your own local account.
+2. Under **Databases**, create **campus_equipment**, owned by that account.
+3. If the database already exists, keep it. Django will apply missing migrations later.
+
+To check the connection, run this in pgAdmin's Query Tool for that database:
+
+```sql
+SELECT current_database(), current_user, current_setting('server_version');
+```
+
+Expect `campus_equipment` and PostgreSQL 17.x. This workstation was verified with 17.5. Django migrations create the tables; do not create them manually from the design document.
+
+### Create and edit .env.local
+
+Create the private file **only if it does not exist**:
+
+```powershell
+New-Item -Path .env.local -ItemType File -Value (Get-Content -LiteralPath .env.example -Raw) -ErrorAction Stop
+```
+
+Open `.env.local` in your editor. The command above deliberately fails if the file already exists, preserving your values.
+
+| Setting | What to enter |
+| --- | --- |
+| `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | Your database name, account, raw password, host, and port. Usual local values are `campus_equipment`, your account, `127.0.0.1`, and `5432` |
+| `DJANGO_SECRET_KEY` | A unique secret generated with the command below |
+| `DJANGO_DEBUG` | `True` for local development to see the success screen and serve assets through runserver |
+| `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` | Keep the template's localhost entries when using port 8000 |
+| `MCP_DATABASE_URL` | Leave blank unless using optional MCP tooling |
+
+Generate a secret locally, then paste the result into `.env.local`:
+
+```powershell
+.\.venv\Scripts\python.exe -c "import secrets; print(secrets.token_urlsafe(64))"
+```
+
+[.env.example](.env.example) is the full key inventory. All `DB_*` and `DJANGO_*` values are required. `DJANGO_DEBUG` accepts exactly `True` or `False`; quote passwords containing `#` or whitespace. Django reads literal values without variable expansion, and explicit process environment values override the file. Missing, blank, malformed, or duplicate configuration fails clearly. Keep `.env.local` private and out of Git.
+
+## Application migrations, checks, and local server
+
+After first-time setup, check configuration and apply the shared migrations:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py check --database default
+.\.venv\Scripts\python.exe manage.py migrate --noinput
+```
+
+Then start the server:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
+```
+
+Open **<http://127.0.0.1:8000/>**. The terminal should report no system-check errors or unapplied migrations. Keep that terminal open while working; stop with Ctrl+C, or Ctrl+Break on Windows.
+
+### Expected startup screen
+
+With `DJANGO_DEBUG=True` and the current empty URL configuration, you should see Django's initial success page:
+
+![Django initial installation success page with DEBUG=True, before custom routes are added](assets/images/inital-setup-running-success-screen.png)
+
+This confirms Django started. Login, `/manage/`, and `/portal/` pages arrive in their assigned tasks. With `DJANGO_DEBUG=False`, the current empty routes return 404 instead. The welcome screen uses Django's own styling; project fonts apply to custom templates that load our stylesheet.
+
+Migrations initialize the settings row (7 days and 3 units per item) and its system audit. They create no accounts or equipment. Admin-account provisioning is part of T04; demonstration seeding is T21.
+
+## Everyday startup
+
+Start PostgreSQL, open the project root, then run:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py migrate --noinput
+.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
+```
+
+After team updates, [sync your branch](#bring-main-into-your-work-before-starting) first. If requirements changed, run `.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt` before migrating. Keep your own `.env.local`; add any new required keys from the template.
+
+## Working with migrations
+
+### Apply existing migrations
+
+Use the migration files supplied by the team:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py showmigrations
+.\.venv\Scripts\python.exe manage.py migrate --plan
+.\.venv\Scripts\python.exe manage.py migrate --noinput
+.\.venv\Scripts\python.exe manage.py migrate --check
+```
+
+`[X]` means applied in `showmigrations`. `migrate --plan` previews work; `migrate` applies it. An updated database reports no migrations to apply. `migrate --check` fails if any are pending.
+
+### Change models in your assigned task
+
+Coordinate shared model changes with their owners. For an authorized inventory change, for example:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py makemigrations inventory --name describe_your_schema_change --noinput
+.\.venv\Scripts\python.exe manage.py migrate --plan
+.\.venv\Scripts\python.exe manage.py migrate --noinput
+```
+
+Review and include models and migrations together. Preserve applied/shared migrations; use new migrations for corrections. Reconcile conflicting migration leaves with affected owners. Do not delete another member's migration or use `--fake` to hide a mismatch. The custom user is already `accounts.User`; the settings initialization data migration is deliberately irreversible.
+
+## Before handing over work
+
+Run the configured checks and any meaningful tests for your feature:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py check --database default
+.\.venv\Scripts\python.exe manage.py makemigrations --check --dry-run --noinput
+.\.venv\Scripts\python.exe manage.py migrate --check
+.\.venv\Scripts\python.exe manage.py test --noinput
+.\.venv\Scripts\ruff.exe check .
+.\.venv\Scripts\ruff.exe format --check .
+.\.venv\Scripts\python.exe -m pip check
+git --no-pager diff --check
+```
+
+Tests create and remove a separate `test_<DB_NAME>` PostgreSQL database. Your local account needs permission to create test databases; keep personal data out of them. The foundation suite does not establish acceptance for unimplemented workflows or T14 competing approvals. To format edited Python files, run `.\.venv\Scripts\ruff.exe format .`.
+
+Write the required [dated handoff](.agents/skills/project-handoff/SKILL.md), update affected task evidence/current readiness, and leave AI changes uncommitted unless the user requests a commit.
+
+## Fonts and static assets
+
+The root `assets/` location is valid. [Django's static-files finder](https://docs.djangoproject.com/en/5.2/howto/static-files/) is configured in [config/settings.py](config/settings.py) to search it. `assets/fonts/...` is therefore served at `/static/fonts/...`; the `assets/` directory name is not part of the static URL.
+
+[assets/css/fonts.css](assets/css/fonts.css) defines the local DM Sans variable fonts and all Poppins weights/styles. It uses DM Sans for body text and Poppins for headings. In a custom template, load it once in the page's base template:
+
+```django
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+```
+
+Keep the existing font files and their `OFL.txt` notices. Use CSS-relative URLs inside the stylesheet and Django's `{% static %}` tag in templates. No fonts are downloaded from a CDN. The DM Sans variable pair covers weights 100–1000, so the included DM Sans static variants need no additional declarations.
+
+For discovery checks:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py findstatic css/fonts.css fonts/Poppins/Poppins-Regular.ttf --verbosity 2
+```
+
+Runserver serves static files during local debugging. `STATIC_ROOT` (`staticfiles/`) is generated collection output, not where source assets belong. `collectstatic` is not needed for the local setup above.
 
 ## Assigned branches and main integration
 
-Branch assignments come from `MEMBERS GITHUB REPO BRANCH` in [Project-Members.txt](docs/Project-Members.txt). These are persistent member branches; keep them after PR merges.
+Assignments come from [Project-Members.txt](docs/Project-Members.txt). Keep permanent member branches after PR merges.
 
-| Member | GitHub account | Working branch |
+| Member | GitHub | Branch |
 | --- | --- | --- |
 | Jerome | `javecilla` | `jerome` |
 | Alex | `AlexCayanan` | `alex` |
@@ -67,41 +209,37 @@ Branch assignments come from `MEMBERS GITHUB REPO BRANCH` in [Project-Members.tx
 | Margareth | `raifun` | `marga` |
 | Ralph | `dreygigz` | `ralph` |
 
-`main` is the shared integration branch. All members may fetch/pull it, but only Jerome integrates changes into it. Develop and push on your own assigned branch; do not push to `main` or another member's branch. Do not delete permanent member branches, force-push, squash, or rewrite shared history as part of ordinary work.
-
-An active GitHub [main-owner-only ruleset](https://github.com/javecilla/Campus-Equipment-Borrowing-System/rules/25213591) targets `refs/heads/main`. It restricts creation, updates, deletion, and non-fast-forward updates, with only `javecilla` as the bypass user. This restricts collaborator pushes and PR merges into main; it does not grant extra permissions on other branches. Member-branch ownership is a team convention, not a separate GitHub access restriction. See [GitHub's ruleset behavior](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets).
+Work and push on your own branch. Only Jerome integrates `main`; do not push another member's branch, force-push, or rewrite shared history. The [main-owner-only ruleset](https://github.com/javecilla/Campus-Equipment-Borrowing-System/rules/25213591) controls main updates; branch assignments are a team convention, not exclusive authorship.
 
 ### First checkout of your member branch
 
-The repository owner initializes the assigned remote branches from the shared baseline. Use your branch from the table; the examples below use Alex's branch. Change the variable once to your assignment:
+From a fresh clone, choose your branch; this example uses Alex:
 
 ```powershell
 $memberBranch = 'alex'
-git status --short
 git fetch origin --prune
 git switch --create $memberBranch --track "origin/$memberBranch"
 ```
 
-Start with a clean working tree. Run the create command only when the local branch does not already exist. On later visits, use `git switch $memberBranch`. If the assigned remote branch is missing, ask Jerome to confirm its setup; do not create another naming scheme or push a replacement main branch.
+If the branch already exists locally, use `git switch $memberBranch` instead. If the remote branch is missing, ask Jerome to verify setup. Preserve local changes before switching.
 
 ### Bring main into your work before starting
 
-First finish or safely preserve any local work on your own branch; do not switch branches with unrelated uncommitted changes. Then run:
+With a clean working tree, set `$memberBranch` to your assignment, then run:
 
 ```powershell
+git status --short
 git fetch origin --prune
-git switch main
-git pull --ff-only origin main
 git switch $memberBranch
 git merge --ff-only "origin/$memberBranch"
-git merge --no-edit main
+git merge --no-edit origin/main
 ```
 
-Pulling `main` updates your **local copy**; it does not push changes or give you main-write permission. The final merge brings the shared work into your member branch, preserving history. If the fast-forward-only update fails, stop and inspect the divergence rather than resetting or force-pushing. If the main-to-member merge conflicts, resolve it as described below before continuing.
+This brings fetched main into your member branch without updating remote main. If a fast-forward fails, inspect the divergence. Resolve conflicts with affected owners and preserve their work. Follow [PLAN.md](PLAN.md)'s gates before starting dependent tasks. The local-batch exception applies only to T01–T03.
 
 ### Commit, push your branch, and open a PR
 
-Complete the task, relevant checks, and dated handoff first. Inspect/stage only its intended files. Replace the example paths and message below with your actual work; never stage `.env.local` or private user configuration:
+After checks and handoff, review/stage the intended paths only. For an AI agent, commit/push/PR actions still require the user's explicit instruction.
 
 ```powershell
 git status --short
@@ -113,92 +251,43 @@ git commit -m "feat: implement the assigned task"
 git push --set-upstream origin $memberBranch
 ```
 
-On GitHub, open **Pull requests → New pull request**, choose **base: main** and **compare: your assigned branch**, and describe the task, resulting behavior, files, actual verification, and remaining limitations. Jerome reviews and integrates it. You may address review comments by committing and pushing more changes to the same member branch. Do not include unrelated unfinished tasks in a PR from a persistent member branch. GitHub documents the [PR creation flow](https://docs.github.com/en/pull-requests/how-tos/create-pull-requests/creating-a-pull-request).
-
-After Jerome merges a PR, keep your member branch and run the main-sync steps before the next task. Prefer an ordinary merge to squash/rebase so individual work and contribution history remain available. A change to this history policy must be explicitly agreed/requested.
+On GitHub, open a PR with **base: main**, **compare: your branch**, the task, actual checks, and handoff link. Keep unrelated unfinished tasks out of the PR. After integration, keep the member branch and sync main before the next task.
 
 ### Resolve merge conflicts without losing another member's work
 
-```powershell
-git status
-git diff --name-only --diff-filter=U
-```
-
-Read each conflict and coordinate with the affected feature owner when a shared rule/schema is involved. Edit the file to preserve the correct combined behavior and remove conflict markers. Stage the resolved files explicitly, run the relevant checks, then complete the existing merge with `git commit --no-edit` and push **your member branch**. To cancel a merge instead, use `git merge --abort` before starting another change. Do not blindly choose one side for every file, use `reset --hard`, or force-push to hide a conflict.
+Use `git status` and `git diff --name-only --diff-filter=U` to locate conflicts. Read both changes, coordinate with affected owners, and edit the correct combined result. Stage resolved paths, run checks, and finish the existing merge with `git commit --no-edit` when authorized. Use `git merge --abort` to cancel the merge. Never blindly choose one side or use a hard reset to hide conflicts.
 
 ### Jerome's integration responsibility
 
-Jerome checks the PR's scope, source contracts, tests/evidence, and dated handoff, then uses GitHub's **Create a merge commit** option for normal PR integration. Only the designated repository maintainer performs the main update. Keep persistent member branches; do not select their deletion after merge. Reviewers and contributors retain accurate credit, and repository access must remain separate from claims of individual authorship.
+Jerome reviews scope, contracts, checks, and handoff before using **Create a merge commit**. Preserve contributor credit and permanent member branches. [CODEOWNERS](CODEOWNERS) routes reviews to `@javecilla`; GitHub cannot accept an author's approval of their own PR. [CONTRIBUTING.md](CONTRIBUTING.md#verification-and-review) explains review restrictions and attribution. Local Django/Ruff checks exist; no GitHub Actions workflow is configured.
 
-Review requests follow [CODEOWNERS and its access requirements](CONTRIBUTING.md#verification-and-review): `@javecilla` is the designated default reviewer. GitHub uses the base branch's file, so a local/jerome change takes effect for main-targeting PRs only after integration into main. A PR authored by `javecilla` cannot receive his own approving review. Collaborator invitations and acceptance still control private repository access; teammate membership does not require listing every member in CODEOWNERS. Current verified access is recorded in HANDOFF.md. This setup does not send invitations.
+## Updating dependencies
 
-The empty repository's initial snapshot is created on `jerome` and published as the main baseline; there is no earlier main history to review against for that first publication. Subsequent task changes use the member-branch → PR → Jerome/main workflow above. No application CI/test checks are claimed to exist yet; use the checks actually configured for the task.
-
-## Prepare the Python environment
-
-An isolated Python environment can be prepared when starting Python work:
+Change runtime ranges in [requirements.in](requirements.in), or development tooling in [requirements-dev.in](requirements-dev.in). With uv already installed, regenerate both locks:
 
 ```powershell
-py -3.13 -m venv .venv
-.\.venv\Scripts\python.exe --version
+uv pip compile requirements.in --output-file requirements.txt
+uv pip compile requirements-dev.in --output-file requirements-dev.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 ```
 
-Activation is unnecessary when calling that interpreter directly. Application dependencies must eventually be declared with tested versions in the project's requirements file. Do not invent a `pip install -r requirements.txt`, migration, or server-start step while those files do not exist.
+Run checks before sharing updated locks. Ordinary setup installs the pins without re-resolving them. Psycopg binary avoids a C build; python-dotenv parses configuration; tzdata supplies Windows time-zone data; Ruff is development-only.
 
-## Create your local database
+## Configure your MCP client
 
-1. Install/start the PostgreSQL 17 Windows service. Remember your own database account and password. The sample account `postgres` is a local administrative account; no dedicated application account is created by these documents.
-2. Open pgAdmin and connect to your local server at `127.0.0.1`, port `5432` unless you selected another port during installation.
-3. Under Databases, create a database named `campus_equipment`, owned by the local account you will use. If that database already exists, use it; do not recreate/drop it.
-4. Open the Query Tool for **campus_equipment** and run:
+MCP is optional AI database inspection, separate from running Django. Node.js 24 LTS/npm are needed for pinned DBHub 1.5.0 (Node >=22.5); use [Node's installer](https://nodejs.org/en/download) for this tooling. The connection remains read-only.
 
-```sql
-SELECT current_database(), current_user, current_setting('server_version');
-```
+<details>
+<summary>Expand optional MCP connection and client setup</summary>
 
-The database name must be `campus_equipment` and the server version must be in the 17 series. On the current workstation, PostgreSQL 17.5 was verified. New workstations should use a current patched PostgreSQL 17 release.
-
-No tables are expected before migrations are implemented. Do not execute the design document as SQL or create competing hand-written application tables. Django migrations will own the executable schema.
-
-## Create and edit .env.local
-
-[.env.example](.env.example) is the canonical key inventory. Copy it only if you do not already have a private file:
-
-```powershell
-New-Item -Path .env.local -ItemType File -Value (Get-Content -LiteralPath .env.example -Raw) -ErrorAction Stop
-```
-
-This command fails if the file already exists. Keep an existing file and edit it rather than replacing it. Edit `.env.local` locally, never the shared template, to set:
-
-| Key or group | What each developer changes |
-| --- | --- |
-| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` | Your future application's local database address, name, and account |
-| `DB_PASSWORD` | That account's raw password, without URL encoding |
-| `MCP_DATABASE_URL` | Full connection URI for AI inspection; include the database name and URL-encode username/password |
-| `DJANGO_SECRET_KEY` | A unique generated local secret for the future application |
-| Other `DJANGO_*` values | Local host/origin settings; set DEBUG True only for private local development |
-
-The connection URI shape is:
+Set `MCP_DATABASE_URL` privately in `.env.local` using this shape:
 
 ```text
 postgresql://YOUR_USER:YOUR_URL_ENCODED_PASSWORD@127.0.0.1:5432/campus_equipment?sslmode=disable
 ```
 
-`sslmode=disable` here is only for the local loopback connection. Remote database connections need their own validated TLS configuration. Characters such as `/`, `@`, `:`, `#`, `%`, and parentheses in credentials must be percent-encoded in the URI; avoid double encoding. `DB_PASSWORD` remains raw. Keep values containing `#` or whitespace quoted in the environment file.
+Include the database name and percent-encode special characters in URI credentials; `DB_PASSWORD` stays raw. This URI may use a separate inspection account. `sslmode=disable` is for the local loopback connection. Node explicitly loads `.env.local` through `--env-file`, with existing process values taking precedence. The file is not automatically loaded into your terminal or pgAdmin.
 
-Generate a local Django secret without installing Django:
-
-```powershell
-py -3.13 -c "import secrets; print(secrets.token_urlsafe(64))"
-```
-
-Paste it into `.env.local`, not chat or documentation. `MCP_DATABASE_URL` is an independent connection setting, allowing an inspection account separate from the application account. If you use the same account for both and change its password/host/port, update both the URL and matching DB_* values. An existing password was configured only in the current developer's private file; other members must supply their own values.
-
-The shared MCP command explicitly loads `.env.local` using Node's [required `--env-file` option](https://nodejs.org/docs/latest-v24.x/api/cli.html#--env-filefile). A missing file fails startup. Existing process environment values take precedence; clear stale matching variables in the launching client if changes to the file seem ignored. The file is not automatically loaded into your terminal, pgAdmin, or Django. Django's loader/settings have not been implemented yet.
-
-`.gitignore` excludes `.env.local`, other private local env files, virtual environments, and local Codex configuration. Keep `.env.example`, [the MCP JSON](.agents/mcp.json), and [DBHub policy](.agents/dbhub.toml) shareable and free of credentials. When using a ZIP instead of Git, explicitly omit `.env.local` and other private files: `.gitignore` does not filter ZIP contents.
-
-## Configure your MCP client
 
 ### Shared JSON template
 
@@ -268,17 +357,22 @@ SELECT current_database() AS database,
 
 Expected: database `campus_equipment`, your own account, PostgreSQL 17.x, and `read_only` = `on`. Confirm both tools appear in your client. A successful pgAdmin login alone does not verify the MCP registration. Do not use schema changes to test this read-only connection.
 
+</details>
+
 ## Troubleshooting
 
-| Symptom | What to check |
+| Symptom | Fix |
 | --- | --- |
-| Cannot find .env.local or DBHub config | Correct the client's `cwd`; use the project root, not `.agents/` |
-| Node/npm entry point missing | Reopen the client after installation, verify PATH and the actual entry-point file |
-| Connection refused | PostgreSQL service is running on the configured host/port |
-| Authentication failed | Own account/password, raw DB_PASSWORD, correct percent encoding in MCP_DATABASE_URL |
-| Database does not exist / wrong database | Create/select campus_equipment and include `/campus_equipment` in the URI |
-| Tools do not appear | Correct client schema, enable the server, and restart/reload; inspect its error log without sharing credentials |
-| Query says read_only = off | Confirm this server uses the shared policy and its execute_sql tool; do not continue with writes |
-| No application tables | Expected before Django migrations exist; follow the backlog when implementation is authorized |
+| Missing or invalid configuration | Fill every required `DB_*`/`DJANGO_*` key in `.env.local`; check quotes, duplicates, and stale process values |
+| Database connection refused | Start PostgreSQL and check `DB_HOST`/`DB_PORT` |
+| Database login fails | Verify the local account, raw `DB_PASSWORD`, and database ownership |
+| Tables missing or migrations pending | Check `DB_NAME`, then inspect/apply [existing migrations](#apply-existing-migrations) |
+| Welcome screen or 404 | Expected until custom routes exist; use `DJANGO_DEBUG=True` locally to see the supplied success screen |
+| Font or CSS returns 404 | Use `DJANGO_DEBUG=True` with runserver; run `findstatic` and use paths relative to `assets/` |
+| Port 8000 is busy | Stop your previous server or choose another port and update CSRF origins if needed |
+| pip missing | Run `.\.venv\Scripts\python.exe -m ensurepip --upgrade` |
+| Tests cannot create a database | Use a local account permitted to create `test_<DB_NAME>` |
+| MCP cannot find files or tools | Check client working directory, Node/npm paths, enable/reload the server, and keep credentials private |
+| MCP read_only is off | Check the shared DBHub policy; do not enable writes to test the connection |
 
-After completing a file-changing task or transferring unfinished work, follow the [project-handoff skill](.agents/skills/project-handoff/SKILL.md): create `handoffs/{title-of-work}-{MM-DD-YYYY}.md` using the current Asia/Manila date, then update HANDOFF.md's current state/index and the affected tasks with actual verification results.
+For a ZIP, exclude private files, environments, caches, and generated output explicitly; `.gitignore` does not filter ZIP contents.
