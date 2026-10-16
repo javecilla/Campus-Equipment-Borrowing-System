@@ -99,7 +99,7 @@ Campus-Equipment-Borrowing-System/
 └── manage.py                                    [existing] Django management entry point
 ```
 
-The root also contains the setup/review documents, dependency files, and private local environment described in [README.md](../README.md#project-folder-structure). Python package `__init__.py` files are omitted from this map. `staticfiles/` is generated collection output, while `.venv/` and `.env.local` are private local setup; none is a place to add application pages.
+The root also contains the setup/review documents, dependency files, and private local environment described in [DEV.md](../DEV.md#first-time-setup). Python package `__init__.py` files are omitted from this map. `staticfiles/` is generated collection output, while `.venv/` and `.env.local` are private local setup; none is a place to add application pages.
 
 ## Where views and page HTML go
 
