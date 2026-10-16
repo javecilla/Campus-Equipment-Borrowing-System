@@ -8,6 +8,8 @@ The T01–T03 foundation is integrated into `main` through [PR #3](https://githu
 
 For where to add views, models, forms, URLs, and page templates, use [Project Folder Architecture](docs/project-folder-architecture.md).
 
+To have your coding agent implement your assigned backlog work, copy your member prompt from [Team AI implementation prompts](docs/team-agent-prompts.md). It includes implementation authorization, prerequisite checks, verification, and handoff; feature changes stay uncommitted for review.
+
 ## First-time setup
 
 Follow these steps once, in order. Keep an existing environment, database, or private configuration.
