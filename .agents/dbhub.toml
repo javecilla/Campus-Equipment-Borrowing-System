@@ -1,0 +1,16 @@
+# Shared database MCP policy. Credentials are loaded from private .env.local.
+[[sources]]
+id = "campus_equipment"
+dsn = "${MCP_DATABASE_URL}"
+connection_timeout = 10
+query_timeout = 30
+
+[[tools]]
+name = "execute_sql"
+source = "campus_equipment"
+readonly = true
+max_rows = 1000
+
+[[tools]]
+name = "search_objects"
+source = "campus_equipment"

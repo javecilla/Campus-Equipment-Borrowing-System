@@ -1,0 +1,52 @@
+PROJECT MEMBERS:
+- Avecilla, Jerome S.
+- Cayanan, Alex Enrico
+- Cortez, Kenneth T.
+- Giga, Ralph Andre F.
+- Ignacio, Margareth Raine H.
+- Regodon, Ma. Ellyssa Bianca
+
+MEMBERS GITHUB ACCOUNT:
+- Jerome: @javecilla (repository owner)
+- Alex: @AlexCayanan
+- Cortez: @corkenneth
+- Ellyssa: @ellieebeann
+- Margareth: @raifun
+- Ralph: @dreygigz
+
+MEMBERS GITHUB REPO BRANCH:
+MAIN BRANCH: main
+- Jerome: jerome
+- Alex: alex
+- Cortez: kenneth
+- Ellyssa: elly
+- Margareth: marga
+- Ralph: ralph
+
+TASK EACH MEMBERS:
+
+ADMIN SIDE
+Member 1: Database and Backend Foundation, Audit Logs and Settings -  Jerome
+Member 2: Login, User Accounts, Security, Dashboard and Reports  - Alex
+Member 3: Equipment Inventory and Maintenance - Kenneth
+Member 4: Approval, Release and Returns - Marga
+USER SIDE
+Member 5: Student Account and Browsing - Ellie
+Member 6: Student Requests, Tracking and UI Integration - Ralph
+
+
+PROJECT TIMELINE:
+Succession: who works when (deadline Sat Oct 24, 2026)
+Yellow Status cells are for you to update: Not started, In progress or Done.
+
+Order	Member	Starts	Starts when	What they hand over	Status
+1	Jerome	Oct 15	Today	All tables merged into main by end of Oct 16, then the shared helpers and locking code	Not started
+2	Alex	Oct 16	Tables are merged	Login, roles, and the admin-only and active-account checks, which every page needs	Not started
+3	Kenneth	Oct 17	Login exists	Categories, items and units, so there is equipment to borrow	Not started
+4	Ellie	Oct 17	Login and units exist	Student sign-up, profile and browsing pages, plus the student layout	Not started
+5	Ralph	Oct 17	Units exist and Ellie's layout is ready	Request form, 'my requests' and the cancel button	Not started
+6	Marga	Oct 19	Students can submit requests	Approval, release, borrowing slip and returns	Not started
+7	Alex (second part)	Oct 21	Marga's loans exist	Dashboard, charts and reports with real data	Not started
+8	Everyone	Oct 22	All parts are merged	Cross-testing, bug fixes, guides, demo practice	Not started
+
+

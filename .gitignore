@@ -1,0 +1,8 @@
+.env.local
+.env
+.env.*.local
+!.env.example
+.codex/config.toml
+.venv/
+__pycache__/
+*.py[cod]
