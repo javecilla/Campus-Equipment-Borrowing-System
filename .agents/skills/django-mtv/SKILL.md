@@ -9,7 +9,7 @@ Use the project's existing Model–Template–View design and preserve the curre
 
 ## Establish the contract
 
-Read [AGENTS.md](../../../AGENTS.md), [coding standards](../../../docs/coding-standards.md), and the relevant task/current state in [tasks.md](../../../docs/tasks.md) and [HANDOFF.md](../../../HANDOFF.md). Resolve paths relative to this skill directory. Respect documentation-only authorization until the user explicitly requests implementation.
+Read [AGENTS.md](../../../AGENTS.md), the delivery gates in [PLAN.md](../../../PLAN.md), [coding standards](../../../docs/coding-standards.md), and the relevant task/current state in [tasks.md](../../../docs/tasks.md) and [HANDOFF.md](../../../HANDOFF.md). Verify accepted prerequisites are integrated into main before dependent implementation; do not invent missing upstream interfaces. Resolve paths relative to this skill directory. Respect documentation-only authorization until the user explicitly requests implementation.
 
 For the affected feature, read only the needed [architecture](../../../docs/architecture.md), [SRS](../../../docs/SRS.md), [database design](../../../docs/db_design.md), and [route/form contract](../../../docs/api_spec.md). Inspect actual code before adding anything; planned module names are not evidence that files exist. Identify the acceptance behavior and affected owners before changing shared contracts.
 

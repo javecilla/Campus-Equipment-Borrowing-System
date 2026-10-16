@@ -2,7 +2,7 @@
 
 ## Status and scheduling
 
-This backlog plans future work. DOC-01 through DOC-03 track documentation/standards/handoffs; MCP-01 and MCP-02 track the separately authorized database tooling and developer preparation; GIT-01 tracks repository publication and the team branch workflow. No application implementation is authorized yet. Status values are **Not started**, **In progress**, and **Done**. Record blockers in the evidence/next-step column rather than inventing completion. Task IDs remain stable so a member can request, for example, "Implement T06."
+This backlog plans future work. DOC-01 through DOC-04 track documentation/standards/handoffs and the execution plan; MCP-01 and MCP-02 track the separately authorized database tooling and developer preparation; GIT-01 tracks repository publication and the team branch workflow. [PLAN.md](../PLAN.md) maps delivery order and member readiness gates; this file owns task status and verified task/integration evidence. No application implementation is authorized yet. Status values are **Not started**, **In progress**, and **Done**. Record blockers in the evidence/next-step column rather than inventing completion. Task IDs remain stable so a member can request, for example, "Implement T06."
 
 Requirements come from [Project-Requirements.txt](Project-Requirements.txt). The source member schedule in [Project-Members.txt](Project-Members.txt) targets **Saturday, October 24, 2026**; the instructor still controls the official submission date. The planned starts below are dependencies, not evidence that work has begun or been merged.
 
@@ -26,6 +26,7 @@ Calendar starts do not override incomplete dependencies. Maintain the approximat
 | DOC-01 | P0 | Team; AI documentation assistance | README without setup instructions; PRD/SRS; architecture/schema/HTTP contracts; AGENTS/environment template; backlog; current handoff and instruction-only handoff skill | Done | Documentation created; 63 relative links and file integrity checked; bundled skill validator passed using existing cached tooling; proposed choices await team review |
 | DOC-02 | P1 | AI agent; member not specified | Canonical MTV/coding standards, reusable Django skill, contribution/conduct guides, and the user-selected MIT license with project-contributor attribution | Done | Guide and skill linked from AGENTS/README/DEV; bundled skill validator passed; document links, scope, and credential scan checked; no application implementation |
 | DOC-03 | P1 | AI agent; member not specified | Dated developer/AI handoff archive, initial setup snapshot, and matching folder/filename instructions in the handoff skill and project entry points | Done | Both skills validated; 159 relative links and archive naming checked; Git excludes private env and keeps shared files trackable; initial snapshot linked from HANDOFF.md |
+| DOC-04 | P1 | Jerome; Codex documentation assistance | Central full-system PLAN.md with dependency/member gates, evidence-based next-task selection, distinct acceptance/main-integration records, and routing through existing agent skills and entry points | Done | All 31 application task IDs covered; stage dependencies reviewed against the backlog; relative links/heading anchors and dated naming checked; both changed skills validated; application task rows and source files unchanged; shared credential scan passed. Local uncommitted documentation on jerome; implementation remains unauthorized |
 | GIT-01 | P1 | Jerome; Codex assistance | Connect the private GitHub repository, publish the setup through jerome with Codex co-authorship, initialize main/member branches, protect main for repository-owner integration, and document the member workflow | Done | Baseline 04ecb37 committed on jerome with Codex credit and pushed to all seven branches; Git/REST verified heads, private visibility, default/protected main, and effective owner-only rules. DEV workflow, corrected CODEOWNERS, link/credential checks, and dated handoff complete. Jerome still needs to invite five teammates with write access; GitHub currently reports them as unknown code owners |
 
 ## Database tooling and developer preparation
@@ -111,5 +112,13 @@ Do not fabricate meetings, interviews, leadership, tests, compliance, or individ
 ## Completion rules
 
 P0 means foundational correctness or required delivery; P1 means remaining required functionality/evidence, not optional work. Dependencies determine execution order. Additional enhancements follow required functionality and must not displace the course brief.
+
+## Verified task evidence
+
+Record actual accepted task evidence here, linking its dated handoff rather than copying test output. Replace the no-evidence row when the first application task is verified; add/update only affected task records. A Done task on a member branch is not an integrated prerequisite. Record main integration separately with the actual merged PR/main revision and relevant check result; use Not integrated while local/uncommitted or awaiting review. See [PLAN.md](../PLAN.md#complete-work-and-hand-it-to-the-next-member) for the handoff gate. Documentation completion evidence remains in the documentation rows above.
+
+| Task | Checked result and work handoff | Branch / commit / PR | Main integration evidence | Next consumer |
+| --- | --- | --- | --- | --- |
+| — | No application acceptance evidence recorded | No application delivery | No application integration | Jerome / T01 after explicit implementation authorization |
 
 On completion or transfer, use the [project-handoff skill](../.agents/skills/project-handoff/SKILL.md). Save the dated work snapshot in `handoffs/{title-of-work}-{MM-DD-YYYY}.md` and link it from [HANDOFF.md](../HANDOFF.md), which remains the current-state summary/index. This file is the canonical task status list. Mark feature work Done only after its acceptance behavior is verified, not after its documentation is written.

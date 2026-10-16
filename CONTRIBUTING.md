@@ -10,7 +10,7 @@ Participation follows [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Licensing is def
 
 ## Before starting
 
-1. Read [AGENTS.md](AGENTS.md), [HANDOFF.md](HANDOFF.md), and the relevant entry in [docs/tasks.md](docs/tasks.md). Claim/coordinate the task with its owner so two contributors do not independently change the same contract.
+1. Read [AGENTS.md](AGENTS.md), [PLAN.md](PLAN.md), [HANDOFF.md](HANDOFF.md), and the relevant entry in [docs/tasks.md](docs/tasks.md). Use the plan's handoff gates and verify prerequisite integration into main before dependent work. Claim/coordinate the task with its owner so two contributors do not independently change the same contract.
 2. Read [docs/coding-standards.md](docs/coding-standards.md), including its MTV responsibility table, and the feature's requirements/design contracts. Follow [DEV.md](DEV.md) for workstation and private environment/MCP setup.
 3. Define the requested outcome and minimum acceptance evidence. Keep the work within the authorized phase; a backlog entry or skill is not permission to begin application implementation.
 4. Inspect existing files, working changes, and shared helpers before editing. If Git metadata is available, use non-interactive status/diff commands; otherwise do not claim a branch, commit, or PR exists.
