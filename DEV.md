@@ -4,7 +4,7 @@
 
 Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv`, `.env.local`, and local PostgreSQL database. Git shares source and migrations, not credentials or database contents.
 
-The T01–T03 foundation is currently local on `jerome`, pending main integration. Check [HANDOFF.md](HANDOFF.md) for availability on other branches. Login and feature pages remain pending.
+The T01–T03 foundation is integrated into `main` through [PR #3](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/3). Sync your member branch with main before starting dependent work; see [HANDOFF.md](HANDOFF.md) for readiness. Login and feature pages remain pending.
 
 For where to add views, models, forms, URLs, and page templates, use [Project Folder Architecture](docs/project-folder-architecture.md).
 
@@ -210,6 +210,8 @@ Assignments come from [Project-Members.txt](docs/Project-Members.txt). Keep perm
 | Ralph | `dreygigz` | `ralph` |
 
 Work and push on your own branch. Only Jerome integrates `main`; do not push another member's branch, force-push, or rewrite shared history. The [main-owner-only ruleset](https://github.com/javecilla/Campus-Equipment-Borrowing-System/rules/25213591) controls main updates; branch assignments are a team convention, not exclusive authorship.
+
+The ruleset's **Restrict updates** rule allows only its bypass actor, `@javecilla`, to update main. GitHub therefore shows **Merging is blocked / Cannot update this protected ref** even on Jerome's PRs. For a reviewed, ready PR, Jerome selects **Merge without waiting for requirements to be met (bypass rules)** and merges it. Other members submit PRs for Jerome to integrate. This banner is expected for the owner-only rule; it does not identify a failed test. See [GitHub's Restrict updates documentation](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#restrict-updates).
 
 ### First checkout of your member branch
 
