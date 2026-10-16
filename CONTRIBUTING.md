@@ -31,7 +31,7 @@ Agents must read AGENTS.md. For Django design, implementation, or review, use [.
 
 ## Verification and review
 
-Use the coding guide's verification table and actual configured commands. The current repository has no application test/lint configuration, so documentation changes need link/consistency/skill checks rather than invented application test runs. When implementation exists, use the appropriate real feature/integration checks and include access/concurrency evidence where required.
+Use the coding guide's verification table and [configured Django/Ruff commands](DEV.md#application-migrations-checks-and-local-server). Documentation changes need link/consistency/skill checks. Feature changes need real integration checks and access/concurrency evidence where required.
 
 A review request or task handover should identify the task, resulting behavior, relevant files, actual verification commands/results, unresolved limitations, and any shared-contract change. Review against the requirements and MTV guide; avoid unrelated rewrites. Have an affected teammate review shared changes when practical. Jerome has been designated to integrate main and manage repository access; this role does not make him the sole author or owner of the team's work.
 

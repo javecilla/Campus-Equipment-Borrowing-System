@@ -23,9 +23,9 @@ Keep task status in the backlog and current readiness in HANDOFF.md. Update this
 
 ## Current starting point
 
-Documentation, standards, shared read-only MCP tooling, and the initial GitHub baseline have been prepared. No Django application, migrations, executable dependency manifest, or application test configuration exists in the inspected baseline. Application tasks T01 through T31 are Not started; use the backlog and current handoff for subsequent state changes.
+The documentation baseline is integrated. The user authorized Jerome's foundation implementation and explicitly allowed **T01–T03 as one local, uncommitted batch** before main integration. This is an exception to the integration gate within this batch only; other members' prerequisites and the normal integration/review gates remain in force. Actual task status and checks belong in the backlog and current handoff.
 
-The next implementation task is **T01, Jerome**, after an explicit implementation request. Creating this plan leaves that authorization gate in place. T02 follows T01. Alex's first implementation handoff is T04 after T02 is verified and integrated into main; he does not need to wait for every later Jerome task. Branch and private-repository access instructions remain in DEV.md.
+Alex's first implementation handoff remains T04 after T02 is verified and integrated into main; he does not need to wait for every later Jerome task. Jerome's T06 still requires T04 as well as T03. Branch and private-repository access instructions remain in DEV.md. No commit or main integration is authorized by the local-batch exception.
 
 ## Delivery stages and handoff gates
 
