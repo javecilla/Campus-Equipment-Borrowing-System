@@ -23,13 +23,14 @@ Campus-Equipment-Borrowing-System/
 │   ├── models.py                                [existing] User and Profile
 │   ├── migrations/                              [existing]
 │   ├── views.py                                 [existing] login/logout/home handlers
-│   ├── forms.py                                 [existing] explicit login fields
+│   ├── forms.py                                 [existing] username/email and password login fields
 │   ├── urls.py, portal_urls.py                  [existing] account/portal auth routes
 │   ├── access.py, middleware.py                 [existing] active/role/owner checks
 │   ├── services.py                              [existing] admin bootstrap write
+│   ├── seeding.py                               [existing] atomic two-account auth test setup
 │   ├── queries.py                               [planned] account/history reads
 │   ├── tests/                                   [existing] authentication/access checks
-│   └── management/commands/                     [existing] authorized admin setup command
+│   └── management/commands/                     [existing] admin setup and auth test seed commands
 │
 ├── inventory/                                   [existing]
 │   ├── models.py                                [existing] catalog, units, maintenance
@@ -152,7 +153,7 @@ For a form that changes data, the view binds the app's `forms.py` and calls the 
 5. Add CSS/images/scripts under `static/` when needed. Custom base templates load the existing `css/fonts.css` through Django's static tag; the exact include and font paths are in [DEV.md](../DEV.md#fonts-and-static-assets).
 6. Add meaningful checks beside the feature in its `tests/` directory, run [the configured commands](../DEV.md#before-handing-over-work), then follow the [handoff workflow](../.agents/skills/project-handoff/SKILL.md). A new persistent field or constraint also needs an app migration.
 
-The shared Django authentication/access contract is implemented locally by T04 in `accounts/access.py` and `accounts/middleware.py`. Views for later tasks use that interface only after T04 is reviewed and integrated; this folder guide does not unlock blocked features.
+The shared Django authentication/access contract is integrated through T04 (PR #9, `cb96319`) in `accounts/access.py` and `accounts/middleware.py`. Views for later tasks reuse that interface after their owners sync main and verify the remaining task prerequisites; this folder guide does not authorize implementation.
 
 ## Which file should I edit?
 

@@ -2,7 +2,7 @@
 
 ## Status, references, and terminology
 
-This specification covers implemented and future behavior. T04's shared authentication/access contract is implemented locally on `alex` with evidence in the [backlog](tasks.md#verified-task-evidence); the remaining application requirements stay planned until their own acceptance evidence exists. Requirement identifiers A1–A8 and U1–U4 refer to [Project-Requirements.txt](Project-Requirements.txt). Product purpose is defined in [PRD.md](PRD.md), field definitions in [db_design.md](db_design.md), and HTTP contracts in [api_spec.md](api_spec.md).
+This specification covers implemented and future behavior. T04's shared authentication/access contract is integrated into main through PR #9 at `cb96319`, with evidence in the [backlog](tasks.md#verified-task-evidence); the remaining application requirements stay planned until their own acceptance evidence exists. Requirement identifiers A1–A8 and U1–U4 refer to [Project-Requirements.txt](Project-Requirements.txt). Product purpose is defined in [PRD.md](PRD.md), field definitions in [db_design.md](db_design.md), and HTTP contracts in [api_spec.md](api_spec.md).
 
 A **catalog item** describes an equipment type; an **equipment unit** is one physical asset. An **allocation** holds a specific unit for a request item. A **loan** records release; a **loan unit** records one issued allocation; a **return** records one loan unit coming back. An **active allocation** has no end timestamp and continues through reservation and issue until cancellation or return.
 
@@ -10,7 +10,7 @@ A **catalog item** describes an equipment type; an **equipment unit** is one phy
 
 | ID | Required behavior | Acceptance criterion |
 | --- | --- | --- |
-| SEC-01 | Exactly `BASIC_USER` and `ADMIN`, using Django authentication | Successful login redirects to `/portal/` or `/manage/` according to the stored role |
+| SEC-01 | Exactly `BASIC_USER` and `ADMIN`, using Django authentication | Successful username or unambiguous case-insensitive email login redirects to `/portal/` or `/manage/` according to the stored role; ambiguous identifiers are denied |
 | SEC-02 | Server-side admin checks on every management action, report, export, and detail page | A basic user cannot invoke them through GET, POST, forged form fields, or direct URLs |
 | SEC-03 | Scope portal lookups to the signed-in owner | Guessing another request/loan ID returns 404 and exposes no data |
 | SEC-04 | Check active status on every protected request, including existing sessions | Deactivation blocks login and subsequent protected operations without deleting history |

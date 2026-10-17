@@ -94,8 +94,10 @@ def validate_origin(origin: str) -> None:
     validate_host(f"[{host}]" if ":" in host else host, key)
 
 
-def read_environment(path: Path, process_environment: Mapping[str, str]) -> ApplicationEnvironment:
-    """Require .env.local; explicit process values override its literal values."""
+def read_environment_values(
+    path: Path, process_environment: Mapping[str, str]
+) -> dict[str, str | None]:
+    """Parse unique literal private values with explicit process overrides."""
     if not path.is_file():
         raise ImproperlyConfigured(
             f"Private configuration file is missing: {path}. Copy .env.example and fill its required values."
@@ -115,7 +117,12 @@ def read_environment(path: Path, process_environment: Mapping[str, str]) -> Appl
     file_values: dict[str, str | None] = {
         binding.key: binding.value for binding in bindings if binding.key is not None
     }
-    values: dict[str, str | None] = {**file_values, **process_environment}
+    return {**file_values, **process_environment}
+
+
+def read_environment(path: Path, process_environment: Mapping[str, str]) -> ApplicationEnvironment:
+    """Require .env.local; explicit process values override its literal values."""
+    values: dict[str, str | None] = read_environment_values(path, process_environment)
     secret_key: str = required_value(values, "DJANGO_SECRET_KEY")
     if (
         len(secret_key) < 50

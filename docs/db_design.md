@@ -40,10 +40,10 @@ Use a custom Django `AbstractUser` subclass selected before the first migration.
 | Field | Type | Constraint/purpose |
 | --- | --- | --- |
 | `id` | bigint | PK |
-| `username` | varchar(150) | Unique; sign-in identifier |
+| `username` | varchar(150) | Unique; accepted sign-in identifier |
 | `password` | varchar(128) | Django-managed hash; never plaintext |
 | `first_name`, `last_name` | varchar(150) each | Required nonblank personal names in application forms |
-| `email` | varchar(254) | Required contact email; Django/server validation |
+| `email` | varchar(254) | Required contact email; Django/server validation; not unique. AUTH-02 permits case-insensitive sign-in only when the combined username/email lookup identifies one account |
 | `role` | varchar(10) | CHECK: BASIC_USER or ADMIN |
 | `is_active` | boolean | Account activation; required for protected actions |
 | `date_joined` | timestamptz | Django-managed account creation time |

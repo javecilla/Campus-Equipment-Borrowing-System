@@ -122,6 +122,9 @@ class BootstrapTests(SimpleTestCase):
     def test_authentication_routes_replace_the_debug_index(self) -> None:
         with self.settings(DEBUG=False, ALLOWED_HOSTS=["testserver"]):
             self.assertEqual(self.client.get("/accounts/login/").status_code, 200)
+            missing_response = self.client.get("/missing-page/")
+            self.assertEqual(missing_response.status_code, 404)
+            self.assertTemplateUsed(missing_response, "404.html")
             self.assertEqual(self.client.get("/admin/").status_code, 404)
             self.assertEqual(self.client.get("/test").status_code, 404)
             for path in ("/", "/manage/", "/portal/"):
