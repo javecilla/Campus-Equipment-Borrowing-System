@@ -22,13 +22,14 @@ Campus-Equipment-Borrowing-System/
 ├── accounts/                                    [existing]
 │   ├── models.py                                [existing] User and Profile
 │   ├── migrations/                              [existing]
-│   ├── views.py                                 [planned] account request handlers
-│   ├── forms.py                                 [planned] account/profile form fields
-│   ├── urls.py                                  [planned] account route definitions
-│   ├── services.py                              [planned] account/profile writes
+│   ├── views.py                                 [existing] login/logout/home handlers
+│   ├── forms.py                                 [existing] explicit login fields
+│   ├── urls.py, portal_urls.py                  [existing] account/portal auth routes
+│   ├── access.py, middleware.py                 [existing] active/role/owner checks
+│   ├── services.py                              [existing] admin bootstrap write
 │   ├── queries.py                               [planned] account/history reads
-│   ├── tests/                                   [planned] account feature checks
-│   └── management/commands/                     [planned] authorized admin setup command
+│   ├── tests/                                   [existing] authentication/access checks
+│   └── management/commands/                     [existing] authorized admin setup command
 │
 ├── inventory/                                   [existing]
 │   ├── models.py                                [existing] catalog, units, maintenance
@@ -60,28 +61,28 @@ Campus-Equipment-Borrowing-System/
 │   ├── services.py                              [existing] audited settings update
 │   ├── queries.py                               [existing] loan-limit read; reporting comes later
 │   ├── tests/                                   [existing] foundation integration checks
-│   ├── views.py                                 [planned] settings/audit/dashboard/report handlers
+│   ├── views.py                                 [existing] protected dashboard placeholder; live data planned
 │   ├── forms.py                                 [planned] settings and filter inputs
-│   └── urls.py                                  [planned] operations routes
+│   └── urls.py                                  [existing] dashboard route; other operations planned
 │
 ├── templates/                                   [existing] shared root template directory
 │   ├── base.html                                [existing] document shell and compiled CSS
 │   ├── dev/frontend-test.html                    [existing] Tailwind/font preview
-│   ├── dev/index.html                            [existing] development navigation
+│   ├── dev/index.html                            [existing] historical development navigation
 │   ├── manage/base.html                         [planned] custom administrator layout
 │   ├── portal/base.html                         [planned] basic-user layout
 │   ├── components/                              [planned] shared form/table/message fragments
 │   ├── accounts/                                [planned] login and account feature pages
-│   │   ├── login.html                           [planned]
+│   │   ├── login.html                           [existing]
 │   │   ├── manage/                              [planned] account management pages
-│   │   └── portal/                              [planned] registration/profile pages
+│   │   └── portal/                              [existing/planned] protected home; registration/profile planned
 │   ├── inventory/                               [planned] catalog/unit feature pages
 │   │   ├── manage/                              [planned] inventory and maintenance pages
 │   │   └── portal/                              [planned] equipment browsing pages
 │   ├── borrowing/                               [planned] request/loan feature pages
 │   │   ├── manage/                              [planned] review, release, returns, slips
 │   │   └── portal/                              [planned] submission and own history pages
-│   └── operations/manage/                       [planned] settings, audit, dashboard, reports
+│   └── operations/manage/                       [existing/planned] protected dashboard destination; live data/settings/audit/reports planned
 │
 ├── static/                                      [existing] shared source static files
 │   ├── css/fonts.css                            [existing] local font declarations and typography
@@ -151,7 +152,7 @@ For a form that changes data, the view binds the app's `forms.py` and calls the 
 5. Add CSS/images/scripts under `static/` when needed. Custom base templates load the existing `css/fonts.css` through Django's static tag; the exact include and font paths are in [DEV.md](../DEV.md#fonts-and-static-assets).
 6. Add meaningful checks beside the feature in its `tests/` directory, run [the configured commands](../DEV.md#before-handing-over-work), then follow the [handoff workflow](../.agents/skills/project-handoff/SKILL.md). A new persistent field or constraint also needs an app migration.
 
-The shared Django authentication/access contract belongs to T04. Views for later tasks use that accepted interface once available; this folder guide does not supply temporary authentication helpers or unlock blocked features.
+The shared Django authentication/access contract is implemented locally by T04 in `accounts/access.py` and `accounts/middleware.py`. Views for later tasks use that interface only after T04 is reviewed and integrated; this folder guide does not unlock blocked features.
 
 ## Which file should I edit?
 

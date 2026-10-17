@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Management · Campus Equipment{% endblock %}
+{% block content %}
+    <main class="min-h-screen bg-slate-950 px-6 py-12 text-slate-100"
+          data-testid="manage-home">
+        <section class="mx-auto max-w-3xl rounded-2xl border border-slate-700 bg-slate-900 p-8 shadow-sm">
+            <p class="mb-3 text-sm font-semibold tracking-widest text-emerald-400 uppercase">Custom management</p>
+            <h1 class="mb-4 font-heading text-3xl font-semibold">Welcome, {{ request.user.first_name }}.</h1>
+            <p class="mb-8 leading-relaxed text-slate-300">Administrator access is active. Live dashboard cards and charts remain part of T18 and are not represented by demonstration values here.</p>
+            <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}
+                <button type="submit"
+                        class="rounded-lg border border-slate-600 px-4 py-2 font-semibold text-slate-100 hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400">Sign out</button>
+            </form>
+        </section>
+    </main>
+{% endblock %}

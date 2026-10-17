@@ -2,7 +2,7 @@
 
 ## Status and proposed stack
 
-This architecture guides implementation. The T01–T03 foundation is integrated into main in the modules below; workflow features and HTTP interfaces remain planned. Behavioral authority is [SRS.md](SRS.md); persistence is specified in [db_design.md](db_design.md) and the actual models/migrations. The canonical [coding standards](coding-standards.md) define MTV responsibility boundaries and implementation/review rules.
+This architecture guides implementation. The T01–T03 foundation is integrated into main in the modules below; T04's shared authentication/access interfaces are implemented locally on `alex`, while registration and workflow feature interfaces remain planned. Behavioral authority is [SRS.md](SRS.md); persistence is specified in [db_design.md](db_design.md) and the actual models/migrations. The canonical [coding standards](coding-standards.md) define MTV responsibility boundaries and implementation/review rules.
 
 Use a single server-rendered Django application with Python 3.13, Django 5.2 LTS, PostgreSQL 17, and Psycopg 3. Pin tested patch versions during implementation. Django 5.2 supports the proposed Python series and database; consult the [release notes](https://docs.djangoproject.com/en/5.2/releases/5.2/) and [database documentation](https://docs.djangoproject.com/en/5.2/ref/databases/).
 

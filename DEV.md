@@ -4,7 +4,7 @@
 
 Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv`, `.env.local`, and local PostgreSQL database. Git shares source and migrations, not credentials or database contents.
 
-The T01–T03 foundation is integrated into `main` through [PR #3](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/3). Sync your member branch with main before starting dependent work; see [HANDOFF.md](HANDOFF.md) for readiness. Login and feature pages remain pending.
+The T01–T03 foundation is integrated into `main` through [PR #3](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/3). T04 authentication/access controls are implemented locally on `alex` and await review/integration; see [HANDOFF.md](HANDOFF.md) for readiness. Registration and workflow feature pages remain pending.
 
 For where to add views, models, forms, URLs, and page templates, use [Project Folder Architecture](docs/project-folder-architecture.md).
 
@@ -120,7 +120,7 @@ Then start the server:
 .\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
 ```
 
-Open **<http://127.0.0.1:8000/>** with `DJANGO_DEBUG=True` for the development index, then follow **Tailwind & font preview** to `/test`. The terminal should report no system-check errors or unapplied migrations. Keep that terminal open while working; stop with Ctrl+C, or Ctrl+Break on Windows.
+Open **<http://127.0.0.1:8000/>** for the custom sign-in route. With `DJANGO_DEBUG=True`, the Tailwind/font preview remains available directly at **<http://127.0.0.1:8000/test>**. The terminal should report no system-check errors or unapplied migrations. Keep that terminal open while working; stop with Ctrl+C, or Ctrl+Break on Windows.
 
 ### Expected startup screen
 
@@ -128,13 +128,23 @@ The screenshot below records Django's initial startup before custom routes were 
 
 ![Django initial installation success page with DEBUG=True, before custom routes are added](static/images/inital-setup-running-success-screen.png)
 
-After setup and server startup, the current development index should look like this:
+The screenshot below records the temporary development index that preceded T04:
 
 ![Current development index at / with a Tailwind and font preview link to /test](static/images/new-inital-setup-running-success-screen.png)
 
-The current startup screen is the development index at `/`, with a navigation card for `/test`, described below. These debug-only pages replace Django's automatic welcome screen. Both return 404 when debug is disabled. The planned account home behavior, login, `/manage/`, and `/portal/` pages arrive in their assigned tasks.
+The current root is `accounts:home`: anonymous visitors go to the custom login page and active users go to `/portal/` or `/manage/` from their stored role. `/test` remains a separate debug-only preview and returns 404 when debug is disabled. The role destinations intentionally contain no demonstration workflow/dashboard data.
 
-Migrations initialize the settings row (7 days and 3 units per item) and its system audit. They create no accounts or equipment. Admin-account provisioning is part of T04; demonstration seeding is T21.
+Migrations initialize the settings row (7 days and 3 units per item) and its system audit. They create no accounts or equipment. Use the command below for a local administrator; demonstration seeding is T21.
+
+### Create an administrator account
+
+Run the CLI-only setup command from a trusted local shell after migrations:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py create_admin --username campus_admin --first-name Campus --last-name Administrator --email admin@example.invalid
+```
+
+The command prompts for the password twice without accepting it as a command-line argument. Django password validators run before one atomic write creates the active `ADMIN` and its Profile. The command fixes `is_staff` and `is_superuser` to false because runtime management access uses the two-role contract. Treat shell and database access as the authorization boundary; there is no public administrator-creation or promotion endpoint. Replace the fictional values above with approved local demonstration details and never commit credentials.
 
 ## Everyday startup
 
@@ -175,7 +185,7 @@ The library rationale and course-pattern requirements are in [architecture.md](d
 
 ### Frontend preview
 
-After building assets and starting Django, visit **<http://127.0.0.1:8000/>** and select **Tailwind & font preview**, or go directly to **<http://127.0.0.1:8000/test>** (no trailing slash). Set `DJANGO_DEBUG=True` in your private `.env.local`. The preview links back to the development index. Expect a pale background, rounded typography cards, green/slate/amber swatches, and the message **DM Sans and Poppins loaded successfully from local assets.** The message checks real font loading in the browser; it reports a failure if font declarations/files cannot load. If it stays at “Checking local fonts…”, check that `build/frontend-test.js` loads and rebuild assets.
+After building assets and starting Django, go directly to **<http://127.0.0.1:8000/test>** (no trailing slash) with `DJANGO_DEBUG=True` in your private `.env.local`. The preview links back to the application home. Expect a pale background, rounded typography cards, green/slate/amber swatches, and the message **DM Sans and Poppins loaded successfully from local assets.** The message checks real font loading in the browser; it reports a failure if font declarations/files cannot load. If it stays at “Checking local fonts…”, check that `build/frontend-test.js` loads and rebuild assets.
 
 The page uses the shared base template and compiled assets. Typography cards sit side by side on wider screens; color swatches stack on small screens. It accepts GET/HEAD without sign-in, reads no application data, and returns 404 when debug is disabled. [config/views.py](config/views.py) owns the preview handler, [templates/dev/frontend-test.html](templates/dev/frontend-test.html) its markup, and [static/js/frontend-test.js](static/js/frontend-test.js) the font check. This is a development preview, not a role layout or product page.
 
@@ -467,7 +477,7 @@ Expected: database `campus_equipment`, your own account, PostgreSQL 17.x, and `r
 | Database connection refused | Start PostgreSQL and check `DB_HOST`/`DB_PORT` |
 | Database login fails | Verify the local account, raw `DB_PASSWORD`, and database ownership |
 | Tables missing or migrations pending | Check `DB_NAME`, then inspect/apply [existing migrations](#apply-existing-migrations) |
-| Welcome screen or 404 | Expected until custom routes exist; use `DJANGO_DEBUG=True` locally to see the supplied success screen |
+| Root redirects to login | Expected after T04; use `/test` with `DJANGO_DEBUG=True` for the frontend/font preview |
 | Font or CSS returns 404 | Use `DJANGO_DEBUG=True` with runserver; run `findstatic` and use paths relative to `static/` |
 | Port 8000 is busy | Stop your previous server or choose another port and update CSRF origins if needed |
 | pip missing | Run `.\.venv\Scripts\python.exe -m ensurepip --upgrade` |

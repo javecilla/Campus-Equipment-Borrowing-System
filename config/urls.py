@@ -1,10 +1,12 @@
-"""Feature owners add the named custom routes from docs/api_spec.md."""
+"""Root routing for shared authentication and development utilities."""
 
-from django.urls import URLPattern, URLResolver, path
+from django.urls import URLPattern, URLResolver, include, path
 
-from config.views import development_index, frontend_test
+from config.views import frontend_test
 
 urlpatterns: list[URLPattern | URLResolver] = [
-    path("", development_index, name="development-index"),
+    path("", include("accounts.urls")),
+    path("portal/", include("accounts.portal_urls")),
+    path("manage/", include("operations.urls")),
     path("test", frontend_test, name="frontend-test"),
 ]

@@ -2,7 +2,7 @@
 
 ## Status and interface choice
 
-Proposed feature contracts for the server-rendered application in [architecture.md](architecture.md). Feature endpoints remain unimplemented; the development preview below exists. There is no separate frontend/backend or microservice API in this scope, so a REST/OpenAPI document would imply an interface the project does not require. This document specifies the HTML form and download interfaces instead. Add OpenAPI only if a real programmatic API is later authorized.
+Feature contracts for the server-rendered application in [architecture.md](architecture.md). T04 implements the shared home, login, logout, role landing, and access-control interfaces; registration and the remaining feature endpoints are still planned. There is no separate frontend/backend or microservice API in this scope, so a REST/OpenAPI document would imply an interface the project does not require. This document specifies the HTML form and download interfaces instead. Add OpenAPI only if a real programmatic API is later authorized.
 
 Use named Django URLs and integer primary-key path converters. `<id>` below denotes the relevant record ID. Successful mutations redirect to the related detail/list page with a message. All management pages are custom group-authored Django views/forms/templates.
 
@@ -36,10 +36,9 @@ The [coding standards](coding-standards.md#http-endpoint-design) define endpoint
 
 | Method | Path | URL name | Access / result |
 | --- | --- | --- | --- |
-| GET, HEAD | `/` | `development-index` | Temporary public development index linking to `/test` with `DEBUG=True`; 404 with `DEBUG=False`; other methods return 405 |
 | GET, HEAD | `/test` | `frontend-test` | Public only with `DEBUG=True`; Tailwind/font samples with no application data; 404 with `DEBUG=False`; other methods return 405 |
 
-See [DEV.md](../DEV.md#frontend-preview) for asset build/run instructions. These utilities do not implement or bypass the role routes below. T04 will replace the temporary development index with the contracted `accounts:home` route; the account-home behavior below is still proposed.
+See [DEV.md](../DEV.md#frontend-preview) for asset build/run instructions. The preview does not implement or bypass the role routes below. T04 replaced the temporary development index at `/` with the contracted `accounts:home` route; `/test` remains debug-only.
 
 ## Shared account routes
 
@@ -50,7 +49,9 @@ See [DEV.md](../DEV.md#frontend-preview) for asset build/run instructions. These
 | POST | `/accounts/logout/` | `accounts:logout` | Signed-in account | CSRF only; clear session and redirect to login |
 | GET, POST | `/accounts/register/` | `accounts:register` | Anonymous | `username`, `first_name`, `last_name`, `email`, `contact_number`, `password1`, `password2`; create BASIC_USER + Profile atomically, then redirect to login |
 
-Role, `is_active`, permission flags, user ID, and password hash are not registration inputs. Password fields use Django validation and account-creation helpers. No public admin-creation endpoint. Document an authorized admin-creation management command when implementation is requested.
+Role, `is_active`, permission flags, user ID, and password hash are not registration inputs. Password fields use Django validation and account-creation helpers. There is no public admin-creation endpoint; [DEV.md](../DEV.md#create-an-administrator-account) documents the authorized setup command.
+
+T04 implements the first three routes above. Registration remains T09 scope. The documented `create_admin` management command creates an active ADMIN and Profile from trusted local CLI access; no public form accepts an administrator role.
 
 ## Basic-user portal
 

@@ -119,11 +119,16 @@ class EnvironmentTests(SimpleTestCase):
 
 
 class BootstrapTests(SimpleTestCase):
-    def test_development_and_unimplemented_routes_are_unavailable_without_debug(self) -> None:
+    def test_authentication_routes_replace_the_debug_index(self) -> None:
         with self.settings(DEBUG=False, ALLOWED_HOSTS=["testserver"]):
-            for path in ("/", "/admin/", "/manage/", "/portal/"):
+            self.assertEqual(self.client.get("/accounts/login/").status_code, 200)
+            self.assertEqual(self.client.get("/admin/").status_code, 404)
+            self.assertEqual(self.client.get("/test").status_code, 404)
+            for path in ("/", "/manage/", "/portal/"):
                 with self.subTest(path=path):
-                    self.assertEqual(self.client.get(path).status_code, 404)
+                    response = self.client.get(path)
+                    self.assertEqual(response.status_code, 302)
+                    self.assertTrue(response.headers["Location"].startswith("/accounts/login/"))
 
     def test_wsgi_and_asgi_entry_points_boot(self) -> None:
         from config.asgi import application as asgi_application
