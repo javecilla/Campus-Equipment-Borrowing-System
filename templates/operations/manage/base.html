@@ -1,0 +1,20 @@
+{% extends "components/workspace.html" %}
+{% block navigation_label %}Administrator{% endblock %}
+{% block account_menu %}
+    {% include "components/account_menu.html" with profile_route="operations:profile" %}
+{% endblock %}
+{% block navigation %}
+    {% comment %}
+        Every admin page extends this layout, including details and confirmations.
+        Preserve light mode, named URLs, aria-current, stable IDs, and POST/CSRF logout.
+        Replace pending GET views in their owning apps as each task is implemented.
+        Equipment and borrowing subpages keep their parent tab active by namespace.
+    {% endcomment %}
+    {% include "components/navigation_link.html" with route="operations:dashboard" label="Dashboard" testid="nav-manage-dashboard" current=request.resolver_match.url_name section="dashboard" only %}
+    {% include "components/navigation_link.html" with route="accounts:manage-list" label="User accounts" testid="nav-manage-accounts" current=request.resolver_match.namespace section="accounts" only %}
+    {% include "components/navigation_link.html" with route="inventory_manage:item-list" label="Equipment" testid="nav-manage-equipment" current=request.resolver_match.namespace section="inventory_manage" only %}
+    {% include "components/navigation_link.html" with route="borrowing_manage:request-list" label="Borrowing" testid="nav-manage-borrowing" current=request.resolver_match.namespace section="borrowing_manage" only %}
+    {% include "components/navigation_link.html" with route="operations:loan-report" label="Reports" testid="nav-manage-reports" current=request.resolver_match.url_name section="loan-report" only %}
+    {% include "components/navigation_link.html" with route="operations:settings" label="Settings" testid="nav-manage-settings" current=request.resolver_match.url_name section="settings" only %}
+    {% include "components/navigation_link.html" with route="operations:audit-list" label="Audit history" testid="nav-manage-audit" current=request.resolver_match.url_name section="audit-list" only %}
+{% endblock %}

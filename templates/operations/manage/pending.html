@@ -1,0 +1,24 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}{{ heading }} · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    {% if request.resolver_match.namespace == "inventory_manage" %}
+        <nav class="mb-8 flex flex-wrap gap-5 text-sm font-medium text-accent"
+             aria-label="Equipment sections">
+            <a href="{% url 'inventory_manage:item-list' %}"
+               data-testid="equipment-catalog">Catalog</a>
+            <a href="{% url 'inventory_manage:unit-list' %}"
+               data-testid="equipment-units">Physical units</a>
+            <a href="{% url 'inventory_manage:maintenance-list' %}"
+               data-testid="equipment-maintenance">Maintenance</a>
+        </nav>
+    {% elif request.resolver_match.namespace == "borrowing_manage" %}
+        <nav class="mb-8 flex flex-wrap gap-5 text-sm font-medium text-accent"
+             aria-label="Borrowing sections">
+            <a href="{% url 'borrowing_manage:request-list' %}"
+               data-testid="borrowing-requests">Requests and approvals</a>
+            <a href="{% url 'borrowing_manage:loan-list' %}"
+               data-testid="borrowing-loans">Releases and returns</a>
+        </nav>
+    {% endif %}
+    {% include "components/pending_module.html" %}
+{% endblock %}

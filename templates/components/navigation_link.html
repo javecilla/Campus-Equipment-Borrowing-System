@@ -1,0 +1,4 @@
+<a href="{% url route %}"
+   data-testid="{{ testid }}"
+   {% if current == section %}aria-current="page"{% endif %}
+   class="inline-flex min-h-11 items-center px-3 text-sm decoration-2 underline-offset-8 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent {% if current == section %}font-bold text-accent underline{% else %}font-medium text-slate-600 hover:text-slate-900 hover:underline hover:decoration-slate-300{% endif %}">{{ label }}</a>

@@ -4,6 +4,10 @@
 
 Feature contracts for the server-rendered application in [architecture.md](architecture.md). T04 implements the shared home, login, logout, role landing, and access-control interfaces; registration and the remaining feature endpoints are still planned. There is no separate frontend/backend or microservice API in this scope, so a REST/OpenAPI document would imply an interface the project does not require. This document specifies the HTML form and download interfaces instead. Add OpenAPI only if a real programmatic API is later authorized.
 
+T05 implements the account-management list/detail and activation/deactivation routes. UI-07 adds shared role layouts and **GET/HEAD-only placeholder pages** at the following contracted destinations: `portal:equipment-list`, `portal:request-list`, `portal:loan-list`, `inventory_manage:item-list`, `inventory_manage:unit-list`, `inventory_manage:maintenance-list`, `borrowing_manage:request-list`, `borrowing_manage:loan-list`, `operations:loan-report`, `operations:audit-list`, and `operations:settings`. Each placeholder enforces its active role, displays pending-module guidance, and rejects POST with 405. The tables below describe the eventual feature behavior; these placeholders provide no domain queries, forms, mutations, reports, or exports. `/manage/` remains a dashboard placeholder until T18. Feature owners replace the pending views while preserving the contracted names and shared layout.
+
+UI-08 supplies the role-specific account dropdown and read-only My profile pages: `operations:profile` at `/manage/profile/` and `portal:profile` at `/portal/profile/`. Both accept GET/HEAD only, require their active role, and display the signed-in account's own identity, role, email, and contact details with the supplied default avatar. Submitted account identifiers are not used; POST returns 405. The portal profile's eventual editing contract below remains T09 work. Log out remains the existing CSRF-protected POST action inside the dropdown.
+
 Use named Django URLs and integer primary-key path converters. `<id>` below denotes the relevant record ID. Successful mutations redirect to the related detail/list page with a message. All management pages are custom group-authored Django views/forms/templates.
 
 The [coding standards](coding-standards.md#http-endpoint-design) define endpoint implementation and [browser interaction conventions](coding-standards.md#browser-interactions) within these contracts. They do not add a JSON response format or change the status table below.
@@ -90,6 +94,7 @@ All routes in the following tables require an active ADMIN.
 | Method | Path | URL name | Inputs / result |
 | --- | --- | --- | --- |
 | GET | `/manage/` | `operations:dashboard` | Four live cards and database-derived charts |
+| GET, HEAD | `/manage/profile/` | `operations:profile` | Current signed-in administrator's read-only account/profile; POST 405 |
 | GET | `/manage/accounts/` | `accounts:manage-list` | `q`, `active` (`true`/`false`), `page`; basic-user accounts |
 | GET | `/manage/accounts/<id>/` | `accounts:manage-detail` | Basic-user details and related request/loan history |
 | GET, POST | `/manage/accounts/<id>/activate/` | `accounts:manage-activate` | Confirm active status change and audit |

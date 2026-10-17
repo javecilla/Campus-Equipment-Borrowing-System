@@ -7,6 +7,8 @@ from config.views import frontend_test
 urlpatterns: list[URLPattern | URLResolver] = [
     path("", include("accounts.urls")),
     path("portal/", include("accounts.portal_urls")),
+    path("manage/", include("inventory.manage_urls")),
+    path("manage/", include("borrowing.manage_urls")),
     path("manage/", include("operations.urls")),
     path("test", frontend_test, name="frontend-test"),
 ]

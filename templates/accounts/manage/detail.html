@@ -1,9 +1,8 @@
-{% extends "base.html" %}
+{% extends "operations/manage/base.html" %}
 {% block title %}{{ account.username }} · Basic-user account{% endblock %}
-{% block content %}
-    <main class="min-h-svh bg-surface px-6 py-10 text-slate-900"
-          data-testid="account-detail">
-        <div class="mx-auto max-w-6xl space-y-6">
+{% block workspace_content %}
+    <section data-testid="account-detail">
+        <div class="space-y-8">
             <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <a href="{% url 'accounts:manage-list' %}"
@@ -14,21 +13,16 @@
                 <div class="flex items-center gap-3">
                     {% if account.is_active %}
                         <a href="{% url 'accounts:manage-deactivate' account.pk %}"
+                           data-testid="account-deactivate"
                            class="inline-flex min-h-11 items-center rounded-md bg-amber-500 px-4 text-sm font-semibold text-slate-950 hover:bg-amber-400">Deactivate account</a>
                     {% else %}
                         <a href="{% url 'accounts:manage-activate' account.pk %}"
+                           data-testid="account-activate"
                            class="inline-flex min-h-11 items-center rounded-md bg-accent px-4 text-sm font-semibold text-white hover:bg-emerald-800">Activate account</a>
                     {% endif %}
-                    {% include "components/logout.html" %}
                 </div>
             </header>
-            {% if messages %}
-                {% for message in messages %}
-                    <p class="rounded-md border border-emerald-100 bg-emerald-50 p-3 text-emerald-800"
-                       role="status">{{ message }}</p>
-                {% endfor %}
-            {% endif %}
-            <section class="grid gap-4 rounded-xl border border-slate-200 bg-white p-6 sm:grid-cols-2 lg:grid-cols-4">
+            <section class="grid gap-4 border-t border-slate-200 py-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
                     <p class="text-sm text-slate-500">Status</p>
                     <p class="font-semibold">{% if account.is_active %}Active{% else %}Inactive{% endif %}</p>
@@ -39,14 +33,14 @@
                 </div>
                 <div>
                     <p class="text-sm text-slate-500">Email</p>
-                    <p class="font-semibold">{{ account.email }}</p>
+                    <p class="font-semibold break-all">{{ account.email }}</p>
                 </div>
                 <div>
                     <p class="text-sm text-slate-500">Contact number</p>
                     <p class="font-semibold">{{ account.profile.contact_number|default:"Not provided" }}</p>
                 </div>
             </section>
-            <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <section class="border-y border-slate-200">
                 <div class="border-b border-slate-200 px-6 py-4">
                     <h2 class="font-heading text-xl font-semibold">Request history</h2>
                 </div>
@@ -89,7 +83,7 @@
                     </table>
                 </div>
             </section>
-            <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <section class="border-y border-slate-200">
                 <div class="border-b border-slate-200 px-6 py-4">
                     <h2 class="font-heading text-xl font-semibold">Borrowing history</h2>
                 </div>
@@ -134,5 +128,5 @@
                 </div>
             </section>
         </div>
-    </main>
+    </section>
 {% endblock %}

@@ -22,22 +22,23 @@ Campus-Equipment-Borrowing-System/
 ├── accounts/                                    [existing]
 │   ├── models.py                                [existing] User and Profile
 │   ├── migrations/                              [existing]
-│   ├── views.py                                 [existing] login/logout/home handlers
-│   ├── forms.py                                 [existing] username/email and password login fields
+│   ├── views.py                                 [existing] login/logout/home and T05 account handlers
+│   ├── portal_views.py                          [existing] pending portal module presentation
+│   ├── forms.py                                 [existing] login, account search and status confirmation
 │   ├── urls.py, portal_urls.py                  [existing] account/portal auth routes
 │   ├── access.py, middleware.py                 [existing] active/role/owner checks
-│   ├── services.py                              [existing] admin bootstrap write
+│   ├── services.py                              [existing] admin bootstrap and audited account status writes
 │   ├── seeding.py                               [existing] atomic two-account auth test setup
-│   ├── queries.py                               [planned] account/history reads
+│   ├── queries.py                               [existing] account/history reads
 │   ├── tests/                                   [existing] authentication/access checks
 │   └── management/commands/                     [existing] admin setup and auth test seed commands
 │
 ├── inventory/                                   [existing]
 │   ├── models.py                                [existing] catalog, units, maintenance
 │   ├── migrations/                              [existing]
-│   ├── views.py                                 [planned] inventory/maintenance handlers
+│   ├── views.py                                 [existing] read-only module placeholders; workflows planned
 │   ├── forms.py                                 [planned] inventory/maintenance inputs
-│   ├── urls.py                                  [planned] inventory management routes
+│   ├── manage_urls.py                           [existing] protected management placeholder routes
 │   ├── services.py                              [planned] catalog/unit/maintenance writes
 │   ├── queries.py                               [planned] inventory and availability reads
 │   └── tests/                                   [planned] inventory feature checks
@@ -45,9 +46,9 @@ Campus-Equipment-Borrowing-System/
 ├── borrowing/                                   [existing]
 │   ├── models.py                                [existing] requests, allocations, loans, returns
 │   ├── migrations/                              [existing]
-│   ├── views.py                                 [planned] request/loan/return handlers
+│   ├── views.py                                 [existing] read-only module placeholders; workflows planned
 │   ├── forms.py                                 [planned] request and return formsets
-│   ├── urls.py                                  [planned] borrowing management routes
+│   ├── manage_urls.py                           [existing] protected management placeholder routes
 │   ├── services.py                              [planned] submission/approval/issue/return actions
 │   ├── queries.py                               [planned] request/loan/history reads
 │   ├── tests/                                   [planned] borrowing workflow checks
@@ -63,19 +64,20 @@ Campus-Equipment-Borrowing-System/
 │   ├── queries.py                               [existing] loan-limit read; reporting comes later
 │   ├── tests/                                   [existing] foundation integration checks
 │   ├── views.py                                 [existing] protected dashboard placeholder; live data planned
+│   ├── workspace_views.py                       [existing] pending settings/audit/report presentation
 │   ├── forms.py                                 [planned] settings and filter inputs
-│   └── urls.py                                  [existing] dashboard route; other operations planned
+│   └── urls.py                                  [existing] dashboard and protected placeholder routes
 │
 ├── templates/                                   [existing] shared root template directory
 │   ├── base.html                                [existing] document shell and compiled CSS
 │   ├── dev/frontend-test.html                    [existing] Tailwind/font preview
 │   ├── dev/index.html                            [existing] historical development navigation
-│   ├── manage/base.html                         [planned] custom administrator layout
-│   ├── portal/base.html                         [planned] basic-user layout
-│   ├── components/                              [planned] shared form/table/message fragments
+│   ├── operations/manage/base.html              [existing] custom administrator navigation layout
+│   ├── accounts/portal/base.html                [existing] basic-user navigation layout
+│   ├── components/                              [existing] workspace/navigation/messages/brand/logout
 │   ├── accounts/                                [planned] login and account feature pages
 │   │   ├── login.html                           [existing]
-│   │   ├── manage/                              [planned] account management pages
+│   │   ├── manage/                              [existing] T05 account management pages
 │   │   └── portal/                              [existing/planned] protected home; registration/profile planned
 │   ├── inventory/                               [planned] catalog/unit feature pages
 │   │   ├── manage/                              [planned] inventory and maintenance pages
@@ -91,6 +93,7 @@ Campus-Equipment-Borrowing-System/
 │   ├── fonts/                                   [existing] DM Sans/Poppins and license notices
 │   ├── images/                                  [existing] includes setup success screenshot
 │   ├── js/frontend-test.js                       [existing] preview font-load check
+│   ├── js/account-menu.js                        [existing] account disclosure dismissal behavior
 │   └── build/                                   [generated] ignored CSS/browser modules/chunks
 ├── package.json                                 [existing] npm dependencies/build/watch commands
 ├── package-lock.json                            [existing] exact npm dependency graph
@@ -105,7 +108,7 @@ The root also contains the setup/review documents, dependency files, and private
 
 A **view** is a Python request handler in the relevant app's `views.py`. The page's **HTML** is a template. For example, an inventory management page uses `inventory/views.py` and a template under `templates/inventory/manage/`.
 
-The role prefix selects the audience; the feature app selects the Python module. A basic-user equipment page still uses `inventory/`, and a basic-user borrowing page still uses `borrowing/`. Feature owners create `templates/manage/base.html` and `templates/portal/base.html` extending the existing `templates/base.html` document/asset shell. The shell's blocks are documented in [DEV.md](../DEV.md#frontend-assets-tailwind-and-page-scripts).
+The role prefix selects the audience; the feature app selects the Python module. Real basic-user equipment handlers belong in `inventory/`, and borrowing handlers in `borrowing/`. UI-07 temporarily renders the four pending portal destinations from `accounts/portal_views.py`; owners replace these presentation handlers when implementing their features, keeping the named `portal` URLs. Feature pages extend the existing `operations/manage/base.html` or `accounts/portal/base.html` and fill `workspace_content`; both inherit `components/workspace.html` and the `base.html` document/asset shell. The [coding guide](coding-standards.md#tailwind-styling-pattern) defines the shared layout pattern.
 
 These page placements are planned examples; route names already come from the HTTP contract:
 
@@ -131,12 +134,12 @@ For the planned physical-unit list, the file flow is:
 ```text
 Browser: GET /manage/units/
     -> config/urls.py                 root URL mounting
-    -> inventory/urls.py              named unit-list route
+    -> inventory/manage_urls.py       named unit-list route
     -> inventory/views.py             method/access checks and HTTP response
     -> inventory/queries.py           read related inventory models
     -> inventory/models.py            ORM data and constraints
     -> inventory/manage/unit_list.html
-         extends manage/base.html
+         extends operations/manage/base.html
     -> HTML response to the browser
 ```
 
