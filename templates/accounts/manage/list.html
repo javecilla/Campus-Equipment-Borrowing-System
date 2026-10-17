@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Basic-user accounts · Campus Equipment{% endblock %}
+{% block content %}
+    <main class="min-h-svh bg-surface px-6 py-10 text-slate-900"
+          data-testid="account-list">
+        <div class="mx-auto max-w-6xl space-y-6">
+            <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-xs font-semibold tracking-widest text-accent uppercase">Administrator workspace</p>
+                    <h1 class="font-heading text-3xl font-semibold">Basic-user accounts</h1>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="{% url 'operations:dashboard' %}"
+                       class="inline-flex min-h-11 items-center rounded-md border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50">Dashboard</a>
+                    {% include "components/logout.html" %}
+                </div>
+            </header>
+            {% if messages %}
+                {% for message in messages %}
+                    <p class="rounded-md border border-emerald-100 bg-emerald-50 p-3 text-emerald-800"
+                       role="status">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+            <section class="rounded-xl border border-slate-200 bg-white p-6">
+                <form method="get"
+                      action="{% url 'accounts:manage-list' %}"
+                      class="grid gap-4 md:grid-cols-[1fr_14rem_auto] md:items-end">
+                    <div>
+                        <label for="{{ form.q.id_for_label }}"
+                               class="mb-2 block text-sm font-medium">{{ form.q.label }}</label>
+                        {{ form.q }}
+                        {{ form.q.errors }}
+                    </div>
+                    <div>
+                        <label for="{{ form.active.id_for_label }}"
+                               class="mb-2 block text-sm font-medium">{{ form.active.label }}</label>
+                        {{ form.active }}
+                        {{ form.active.errors }}
+                    </div>
+                    <button type="submit"
+                            class="h-11 rounded-md bg-accent px-4 text-sm font-semibold text-white hover:bg-emerald-800">Search</button>
+                </form>
+            </section>
+            <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50 text-left text-sm text-slate-600">
+                            <tr>
+                                <th scope="col" class="px-5 py-3">Username</th>
+                                <th scope="col" class="px-5 py-3">Name</th>
+                                <th scope="col" class="px-5 py-3">Email</th>
+                                <th scope="col" class="px-5 py-3">Status</th>
+                                <th scope="col"
+                                    class="px-5 py-3"><span class="sr-only">Details</span></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for account in page %}
+                                <tr>
+                                    <td class="px-5 py-4 font-semibold">{{ account.username }}</td>
+                                    <td class="px-5 py-4">{{ account.get_full_name }}</td>
+                                    <td class="px-5 py-4">{{ account.email }}</td>
+                                    <td class="px-5 py-4">
+                                        {% if account.is_active %}
+                                            <span class="font-semibold text-accent">Active</span>
+                                        {% else %}
+                                            <span class="font-semibold text-amber-700">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-5 py-4 text-right">
+                                        <a href="{% url 'accounts:manage-detail' account.pk %}"
+                                           class="font-semibold text-accent hover:text-emerald-800">View details</a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5"
+                                        class="px-5 py-10 text-center text-slate-500">No basic-user accounts match these filters.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if page.paginator.num_pages > 1 %}
+                    <nav class="flex items-center justify-between border-t border-slate-200 px-5 py-4"
+                         aria-label="Account pages">
+                        <span class="text-sm text-slate-500">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+                        <div class="flex gap-3">
+                            {% if page.has_previous %}
+                                <a href="?q={{ form.q.value|default_if_none:''|urlencode }}&amp;active={{ form.active.value|default_if_none:''|urlencode }}&amp;page={{ page.previous_page_number }}"
+                                   class="rounded-md border border-slate-200 px-3 py-2 font-semibold hover:bg-slate-50">Previous</a>
+                            {% endif %}
+                            {% if page.has_next %}
+                                <a href="?q={{ form.q.value|default_if_none:''|urlencode }}&amp;active={{ form.active.value|default_if_none:''|urlencode }}&amp;page={{ page.next_page_number }}"
+                                   class="rounded-md border border-slate-200 px-3 py-2 font-semibold hover:bg-slate-50">Next</a>
+                            {% endif %}
+                        </div>
+                    </nav>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+{% endblock %}
