@@ -1,10 +1,10 @@
 # Team Development Guide
 
-[First-time setup](#first-time-setup) | [Everyday startup](#everyday-startup) | [Frontend assets](#frontend-assets-tailwind-and-axios) | [Formatting](#formatting-and-code-consistency) | [Migrations](#working-with-migrations) | [Checks](#before-handing-over-work) | [Fonts](#fonts-and-static-assets) | [Team Git](#assigned-branches-and-main-integration) | [Optional MCP](#configure-your-mcp-client) | [Troubleshooting](#troubleshooting)
+[First-time setup](#first-time-setup) | [Everyday startup](#everyday-startup) | [Error pages](#preview-custom-error-pages) | [Reset local data](#reset-local-development-data) | [Frontend assets](#frontend-assets-tailwind-and-axios) | [Formatting](#formatting-and-code-consistency) | [Migrations](#working-with-migrations) | [Checks](#before-handing-over-work) | [Fonts](#fonts-and-static-assets) | [Team Git](#assigned-branches-and-main-integration) | [Optional MCP](#configure-your-mcp-client) | [Troubleshooting](#troubleshooting)
 
 Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv`, `.env.local`, and local PostgreSQL database. Git shares source and migrations, not credentials or database contents.
 
-The T01–T03 foundation is integrated into `main` through [PR #3](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/3). T04 authentication/access controls are implemented locally on `alex` and await review/integration; see [HANDOFF.md](HANDOFF.md) for readiness. Registration and workflow feature pages remain pending.
+The T01–T03 foundation is integrated into `main` through [PR #3](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/3). Alex's T04 authentication/access controls are integrated through PR #9, with its LF-scope correction integrated through PR #10; see [HANDOFF.md](HANDOFF.md) for current follow-up readiness. Registration and workflow feature pages remain pending.
 
 For where to add views, models, forms, URLs, and page templates, use [Project Folder Architecture](docs/project-folder-architecture.md).
 
@@ -93,9 +93,10 @@ Open `.env.local` in your editor. The command above deliberately fails if the fi
 | --- | --- |
 | `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | Your database name, account, raw password, host, and port. Usual local values are `campus_equipment`, your account, `127.0.0.1`, and `5432` |
 | `DJANGO_SECRET_KEY` | A unique secret generated with the command below |
-| `DJANGO_DEBUG` | `True` for local development to see the success screen and serve assets through runserver |
+| `DJANGO_DEBUG` | `True` for normal local debugging and static serving; use the [error-page preview steps](#preview-custom-error-pages) to inspect the custom 404 |
 | `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` | Keep the template's localhost entries when using port 8000 |
 | `MCP_DATABASE_URL` | Leave blank unless using optional MCP tooling |
+| `SEED_ACCOUNT_PASSWORD` | Your shared private password for both authentication test accounts; required only when running `seed_auth_accounts` |
 
 Generate a secret locally, then paste the result into `.env.local`:
 
@@ -124,17 +125,26 @@ Open **<http://127.0.0.1:8000/>** for the custom sign-in route. With `DJANGO_DEB
 
 ### Expected startup screen
 
+Anonymous visitors now see the custom sign-in page, with the existing green branding and bottom wave:
+
+![Campus Equipment sign-in page with username or email, password, and the green bottom wave](static/images/login-screen.png)
+
+The current root is `accounts:home`: anonymous visitors go to the custom login page and active users go to `/portal/` or `/manage/` from their stored role. `/test` remains a separate debug-only preview and returns 404 when debug is disabled. The role destinations intentionally contain no demonstration workflow/dashboard data.
+
+<details>
+<summary>Earlier setup screens (historical)</summary>
+
 The screenshot below records Django's initial startup before custom routes were added:
 
 ![Django initial installation success page with DEBUG=True, before custom routes are added](static/images/inital-setup-running-success-screen.png)
 
 The screenshot below records the temporary development index that preceded T04:
 
-![Current development index at / with a Tailwind and font preview link to /test](static/images/new-inital-setup-running-success-screen.png)
+![Earlier development index at / with a Tailwind and font preview link to /test](static/images/new-inital-setup-running-success-screen.png)
 
-The current root is `accounts:home`: anonymous visitors go to the custom login page and active users go to `/portal/` or `/manage/` from their stored role. `/test` remains a separate debug-only preview and returns 404 when debug is disabled. The role destinations intentionally contain no demonstration workflow/dashboard data.
+</details>
 
-Migrations initialize the settings row (7 days and 3 units per item) and its system audit. They create no accounts or equipment. Use the command below for a local administrator; demonstration seeding is T21.
+Migrations initialize the settings row (7 days and 3 units per item) and its system audit. They create no accounts or equipment. Use the commands below for local account setup; the full demonstration dataset remains T21.
 
 ### Create an administrator account
 
@@ -145,6 +155,101 @@ Run the CLI-only setup command from a trusted local shell after migrations:
 ```
 
 The command prompts for the password twice without accepting it as a command-line argument. Django password validators run before one atomic write creates the active `ADMIN` and its Profile. The command fixes `is_staff` and `is_superuser` to false because runtime management access uses the two-role contract. Treat shell and database access as the authorization boundary; there is no public administrator-creation or promotion endpoint. Replace the fictional values above with approved local demonstration details and never commit credentials.
+
+### Seed authentication test accounts
+
+After migrations, run this command in a trusted local terminal:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py seed_auth_accounts
+```
+
+Set `SEED_ACCOUNT_PASSWORD` in your ignored `.env.local` first. The command uses that same private password for both accounts without prompting or printing it; explicit process environment values override the file. The setting is required only for this command, so other Django commands do not require a seed password. Keep its value out of shared files and Git.
+
+It creates the fictional `auth_demo_admin` (`ADMIN`) and `auth_demo_user` (`BASIC_USER`), both active with Profiles and Django staff/superuser flags false. Django validates and hashes the configured password. Both accounts are created in one transaction; a missing/blank/invalid password or either username already existing causes a clear error without changing accounts. Reuse existing accounts or run `manage.py changepassword USERNAME` if needed. Changing the environment value does not reset existing accounts.
+
+Open `/accounts/login/` and sign in with each account separately using the "Username or email" field:
+
+| Role | Username | Email |
+| --- | --- | --- |
+| Admin | `auth_demo_admin` | `auth-admin@example.invalid` |
+| Basic user | `auth_demo_user` | `auth-user@example.invalid` |
+
+Both accounts use your private `SEED_ACCOUNT_PASSWORD`; there is no password shipped in the repository. Choose your own value in `.env.local`. To replace the password on existing accounts, follow [password changes](#change-seed-passwords-while-keeping-records); changing the environment value alone does not update them. Email matching ignores letter case; shared or otherwise ambiguous email addresses require an unambiguous username instead.
+
+The admin should reach `/manage/` and receive 403 at `/portal/`; the basic user should reach `/portal/` and receive 403 at `/manage/`. Sign out using the page's logout button, then reopen the protected destination and confirm it redirects to login. These are authentication landing pages; later workflow features remain pending. This two-account development seed does not satisfy T21's full fictional demonstration dataset.
+
+### Preview custom error pages
+
+The custom [403](templates/403.html) and [404](templates/404.html) share the project's minimal light design. Django shows its diagnostic 404 instead of our template while `DJANGO_DEBUG=True`.
+
+1. Stop the server, set `DJANGO_DEBUG=False` in your ignored `.env.local`, and save it. An explicit `DJANGO_DEBUG` process environment variable overrides this file; remove or update that override if one is set.
+2. Start the local preview with static serving enabled:
+
+    ```powershell
+    .\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000 --insecure
+    ```
+
+3. Visit <http://localhost:8000/accounts/login/s> to see the custom 404. For a 403, sign in as the basic user and open `/manage/`, or as the admin and open `/portal/`. The home action returns to the appropriate role destination, or sign-in when anonymous. `/test` also returns 404 with debug disabled.
+4. After inspection, stop the server, restore `DJANGO_DEBUG=True`, and restart with the normal [startup command](#everyday-startup).
+
+`--insecure` serves local development assets when debug is disabled. Use it only for this local preview; it is not a production server or deployment configuration.
+
+### Reset local development data
+
+An existing-username error from `seed_auth_accounts` means the accounts have already been created. Sign in with them; the seed deliberately refuses to overwrite existing users. Choose password changes to keep accounts/history, deletion of the two disposable accounts to reseed only those identities, or the full reset for an empty local database.
+
+#### Change seed passwords while keeping records
+
+Run these commands and follow their hidden password/confirmation prompts:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py changepassword auth_demo_admin
+.\.venv\Scripts\python.exe manage.py changepassword auth_demo_user
+```
+
+Use your private `SEED_ACCOUNT_PASSWORD` value for each if you want both accounts to match the seed configuration. These commands keep accounts, Profiles, and transaction history. Editing `.env.local` alone does not change stored password hashes; reseeding is unnecessary for a password change.
+
+#### Delete only the two authentication seed accounts
+
+For your disposable local test identities, this deletes `auth_demo_admin`, `auth_demo_user`, and their cascading Profiles. Check that `.env.local` points to your own development database before running it:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py shell --command "from accounts.models import User; print(User.objects.filter(username__in=['auth_demo_admin', 'auth_demo_user']).delete())"
+.\.venv\Scripts\python.exe manage.py seed_auth_accounts
+```
+
+Run the seed command only after deletion succeeds. It recreates both identities using the current private `SEED_ACCOUNT_PASSWORD`; sign in again afterward. This does not reset equipment, settings, or other accounts. If either identity has protected workflow, audit, or settings references, Django raises `ProtectedError` and prevents deletion. Keep that history and use password changes instead; do not bypass the protections.
+
+#### Delete all local records and seed again
+
+**This deletes the entire selected database, including every account, Profile, session, equipment record, transaction, audit entry, setting, and migration record.** Use it only for your own disposable development database. Export a backup first if any records must be kept. Your code, migration files, `.env.local`, and generated frontend assets remain on disk.
+
+1. Verify `DB_HOST`, `DB_PORT`, `DB_NAME`, and `DB_USER` in your private `.env.local`. The SQL below targets the standard local `campus_equipment` database; use your exact disposable database name if different. Stop Django with Ctrl+C and disconnect other clients from that database, including pgAdmin Query Tool tabs and any MCP/database tools.
+2. In pgAdmin, connect to that same PostgreSQL server as the account named by `DB_USER`, then open Query Tool on the maintenance database **postgres**, not `campus_equipment`. Keep autocommit enabled. Execute each statement separately; database drop/create cannot run inside a transaction:
+
+    ```sql
+    DROP DATABASE campus_equipment;
+    ```
+
+    ```sql
+    CREATE DATABASE campus_equipment;
+    ```
+
+    If PostgreSQL reports active connections, disconnect the clients it identifies before retrying. If it reports insufficient privileges, use the database owner/administrator to recreate the database with `DB_USER` as its owner, following [local database setup](#create-your-local-database). Stop on an error; do not continue to migrations until recreation succeeds.
+3. From the project root, run these commands one at a time. Continue only after each succeeds:
+
+    ```powershell
+    .\.venv\Scripts\python.exe manage.py migrate --noinput
+    .\.venv\Scripts\python.exe manage.py seed_auth_accounts
+    .\.venv\Scripts\python.exe manage.py check --database default
+    .\.venv\Scripts\python.exe manage.py showmigrations
+    ```
+
+    Migrations rebuild the schema, initialize the required settings singleton (7 days / 3 units per item) and its SYSTEM audit, and recreate Django metadata. The seed recreates both authentication accounts and Profiles using the current private password. All migrations should show `[X]`; no equipment or borrowing demonstration records are supplied by this two-account seed.
+4. Restart Django using [everyday startup](#everyday-startup) and verify both roles using the [authentication test steps](#seed-authentication-test-accounts). Existing login sessions were deleted, so sign in again.
+
+Do not use `manage.py flush` as this project's fresh-start procedure. It deletes data created by migrations, including `SystemSetting` row 1, but retains migration history; running ordinary `migrate` afterward will not rerun the already-applied initialization migration. Use database recreation above even if you have already flushed the disposable database. Keep the migration files in Git; deleting them or using `--fake` is not a data-reset procedure.
 
 ## Everyday startup
 

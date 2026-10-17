@@ -10,7 +10,7 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.http import HttpRequest, HttpResponse
 from django.test import Client, TestCase, override_settings
-from django.urls import URLPattern, path, reverse
+from django.urls import URLPattern, URLResolver, include, path, reverse
 from django.utils import timezone
 
 from accounts.access import basic_user_required, get_owned_object_or_404
@@ -45,7 +45,8 @@ def owned_request_probe(request: HttpRequest, object_id: int) -> HttpResponse:
     return HttpResponse(str(record.pk))
 
 
-urlpatterns: list[URLPattern] = [
+urlpatterns: list[URLPattern | URLResolver] = [
+    path("", include("accounts.urls")),
     path("owned-requests/<int:object_id>/", owned_request_probe, name="owned-request-probe"),
 ]
 
@@ -115,7 +116,7 @@ class AuthenticationRouteTests(TestCase):
             {"username": self.borrower.username, "password": "wrong-password"},
         )
         self.assertEqual(invalid_response.status_code, 200)
-        self.assertContains(invalid_response, "Invalid username or password.")
+        self.assertContains(invalid_response, "Invalid username/email or password.")
         self.assertNotIn(SESSION_KEY, self.client.session)
 
         inactive_response = self.client.post(
@@ -123,8 +124,78 @@ class AuthenticationRouteTests(TestCase):
             {"username": self.inactive.username, "password": PASSWORD},
         )
         self.assertEqual(inactive_response.status_code, 200)
-        self.assertContains(inactive_response, "Invalid username or password.")
+        self.assertContains(inactive_response, "Invalid username/email or password.")
         self.assertNotIn(SESSION_KEY, self.client.session)
+
+    def test_email_login_is_case_insensitive_for_both_roles_and_supports_csrf_logout(self) -> None:
+        for user, destination in [
+            (self.admin, "operations:dashboard"),
+            (self.borrower, "portal:home"),
+        ]:
+            with self.subTest(role=user.role):
+                client: Client = Client(enforce_csrf_checks=True)
+                client.get(reverse("accounts:login"))
+                response = client.post(
+                    reverse("accounts:login"),
+                    {"username": f"  {user.email.upper()}  ", "password": PASSWORD},
+                    HTTP_X_CSRFTOKEN=client.cookies["csrftoken"].value,
+                )
+                self.assertRedirects(response, reverse(destination))
+                logout_response = client.post(
+                    reverse("accounts:logout"),
+                    HTTP_X_CSRFTOKEN=client.cookies["csrftoken"].value,
+                )
+                self.assertRedirects(logout_response, reverse("accounts:login"))
+                self.assertNotIn(SESSION_KEY, client.session)
+
+    def test_wrong_password_inactive_and_unknown_emails_share_a_generic_error(self) -> None:
+        for email, password in [
+            (self.borrower.email, "wrong-password"),
+            (self.inactive.email, PASSWORD),
+            ("missing@example.invalid", PASSWORD),
+        ]:
+            with self.subTest(email=email):
+                response = self.client.post(
+                    reverse("accounts:login"), {"username": email, "password": password}
+                )
+                self.assertContains(response, "Invalid username/email or password.")
+                self.assertNotIn(SESSION_KEY, self.client.session)
+
+    def test_duplicate_email_is_denied_while_usernames_keep_their_roles(self) -> None:
+        User.objects.filter(pk=self.borrower.pk).update(email=self.admin.email.upper())
+        response = self.client.post(
+            reverse("accounts:login"), {"username": self.admin.email, "password": PASSWORD}
+        )
+        self.assertContains(response, "Invalid username/email or password.")
+        self.assertNotIn(SESSION_KEY, self.client.session)
+        for user, destination in [
+            (self.admin, "operations:dashboard"),
+            (self.borrower, "portal:home"),
+        ]:
+            with self.subTest(role=user.role):
+                client: Client = Client()
+                response = client.post(
+                    reverse("accounts:login"),
+                    {"username": user.username, "password": PASSWORD},
+                )
+                self.assertRedirects(response, reverse(destination))
+
+    def test_username_matching_another_email_does_not_choose_an_account(self) -> None:
+        other: User = create_account("email_collision", UserRole.ADMIN, True)
+        User.objects.filter(pk=other.pk).update(username=self.borrower.email)
+        response = self.client.post(
+            reverse("accounts:login"), {"username": self.borrower.email, "password": PASSWORD}
+        )
+        self.assertContains(response, "Invalid username/email or password.")
+        self.assertNotIn(SESSION_KEY, self.client.session)
+
+    def test_valid_email_longer_than_username_limit_can_sign_in(self) -> None:
+        email: str = f"{'a' * 40}@{'b' * 60}.{'c' * 60}.invalid"
+        User.objects.filter(pk=self.borrower.pk).update(email=email)
+        response = self.client.post(
+            reverse("accounts:login"), {"username": email, "password": PASSWORD}
+        )
+        self.assertRedirects(response, reverse("portal:home"))
 
     def test_home_and_role_destinations_enforce_authentication_and_role(self) -> None:
         anonymous_home = self.client.get(reverse("accounts:home"))
@@ -139,7 +210,9 @@ class AuthenticationRouteTests(TestCase):
 
         self.client.force_login(self.borrower)
         self.assertEqual(self.client.get(reverse("portal:home")).status_code, 200)
-        self.assertEqual(self.client.get(reverse("operations:dashboard")).status_code, 403)
+        denied_response = self.client.get(reverse("operations:dashboard"))
+        self.assertEqual(denied_response.status_code, 403)
+        self.assertTemplateUsed(denied_response, "403.html")
 
         self.client.force_login(self.admin)
         self.assertEqual(self.client.get(reverse("operations:dashboard")).status_code, 200)
@@ -217,6 +290,7 @@ class OwnershipAccessTests(TestCase):
         self.client.force_login(self.other_user)
         response = self.client.get(f"/owned-requests/{self.borrow_request.pk}/")
         self.assertEqual(response.status_code, 404)
+        self.assertTemplateUsed(response, "404.html")
 
         self.client.force_login(self.owner)
         owner_response = self.client.get(f"/owned-requests/{self.borrow_request.pk}/")

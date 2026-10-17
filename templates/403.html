@@ -1,12 +1,16 @@
-{% extends "base.html" %}
+{% extends "errors/base.html" %}
 {% block title %}Access denied · Campus Equipment{% endblock %}
-{% block content %}
-    <main class="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-12 text-slate-900"
-          data-testid="access-denied">
-        <section class="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-            <p class="mb-3 text-sm font-semibold tracking-widest text-rose-700 uppercase">Access denied</p>
-            <h1 class="mb-4 font-heading text-3xl font-semibold">This page is not available to your account.</h1>
-            <p class="leading-relaxed text-slate-600">Sign in with an active account that has access to this area.</p>
-        </section>
-    </main>
+{% block error_testid %}access-denied{% endblock %}
+{% block error_code %}403 / ACCESS DENIED{% endblock %}
+{% block error_heading %}This space isn't available to your account.{% endblock %}
+{% block error_message %}Your account doesn't have permission to open this page. Return home, or contact your campus administrator if you need help with access.{% endblock %}
+{% block error_help %}
+    {% if not request.user.is_authenticated %}
+        <p class="mt-5 text-sm text-slate-500">
+            Have another account?
+            <a href="{% url 'accounts:login' %}"
+               data-testid="error-login"
+               class="rounded-sm font-medium text-accent underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">Sign in</a>
+        </p>
+    {% endif %}
 {% endblock %}

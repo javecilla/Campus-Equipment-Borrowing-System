@@ -1,17 +1,45 @@
 {% extends "base.html" %}
 {% block title %}Borrower portal · Campus Equipment{% endblock %}
 {% block content %}
-    <main class="min-h-screen bg-slate-50 px-6 py-12 text-slate-900"
-          data-testid="portal-home">
-        <section class="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-            <p class="mb-3 text-sm font-semibold tracking-widest text-emerald-700 uppercase">Borrower portal</p>
-            <h1 class="mb-4 font-heading text-3xl font-semibold">Welcome, {{ request.user.first_name }}.</h1>
-            <p class="mb-8 leading-relaxed text-slate-600">Your portal account is active. Equipment and request features will appear here as their assigned tasks are integrated.</p>
-            <form method="post" action="{% url 'accounts:logout' %}">
-                {% csrf_token %}
-                <button type="submit"
-                        class="rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">Sign out</button>
-            </form>
-        </section>
-    </main>
+    {% comment %}
+        Developer handoff: this is the T04 authentication destination, not a finished portal.
+        Follow docs/coding-standards.md: light surfaces, green accents, minimal layout.
+        Ellyssa T09 is ready: registration, own profile, portal base/components using shared auth.
+        Ellyssa T10 browsing requires Kenneth T08 units plus T09; Ralph T11 requests requires
+        T03/T08/T09, then T12 adds owner-scoped tracking and eligible cancellation.
+        Coordinate shared navigation with T20; never expose admin/internal records here.
+        Keep pending features as text until their named routes and authorization exist.
+        Canonical owners, dependencies, and status: docs/tasks.md. Preserve POST/CSRF logout.
+    {% endcomment %}
+    <div class="flex min-h-svh flex-col bg-surface px-6 text-slate-900">
+        <header class="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 border-b border-slate-100 py-5">
+            {% include "components/brand.html" %}
+            {% include "components/logout.html" %}
+        </header>
+        <main class="mx-auto w-full max-w-3xl flex-1 py-12 sm:py-20"
+              data-testid="portal-home"
+              aria-labelledby="portal-heading">
+            <p class="mb-4 text-xs font-semibold tracking-widest text-accent uppercase">Borrower workspace</p>
+            <h1 id="portal-heading"
+                class="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">Welcome, {{ request.user.first_name }}.</h1>
+            <p class="mt-4 max-w-xl text-base leading-7 text-slate-500">You're signed in and ready. Your equipment browsing and borrowing tools will appear here as they become available.</p>
+            <section class="mt-12 border-t border-slate-200 pt-7"
+                     aria-labelledby="portal-next-heading">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <h2 id="portal-next-heading"
+                        class="text-sm font-semibold">Next in your portal</h2>
+                    <span class="text-xs text-slate-500">Awaiting implementation</span>
+                </div>
+                <ul class="mt-3 divide-y divide-slate-100 text-sm text-slate-600">
+                    <li class="py-4">Your personal profile and contact details</li>
+                    <li class="py-4">Equipment search, descriptions, and availability</li>
+                    <li class="py-4">Borrowing requests and eligible cancellations</li>
+                    <li class="py-4">Your request history, loans, and due dates</li>
+                </ul>
+            </section>
+        </main>
+        <footer class="mx-auto w-full max-w-5xl border-t border-slate-100 py-5 text-xs text-slate-500">
+            Campus Equipment Borrowing System
+        </footer>
+    </div>
 {% endblock %}

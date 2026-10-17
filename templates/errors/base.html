@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="flex min-h-svh flex-col bg-surface px-6 text-slate-900">
+        <header class="mx-auto w-full max-w-5xl py-6">
+            {% include "components/brand.html" %}
+        </header>
+        <main class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-16"
+              data-testid="{% block error_testid %}{% endblock %}"
+              aria-labelledby="error-heading">
+            <p class="mb-5 text-sm font-medium tracking-widest text-accent">
+                {% block error_code %}{% endblock %}
+            </p>
+            <h1 id="error-heading"
+                class="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
+                {% block error_heading %}{% endblock %}
+            </h1>
+            <p class="mt-4 text-base leading-7 text-slate-500">
+                {% block error_message %}{% endblock %}
+            </p>
+            <div class="mt-8">
+                <a href="{% url 'accounts:home' %}"
+                   data-testid="error-home"
+                   class="inline-flex min-h-11 items-center rounded-md bg-accent px-5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">Return home</a>
+            </div>
+            {% block error_help %}{% endblock %}
+        </main>
+        <footer class="mx-auto w-full max-w-5xl py-6 text-xs text-slate-500">
+            Campus Equipment Borrowing System
+        </footer>
+    </div>
+{% endblock %}

@@ -45,13 +45,15 @@ See [DEV.md](../DEV.md#frontend-preview) for asset build/run instructions. The p
 | Method | Path | URL name | Access | Inputs / result |
 | --- | --- | --- | --- | --- |
 | GET | `/` | `accounts:home` | Public | Anonymous redirects to login; active signed-in user redirects to role home |
-| GET, POST | `/accounts/login/` | `accounts:login` | Public | `username`, `password`; successful role redirect; safe generic invalid-credentials error |
+| GET, POST | `/accounts/login/` | `accounts:login` | Public | `username` accepts a username or email; `password`; successful role redirect; safe generic invalid-credentials error |
 | POST | `/accounts/logout/` | `accounts:logout` | Signed-in account | CSRF only; clear session and redirect to login |
 | GET, POST | `/accounts/register/` | `accounts:register` | Anonymous | `username`, `first_name`, `last_name`, `email`, `contact_number`, `password1`, `password2`; create BASIC_USER + Profile atomically, then redirect to login |
 
 Role, `is_active`, permission flags, user ID, and password hash are not registration inputs. Password fields use Django validation and account-creation helpers. There is no public admin-creation endpoint; [DEV.md](../DEV.md#create-an-administrator-account) documents the authorized setup command.
 
 T04 implements the first three routes above. Registration remains T09 scope. The documented `create_admin` management command creates an active ADMIN and Profile from trusted local CLI access; no public form accepts an administrator role.
+
+AUTH-02 adds email sign-in locally without changing the POST field name `username`. Its label is "Username or email" and it accepts up to 254 characters. Match usernames exactly and emails case-insensitively; the combined lookup must identify exactly one account. Duplicate emails or a username matching another account's email are rejected with the same generic error as invalid/inactive credentials. Never choose the first match or try accounts until a password succeeds. Native Django password/session authentication, active checks, safe role redirects, and CSRF remain authoritative. No schema uniqueness change is implied; local acceptance and main integration are recorded in [the backlog](tasks.md#verified-task-evidence).
 
 ## Basic-user portal
 
