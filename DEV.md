@@ -307,7 +307,7 @@ The common shell loads the compiled stylesheet, including local fonts; do not lo
 
 Use ordinary Django forms and links for the current server-rendered pages. Login and logout use native form submission with CSRF tokens; no JavaScript HTTP library is installed or needed.
 
-Load an actual page module through its template's scripts block with `<script type="module" src="{% static 'build/your-page.js' %}"></script>` and `{% load static %}`. The build compiles/minifies the page scripts; the font preview is the only current JavaScript entry. Use the [coding guide](docs/coding-standards.md#browser-interactions) for future explicitly authorized enhancements and the [HTTP contract](docs/api_spec.md#common-protocol) for existing HTML/form/CSV response semantics.
+Load an actual page module through its template's scripts block with `<script type="module" src="{% static 'build/your-page.js' %}"></script>` and `{% load static %}`. The build compiles/minifies the current `frontend-test.js` font check and `account-menu.js` account-disclosure enhancement. The shared workspace loads the latter for outside-click/Escape dismissal; native links/forms still handle profile navigation and logout. Use the [coding guide](docs/coding-standards.md#browser-interactions) for future explicitly authorized enhancements and the [HTTP contract](docs/api_spec.md#common-protocol) for existing HTML/form/CSV response semantics.
 
 ## Working with migrations
 

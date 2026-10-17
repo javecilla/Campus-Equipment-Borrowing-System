@@ -6,7 +6,7 @@ This architecture guides implementation. The T01–T03 foundation is integrated 
 
 Use a single server-rendered Django application with Python 3.13, Django 5.2 LTS, PostgreSQL 17, and Psycopg 3. Pin tested patch versions during implementation. Django 5.2 supports the proposed Python series and database; consult the [release notes](https://docs.djangoproject.com/en/5.2/releases/5.2/) and [database documentation](https://docs.djangoproject.com/en/5.2/ref/databases/).
 
-HTML/CSS and minimal JavaScript serve both roles. The user selected Tailwind CSS for styling. Ordinary Django forms and links handle the current HTTP interactions; no browser HTTP library is installed. The local npm build and shared HTML shell are implemented; role layouts and feature pages remain their owners' work. A chart library remains unselected. There are no required external APIs, background workers, message brokers, or separate frontend services.
+HTML/CSS and minimal JavaScript serve both roles. The user selected Tailwind CSS for styling. Ordinary Django forms and links handle the current HTTP interactions; no browser HTTP library is installed. The local npm build, shared HTML shell, and role navigation layouts are implemented. Pending module destinations are protected read-only placeholders as listed in [the HTTP contract](api_spec.md#status-and-interface-choice); feature workflows remain their owners' work. A chart library remains unselected. There are no required external APIs, background workers, message brokers, or separate frontend services.
 
 ## Required patterns and selected libraries
 
@@ -16,7 +16,7 @@ The [course brief](Project-Requirements.txt), CO2 and Parts 5–6, requires the 
 | --- | --- |
 | Django MTV and MTV/database/workflow diagrams | Models/ORM persist data, function-based views orchestrate HTTP, and server-rendered templates present pages; the diagrams in the design documents describe those boundaries |
 | Reusable business logic | The brief allows functions, services, or model methods. This project uses explicit workflow service functions and read-only query helpers, following the coding guide |
-| Template inheritance and reusable components | Shared `templates/base.html` supplies the asset/document shell. Feature owners create `manage/base.html` and `portal/base.html` extending it, plus reusable navigation/form/table/message fragments; those role layouts are still planned |
+| Template inheritance and reusable components | `templates/base.html` supplies the document/assets; `components/workspace.html` supplies the sticky header, messages, and footer; `operations/manage/base.html` and `accounts/portal/base.html` supply role navigation. Feature pages fill `workspace_content`; form/table fragments can be extracted when needed |
 | Compare two suitable system options and justify one | The comparison below is design evidence, rather than a software design pattern; later course evidence must evaluate the implemented system and actual user needs |
 
 Part 5 permits third-party packages when declared and justified, and forbids generating the required custom administration side. Tailwind is not named by the brief; using it under that general rule is our interpretation. It does not generate views, forms, admin pages, or authorization.
@@ -72,7 +72,7 @@ The five Python app/config directories, shared `static/`, and common template sh
 | `inventory/` | Categories, items, units, maintenance, availability queries | Kenneth |
 | `borrowing/` | Requests/items, allocations, loans/loan units, returns, workflow services | Jerome defines shared models; Ralph owns submission/tracking; Margareth owns approval/release/return |
 | `operations/` | Audit logs, settings, dashboard/report queries, exports | Jerome for audit/settings; Alex for dashboard/reports |
-| `templates/` | Shared `base.html` shell; planned role layouts, components, and feature templates | Feature owners; Ellyssa and Ralph coordinate integration |
+| `templates/` | Shared document/role layouts, navigation/messages, T05 pages, and pending module presentation; remaining workflow templates planned | Feature owners; Ellyssa and Ralph coordinate integration |
 | `static/` | Source fonts/images/CSS/JavaScript and ignored generated `build/` assets; discovered through STATICFILES_DIRS | Feature owners |
 
 Each Django app keeps models, forms, function-based views, URLs, service/query functions, migrations, and tests close to its feature. Split further only when actual file size or responsibility warrants it. Avoid a generic CRUD framework or unnecessary repository abstraction over Django ORM.

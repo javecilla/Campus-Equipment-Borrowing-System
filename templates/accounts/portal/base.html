@@ -1,0 +1,17 @@
+{% extends "components/workspace.html" %}
+{% block navigation_label %}Borrower{% endblock %}
+{% block account_menu %}
+    {% include "components/account_menu.html" with profile_route="portal:profile" %}
+{% endblock %}
+{% block navigation %}
+    {% comment %}
+        T09/T10 and T11/T12 pages extend this layout and fill workspace_content.
+        Keep light mode and shared POST/CSRF logout. Pending routes are GET-only;
+        they do not provide profile updates, inventory, or borrowing actions.
+        Owners and prerequisites remain canonical in docs/tasks.md.
+    {% endcomment %}
+    {% include "components/navigation_link.html" with route="portal:home" label="Home" testid="nav-portal-home" current=request.resolver_match.url_name section="home" only %}
+    {% include "components/navigation_link.html" with route="portal:equipment-list" label="Equipment" testid="nav-portal-equipment" current=request.resolver_match.url_name section="equipment-list" only %}
+    {% include "components/navigation_link.html" with route="portal:request-list" label="My requests" testid="nav-portal-requests" current=request.resolver_match.url_name section="request-list" only %}
+    {% include "components/navigation_link.html" with route="portal:loan-list" label="My loans" testid="nav-portal-loans" current=request.resolver_match.url_name section="loan-list" only %}
+{% endblock %}

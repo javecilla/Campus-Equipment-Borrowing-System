@@ -1,0 +1,6 @@
+{% extends "accounts/portal/base.html" %}
+{% block title %}My profile · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    {% comment %}T09 adds validated profile editing; this page is currently read-only.{% endcomment %}
+    {% include "components/profile.html" %}
+{% endblock %}
