@@ -2,6 +2,8 @@
 
 ## Current state
 
+- GIT-01 local-tooling follow-up: `.devin/` is ignored; no tracked files or matching commits were found in available local history, so no removal was needed. The local folder remains intact. Uncommitted on `jerome`, **Not integrated**. See [ignore handoff](handoffs/ignore-local-devin-folder-10-17-2026.md).
+
 - UI-07/UI-08 publication is verified: source `a444de9` is on `origin/jerome` with Alex and Codex co-author trailers. All 61 PostgreSQL tests and applicable checks pass again on the complete batch. Remote main was `7a80257`; this UI is **Not integrated**. See [publication receipt](handoffs/role-navigation-and-profile-publication-10-17-2026.md).
 
 - UI-08 styling follow-up: active primary links now use accent color, bold weight, and an underline instead of a button-like fill; the dropdown's Log out button is full width and aligned with My profile. CSS build, component djLint, and all 61 tests pass; browser visual check not run. Committed/pushed on `jerome` as `a444de9` with Alex/Codex co-authors; **Not integrated**. See [navigation styling handoff](handoffs/underlined-active-navigation-and-full-width-logout-10-17-2026.md).
@@ -64,6 +66,7 @@ Developers and AI agents write work snapshots in the project-root `handoffs/` fo
 
 | Date | Work | Author | Handoff |
 | --- | --- | --- | --- |
+| October 17, 2026 | Ignore local Devin folder and verify tracking/history | Jerome with Codex assistance | [Ignore Devin folder](handoffs/ignore-local-devin-folder-10-17-2026.md) |
 | October 17, 2026 | Publish shared navigation/profile UI and styling with Alex/Codex credit | Jerome; Alex and Codex co-authors | [Role UI publication](handoffs/role-navigation-and-profile-publication-10-17-2026.md) |
 | October 17, 2026 | Underlined active navigation links and full-width dropdown logout | Jerome with Devin assistance | [Navigation styling](handoffs/underlined-active-navigation-and-full-width-logout-10-17-2026.md) |
 | October 17, 2026 | Single-row desktop header, account dropdown, and own-profile pages | Jerome with Codex assistance; Alex authentication preserved | [Account dropdown](handoffs/single-row-header-and-account-dropdown-10-17-2026.md) |

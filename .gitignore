@@ -3,6 +3,7 @@
 .env.*.local
 !.env.example
 .codex/config.toml
+.devin/
 .venv/
 __pycache__/
 *.py[cod]
