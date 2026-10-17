@@ -6,7 +6,7 @@ The user authorized implementation of Jerome Avecilla's assigned work on `jerome
 
 The user subsequently authorized committing all completed foundation/documentation/assets changes with `Co-authored-by: Codex <codex@openai.com>`, pushing `jerome`, and opening a PR into `main`. This publication request does not authorize merging that PR or starting another member's features.
 
-The user separately selected Tailwind CSS for styling and Axios for optional browser HTTP calls, and authorized their shared frontend setup on `jerome`. UI-01 covers the npm build, shared HTML shell, and team guidance; it does not implement authentication, role layouts, product pages, or a separate API. See DEV.md for asset commands and docs/architecture.md for the dependency rationale and required patterns. Later changes stay uncommitted unless separately requested.
+The user selected Tailwind CSS for styling and authorized the shared frontend setup on `jerome`, then explicitly requested removal of the unused Axios dependency/client. Use ordinary Django forms and links for the current server-rendered interface; do not reintroduce Axios. UI-01 covers the npm build, shared HTML shell, and team guidance; it does not implement authentication, role layouts, product pages, or a separate API. See DEV.md for asset commands and docs/architecture.md for the dependency rationale and required patterns. Later changes stay uncommitted unless separately requested.
 
 The user separately authorized local PostgreSQL MCP tooling, shareable MCP configuration, DEV.md setup guidance, and a private `.env.local` for `campus_equipment`. The connection is read-only; this does not authorize schema changes, seed data, or application implementation. Credentials belong only in ignored private files. Shared configuration and setup instructions are defined in [DEV.md](DEV.md); see [HANDOFF.md](HANDOFF.md) for verified connection state.
 
@@ -24,7 +24,7 @@ If a requested change would contradict the course brief, call out the exact conf
 
 ## Coding standards and Django MTV
 
-Before designing, writing, reviewing, or refactoring a Django feature, read [docs/coding-standards.md](docs/coding-standards.md) and use [.agents/skills/django-mtv/SKILL.md](.agents/skills/django-mtv/SKILL.md). The guide is the canonical source for MTV responsibility placement, HTTP endpoint/Axios calling patterns, Tailwind styling, naming/types, functional style, explicit parameters, errors, authorization, dependency disclosure, formatting ownership, and feature verification. Do not duplicate it into another AI/style file.
+Before designing, writing, reviewing, or refactoring a Django feature, read [docs/coding-standards.md](docs/coding-standards.md) and use [.agents/skills/django-mtv/SKILL.md](.agents/skills/django-mtv/SKILL.md). The guide is the canonical source for MTV responsibility placement, HTTP endpoint/browser interaction patterns, Tailwind styling, naming/types, functional style, explicit parameters, errors, authorization, dependency disclosure, formatting ownership, and feature verification. Do not duplicate it into another AI/style file.
 
 Follow the existing architecture, SRS, database, and HTTP contracts for the affected feature. Use the guide's Model–Template–View split with forms, distinct workflow service functions, and read-only query helpers. Read actual code before changing it; the skill does not authorize implementation or install an automatic enforcement hook.
 
