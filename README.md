@@ -6,7 +6,7 @@ Private team repository: [javecilla/Campus-Equipment-Borrowing-System](https://g
 
 The system tracks individual physical units by asset code, preserves their transaction history, and prevents the same unit from being reserved or issued to multiple borrowers simultaneously.
 
-**Current phase:** Django foundation (T01–T03) integrated into `main` through [PR #3](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/3). Configuration, shared models/migrations, audit/settings services, validation, and PostgreSQL integration tests exist. Login and feature pages remain unimplemented; see [current readiness](HANDOFF.md).
+**Current phase:** Django foundation (T01–T03) integrated into `main` through [PR #3](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/3). T04 authentication and access controls are implemented locally on `alex` and await review/integration; registration and workflow feature pages remain pending. See [current readiness](HANDOFF.md).
 
 ## Run locally
 
@@ -41,7 +41,7 @@ Install Python 3.13, PostgreSQL 17, and Node.js 22+/npm 10+, open the project ro
     .\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
     ```
 
-Open <http://127.0.0.1:8000/> with `DJANGO_DEBUG=True` for the development index, which links to the Tailwind/font preview at `/test`. See [the frontend preview](DEV.md#frontend-preview) for expected behavior. The account home behavior, custom login, `/manage/`, and `/portal/` routes are pending. The migration initializes loan limits, but creates no accounts or demonstration data. Stop the server with Ctrl+C (Ctrl+Break on Windows if needed).
+Open <http://127.0.0.1:8000/> for the custom sign-in route. The debug-only Tailwind/font preview remains at <http://127.0.0.1:8000/test>; see [the frontend preview](DEV.md#frontend-preview). Migrations initialize loan limits but create no accounts or demonstration data; use the documented [`create_admin` command](DEV.md#create-an-administrator-account) for a local administrator. Stop the server with Ctrl+C (Ctrl+Break on Windows if needed).
 
 See the [expected success screenshot](DEV.md#expected-startup-screen) and [everyday startup commands](DEV.md#everyday-startup) in DEV.md. During frontend work, keep `npm.cmd run dev` running in a second terminal to rebuild CSS/JavaScript after edits.
 

@@ -2,7 +2,7 @@
 
 ## Status, references, and terminology
 
-This is a specification for future implementation. No application behavior or test result is claimed. Requirement identifiers A1–A8 and U1–U4 refer to [Project-Requirements.txt](Project-Requirements.txt). Product purpose is defined in [PRD.md](PRD.md), field definitions in [db_design.md](db_design.md), and HTTP contracts in [api_spec.md](api_spec.md).
+This specification covers implemented and future behavior. T04's shared authentication/access contract is implemented locally on `alex` with evidence in the [backlog](tasks.md#verified-task-evidence); the remaining application requirements stay planned until their own acceptance evidence exists. Requirement identifiers A1–A8 and U1–U4 refer to [Project-Requirements.txt](Project-Requirements.txt). Product purpose is defined in [PRD.md](PRD.md), field definitions in [db_design.md](db_design.md), and HTTP contracts in [api_spec.md](api_spec.md).
 
 A **catalog item** describes an equipment type; an **equipment unit** is one physical asset. An **allocation** holds a specific unit for a request item. A **loan** records release; a **loan unit** records one issued allocation; a **return** records one loan unit coming back. An **active allocation** has no end timestamp and continues through reservation and issue until cancellation or return.
 

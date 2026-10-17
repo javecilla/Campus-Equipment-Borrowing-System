@@ -58,6 +58,7 @@ MIDDLEWARE: list[str] = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "accounts.middleware.ActiveAccountMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -106,6 +107,7 @@ USE_I18N: bool = True
 USE_TZ: bool = True
 DEFAULT_AUTO_FIELD: str = "django.db.models.BigAutoField"
 AUTH_USER_MODEL: str = "accounts.User"
+LOGIN_URL: str = "accounts:login"
 STATIC_URL: str = "static/"
 STATICFILES_DIRS: list[Path] = [BASE_DIR / "static"]
 STATIC_ROOT: Path = BASE_DIR / "staticfiles"
