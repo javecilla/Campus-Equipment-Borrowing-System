@@ -16,7 +16,6 @@ ADMIN_READ_ONLY: tuple[str, ...] = (
     "borrowing_manage:request-list",
     "borrowing_manage:loan-list",
     "operations:loan-report",
-    "operations:settings",
     "operations:audit-list",
     "operations:profile",
 )
@@ -60,6 +59,7 @@ class WorkspaceNavigationTests(TestCase):
             reverse("accounts:manage-detail", args=[account_id]),
             reverse("accounts:manage-activate", args=[account_id]),
             reverse("accounts:manage-deactivate", args=[account_id]),
+            reverse("operations:settings"),
             *(reverse(name) for name in ADMIN_READ_ONLY),
         )
         portal_paths: tuple[str, ...] = (

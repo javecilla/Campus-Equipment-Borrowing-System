@@ -146,6 +146,7 @@ Assignments come from [Project-Members.txt](docs/Project-Members.txt). All membe
 | [AGENTS.md](AGENTS.md)                                                | Project instructions and AI collaboration rules                                             |
 | [coding-standards.md](docs/coding-standards.md)                       | Canonical Django MTV, coding, and verification standards                                    |
 | [third-party-dependencies.md](docs/third-party-dependencies.md)       | All locked Python/npm packages, parent dependencies, optional entries, and license metadata |
+| [User-needs evidence guide](docs/user-needs-evidence-guide.md)       | T26 collection questions, recording worksheets, option comparison, and technology evaluation |
 | [django-mtv skill](.agents/skills/django-mtv/SKILL.md)                | Reusable Django design, implementation, and review workflow                                 |
 | [DEV.md](DEV.md)                                                      | Workstation, private environment, local PostgreSQL, and MCP setup                           |
 | [.env.example](.env.example)                                          | Shared application/MCP configuration keys with empty secret values                          |
