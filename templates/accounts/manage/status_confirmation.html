@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ action_label }} {{ account.username }} · Campus Equipment{% endblock %}
+{% block content %}
+    <main class="flex min-h-svh items-center justify-center bg-surface px-6 py-12 text-slate-900"
+          data-testid="account-status-confirmation">
+        <section class="w-full max-w-xl rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+            <p class="mb-3 text-xs font-semibold tracking-widest text-accent uppercase">Basic-user account</p>
+            <h1 class="mb-4 font-heading text-3xl font-semibold">{{ action_label }} {{ account.username }}?</h1>
+            {% if error %}
+                <p class="mb-5 rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-800"
+                   role="alert">{{ error }}</p>
+            {% endif %}
+            <p class="mb-2 text-slate-600">
+                This changes only the account's active status. Its profile, requests, loans, allocations, returns, and audit records are preserved.
+            </p>
+            {% if action_label == "Deactivate" %}
+                <p class="mb-6 text-slate-600">Existing signed-in sessions will be denied by the shared active-account control on their next request.</p>
+            {% else %}
+                <p class="mb-6 text-slate-600">The account will be permitted to sign in again with its existing credentials.</p>
+            {% endif %}
+            <form method="post" class="flex flex-wrap gap-3">
+                {% csrf_token %}
+                <button type="submit"
+                        class="min-h-11 rounded-md bg-accent px-4 text-sm font-semibold text-white hover:bg-emerald-800">{{ action_label }} account</button>
+                <a href="{% url 'accounts:manage-detail' account.pk %}"
+                   class="inline-flex min-h-11 items-center rounded-md border border-slate-200 px-4 text-sm font-semibold hover:bg-slate-50">Cancel</a>
+            </form>
+        </section>
+    </main>
+{% endblock %}

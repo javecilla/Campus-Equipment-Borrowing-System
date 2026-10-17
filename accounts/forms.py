@@ -1,4 +1,4 @@
-"""Authentication forms with explicit public input fields."""
+"""Authentication and account-management forms with explicit public inputs."""
 
 from typing import cast
 
@@ -70,3 +70,36 @@ class LoginForm(AuthenticationForm):
             self.confirm_login_allowed(user)
             self.user_cache = user
         return self.cleaned_data
+
+
+class AccountSearchForm(forms.Form):
+    """Validate the documented basic-user list filters."""
+
+    q = forms.CharField(
+        label="Search",
+        required=False,
+        max_length=200,
+        strip=True,
+        widget=forms.SearchInput(
+            attrs={
+                "class": "h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 transition-colors hover:border-slate-300 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15 aria-invalid:border-rose-500",
+                "placeholder": "Username, name, email, or contact number",
+            }
+        ),
+    )
+    active = forms.TypedChoiceField(
+        label="Status",
+        required=False,
+        choices=(("", "All statuses"), ("true", "Active"), ("false", "Inactive")),
+        coerce={"true": True, "false": False}.get,
+        empty_value=None,
+        widget=forms.Select(
+            attrs={
+                "class": "h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 transition-colors hover:border-slate-300 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15 aria-invalid:border-rose-500"
+            }
+        ),
+    )
+
+
+class AccountStatusForm(forms.Form):
+    """Accept only the CSRF-protected confirmation for a named status action."""

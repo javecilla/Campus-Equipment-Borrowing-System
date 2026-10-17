@@ -4,7 +4,7 @@
     {% comment %}
         Developer handoff: this is the T04 authentication destination, not the T18 dashboard.
         Follow docs/coding-standards.md: light surfaces, green accents, minimal layout.
-        Next ready work: Alex T05 accounts; Jerome T06 settings/audit; Kenneth T07 catalog.
+        T05 accounts is linked below; next ready work includes T06 settings/audit and T07 catalog.
         Margareth T13/T15/T17 requires borrower workflows; Kenneth T16 requires physical units.
         Alex T18/T19 requires issued/returned loans. Use live ORM data, never sample metrics.
         Ralph/Ellyssa/admin owners integrate role navigation in T20 after its prerequisites.
@@ -23,6 +23,8 @@
             <h1 id="manage-heading"
                 class="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">Welcome, {{ request.user.first_name }}.</h1>
             <p class="mt-4 max-w-xl text-base leading-7 text-slate-500">Your administrator account is ready. This workspace will bring campus equipment and borrowing operations together.</p>
+            <a href="{% url 'accounts:manage-list' %}"
+               class="mt-7 inline-flex min-h-11 items-center rounded-md bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">Manage basic-user accounts</a>
             <section class="mt-12 border-t border-slate-200 pt-7"
                      aria-labelledby="manage-next-heading">
                 <div class="flex flex-wrap items-center justify-between gap-3">
@@ -31,7 +33,7 @@
                     <span class="text-xs text-slate-500">Awaiting implementation</span>
                 </div>
                 <ul class="mt-3 divide-y divide-slate-100 text-sm text-slate-600">
-                    <li class="py-4">Basic-user accounts, operational settings, and audit history</li>
+                    <li class="py-4">Operational settings and audit history</li>
                     <li class="py-4">Equipment catalog, physical units, and maintenance</li>
                     <li class="py-4">Request review, approvals, releases, and returns</li>
                     <li class="py-4">Live dashboard, overdue monitoring, reports, and exports</li>
