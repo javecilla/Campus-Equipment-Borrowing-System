@@ -1,6 +1,6 @@
 # Team Development Guide
 
-[First-time setup](#first-time-setup) | [Everyday startup](#everyday-startup) | [Error pages](#preview-custom-error-pages) | [Reset local data](#reset-local-development-data) | [Frontend assets](#frontend-assets-tailwind-and-axios) | [Formatting](#formatting-and-code-consistency) | [Migrations](#working-with-migrations) | [Checks](#before-handing-over-work) | [Fonts](#fonts-and-static-assets) | [Team Git](#assigned-branches-and-main-integration) | [Optional MCP](#configure-your-mcp-client) | [Troubleshooting](#troubleshooting)
+[First-time setup](#first-time-setup) | [Everyday startup](#everyday-startup) | [Error pages](#preview-custom-error-pages) | [Reset local data](#reset-local-development-data) | [Frontend assets](#frontend-assets-tailwind-and-page-scripts) | [Formatting](#formatting-and-code-consistency) | [Migrations](#working-with-migrations) | [Checks](#before-handing-over-work) | [Fonts](#fonts-and-static-assets) | [Team Git](#assigned-branches-and-main-integration) | [Optional MCP](#configure-your-mcp-client) | [Troubleshooting](#troubleshooting)
 
 Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv`, `.env.local`, and local PostgreSQL database. Git shares source and migrations, not credentials or database contents.
 
@@ -56,7 +56,7 @@ npm.cmd ci
 npm.cmd run build
 ```
 
-Commit `package.json` and `package-lock.json` when dependencies change. `node_modules/` and `static/build/` are local generated files and remain ignored. Rebuild them on each workstation; do not copy them from another member. Python dependencies remain in the requirements files. See [frontend usage](#frontend-assets-tailwind-and-axios) for watch mode and template integration.
+Commit `package.json` and `package-lock.json` when dependencies change. `node_modules/` and `static/build/` are local generated files and remain ignored. Rebuild them on each workstation; do not copy them from another member. Python dependencies remain in the requirements files. See [frontend usage](#frontend-assets-tailwind-and-page-scripts) for watch mode and template integration.
 
 <details>
 <summary>Using uv, or fixing a missing pip command</summary>
@@ -272,7 +272,9 @@ Stop asset watchers before syncing a branch update that moves source directories
 
 After team updates, [sync your branch](#bring-main-into-your-work-before-starting) first. If requirements changed, run `.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt` before migrating. If `package-lock.json` changed, stop the watchers, run `npm.cmd ci`, then restart them. Keep your own `.env.local`; add any new required keys from the template.
 
-## Frontend assets: Tailwind and Axios
+<a id="frontend-assets-tailwind-and-axios"></a>
+
+## Frontend assets: Tailwind and page scripts
 
 The library rationale and course-pattern requirements are in [architecture.md](docs/architecture.md#required-patterns-and-selected-libraries). This setup adds a shared template shell and asset build; feature owners still implement the role layouts and pages.
 
@@ -280,13 +282,14 @@ The library rationale and course-pattern requirements are in [architecture.md](d
 | --- | --- |
 | `static/css/app.css` | Tailwind entry point, local font import, font theme, and explicit source locations |
 | `static/css/fonts.css` | Existing local font declarations; imported into Tailwind's base layer |
-| `static/js/http.js` | Shared Axios instance with Django CSRF names and a 10-second timeout |
 | `static/js/*.js` | Browser page modules; the JavaScript build compiles every top-level module |
 | `static/build/` | Generated CSS, browser ES modules/chunks, and any generated dependency license notices |
 | `templates/base.html` | Shared document shell loading `build/app.css`, favicon links, and metadata; blocks: title, meta_description, extra_head, content, scripts |
 | `static/images/favicon/` | Supplied browser/touch icons and web manifest; manifest icon paths are relative to this directory |
 
 `npm.cmd run build` creates a minified build. `npm.cmd run dev` runs CSS and JavaScript watchers together and stops the sibling if either exits. Build before running `collectstatic` or assembling a submission; include the complete generated build, including chunks/license files, in a runnable artifact. Source control keeps the npm lockfile and source assets; the submission process must build assets explicitly because ignored files are not supplied by Git.
+
+When updating a workstation from the earlier Axios setup, remove its obsolete generated `static/build/http.js` and `static/build/axios-LICENSE.txt` if present before rebuilding or collecting static files. Current builds do not create those files. Keep the source assets and font license files.
 
 ### Frontend preview
 
@@ -300,19 +303,11 @@ Feature owners make `manage/base.html` and `portal/base.html` extend `base.html`
 
 The common shell loads the compiled stylesheet, including local fonts; do not load fonts.css again when extending it. Tailwind styling does not enforce roles, active accounts, ownership, or workflow rules. Django views/forms/services remain authoritative.
 
-### Calling Django with Axios
+### Browser interactions
 
-Page modules in `static/js/` import the shared client:
+Use ordinary Django forms and links for the current server-rendered pages. Login and logout use native form submission with CSRF tokens; no JavaScript HTTP library is installed or needed.
 
-```javascript
-import { http } from "./http.js";
-```
-
-Load a page's compiled module in its template's `scripts` block with `<script type="module" src="{% static 'build/your-page.js' %}"></script>` and `{% load static %}` in that template. The build bundles bare npm imports and shares dependency chunks; do not serve `static/js/http.js` directly as browser-ready JavaScript. No Axios request is made until a feature calls the client.
-
-Use named Django URLs rendered into the page and same-origin requests. Current form endpoints use the URL-encoded encoding in [api_spec.md](docs/api_spec.md#common-protocol): send string fields through URLSearchParams, rather than JSON. Use FormData/multipart only when the affected contract explicitly allows it. Render `{% csrf_token %}` in state-changing forms; that also causes Django to issue the CSRF cookie. A future page without such a form that makes POST requests must explicitly arrange for Django to set that cookie, following [Django's CSRF guidance](https://docs.djangoproject.com/en/5.2/howto/csrf/).
-
-Axios reads `csrftoken` and sends `X-CSRFToken` for same-origin browser requests. Session cookies use the browser's normal same-origin behavior; cross-origin credentials and CSRF exemptions are not enabled. Handle rejected responses/timeouts in the calling feature with visible, actionable feedback. Do not retry state-changing requests automatically. Validate any response data a feature consumes; Axios is a transport, not runtime schema validation. The [HTTP contract](docs/api_spec.md) still describes server-rendered HTML/forms/CSV, with no separate JSON API or chart endpoint added by this setup.
+Load an actual page module through its template's scripts block with `<script type="module" src="{% static 'build/your-page.js' %}"></script>` and `{% load static %}`. The build compiles/minifies the page scripts; the font preview is the only current JavaScript entry. Use the [coding guide](docs/coding-standards.md#browser-interactions) for future explicitly authorized enhancements and the [HTTP contract](docs/api_spec.md#common-protocol) for existing HTML/form/CSV response semantics.
 
 ## Working with migrations
 
@@ -402,7 +397,7 @@ Keep the existing font files and their `OFL.txt` notices. Use CSS-relative URLs 
 For discovery checks:
 
 ```powershell
-.\.venv\Scripts\python.exe manage.py findstatic build/app.css build/http.js fonts/Poppins/Poppins-Regular.ttf --verbosity 2
+.\.venv\Scripts\python.exe manage.py findstatic build/app.css build/frontend-test.js fonts/Poppins/Poppins-Regular.ttf --verbosity 2
 ```
 
 Runserver serves static files during local debugging. `STATIC_ROOT` (`staticfiles/`) is generated collection output, not where source assets belong. `collectstatic` is not needed for the local setup above.
@@ -486,7 +481,7 @@ uv pip compile requirements-dev.in --output-file requirements-dev.txt
 
 Run checks before sharing updated locks. Ordinary setup installs the pins without re-resolving them. Psycopg binary avoids a C build; python-dotenv parses configuration; tzdata supplies Windows time-zone data; Ruff is development-only.
 
-JavaScript dependencies belong in package.json/package-lock.json. Use `npm.cmd install --save-exact package@version` for a runtime dependency, adding `--save-dev` for build tools; use real reviewed package/version values. Reinstall with `npm.cmd ci`, then format/check, build, and audit before sharing the lockfile. Tailwind CLI 4.3.0 currently permits the locked watcher 2.6.0, avoiding the [vulnerable braces chain](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) pinned by CLI 4.3.3. Recheck that dependency path during updates; do not run a forced audit fix without reviewing the actual change. Update [README purposes/tradeoffs](README.md#third-party-packages-and-assets) and the [full inventory](docs/third-party-dependencies.md) from lockfile/distribution metadata, including indirect/optional packages and their parent/license declarations. The JS build copies Axios's complete MIT notice beside its bundle through `scripts/copy-licenses.mjs`; extend that step if another package enters the browser bundle.
+JavaScript dependencies belong in package.json/package-lock.json. Use `npm.cmd install --save-exact package@version` for a runtime dependency, adding `--save-dev` for build tools; use real reviewed package/version values. Reinstall with `npm.cmd ci`, then format/check, build, and audit before sharing the lockfile. Tailwind CLI 4.3.0 currently permits the locked watcher 2.6.0, avoiding the [vulnerable braces chain](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) pinned by CLI 4.3.3. Recheck that dependency path during updates; do not run a forced audit fix without reviewing the actual change. Update [README purposes/tradeoffs](README.md#third-party-packages-and-assets) and the [full inventory](docs/third-party-dependencies.md) from lockfile/distribution metadata, including indirect/optional packages and their parent/license declarations. Current page JavaScript contains no bundled third-party runtime package. If a future authorized dependency enters the browser bundle, include its required upstream notices in the generated artifact.
 
 ## Configure your MCP client
 

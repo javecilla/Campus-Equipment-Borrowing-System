@@ -90,12 +90,10 @@ Campus-Equipment-Borrowing-System/
 │   ├── css/app.css                              [existing] Tailwind entry point/theme/source scan
 │   ├── fonts/                                   [existing] DM Sans/Poppins and license notices
 │   ├── images/                                  [existing] includes setup success screenshot
-│   ├── js/http.js                               [existing] shared Axios client source
 │   ├── js/frontend-test.js                       [existing] preview font-load check
 │   └── build/                                   [generated] ignored CSS/browser modules/chunks
 ├── package.json                                 [existing] npm dependencies/build/watch commands
 ├── package-lock.json                            [existing] exact npm dependency graph
-├── scripts/copy-licenses.mjs                     [existing] copies Axios notice into build output
 ├── docs/                                        [existing] canonical requirements/design guides
 ├── handoffs/                                    [existing] dated work evidence
 └── manage.py                                    [existing] Django management entry point
@@ -107,7 +105,7 @@ The root also contains the setup/review documents, dependency files, and private
 
 A **view** is a Python request handler in the relevant app's `views.py`. The page's **HTML** is a template. For example, an inventory management page uses `inventory/views.py` and a template under `templates/inventory/manage/`.
 
-The role prefix selects the audience; the feature app selects the Python module. A basic-user equipment page still uses `inventory/`, and a basic-user borrowing page still uses `borrowing/`. Feature owners create `templates/manage/base.html` and `templates/portal/base.html` extending the existing `templates/base.html` document/asset shell. The shell's blocks are documented in [DEV.md](../DEV.md#frontend-assets-tailwind-and-axios).
+The role prefix selects the audience; the feature app selects the Python module. A basic-user equipment page still uses `inventory/`, and a basic-user borrowing page still uses `borrowing/`. Feature owners create `templates/manage/base.html` and `templates/portal/base.html` extending the existing `templates/base.html` document/asset shell. The shell's blocks are documented in [DEV.md](../DEV.md#frontend-assets-tailwind-and-page-scripts).
 
 These page placements are planned examples; route names already come from the HTTP contract:
 

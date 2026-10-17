@@ -80,9 +80,9 @@ Read-only queries never repair data or change overdue status. Derive reports/sta
 
 ## Dependencies and compatibility
 
-Use the compatible stack in architecture.md and native Django patterns. Add dependencies only to the project environment and declared configuration, never globally. Record tested versions and justify extra packages. Read an installed package's source when behavior is uncertain rather than guessing its API. The Tailwind/Axios build is configured; do not add another frontend framework, generated admin, ORM wrapper, or new deployment target without a task that needs it.
+Use the compatible stack in architecture.md and native Django patterns. Add dependencies only to the project environment and declared configuration, never globally. Record tested versions and justify extra packages. Read an installed package's source when behavior is uncertain rather than guessing its API. The Tailwind and page-script build is configured; do not add another frontend framework, generated admin, ORM wrapper, or new deployment target without a task that needs it.
 
-Every dependency change updates the appropriate Python input/pins or npm manifest/lockfile, the [README disclosure](../README.md#third-party-packages-and-assets), and the complete [dependency inventory](third-party-dependencies.md), including indirect/optional packages and license metadata. Explain the need, runtime versus development role, and relevant limitation. Preserve supplied notices, add required notices for new browser-bundled packages to the license-copy step, rebuild, and run the configured package/build checks; an inventory/lockfile does not replace those notices or the justification.
+Every dependency change updates the appropriate Python input/pins or npm manifest/lockfile, the [README disclosure](../README.md#third-party-packages-and-assets), and the complete [dependency inventory](third-party-dependencies.md), including indirect/optional packages and license metadata. Explain the need, runtime versus development role, and relevant limitation. Preserve supplied notices, include required notices with any newly authorized browser-bundled packages, rebuild, and run the configured package/build checks; an inventory/lockfile does not replace those notices or the justification.
 
 Do not change a shared field, enum, URL contract, or workflow in one feature without updating its canonical contract and coordinating with affected feature owners. Before the first migration, confirm the custom authentication model. Once migrations exist, preserve shared history and add appropriate migrations rather than independently rewriting another member's schema.
 
@@ -96,23 +96,15 @@ The project uses a **server-rendered command/query HTTP pattern**: GET reads or 
 - Follow the response/status table exactly. In particular, invalid bound forms return 200 HTML, successful mutations return a named 302 redirect, and workflow conflicts return 409. Do not globally change these to 422/JSON or convert failures to successful empty responses. Wrong methods, permissions, missing objects, and unexpected errors retain the documented semantics.
 - New programmatic response formats require an explicitly authorized feature and a corresponding HTTP-contract update: document method/name, access, accepted fields, content type, success/error shape, and checks before implementation. Use snake_case for newly agreed JSON field names to match server/form fields; do not add a universal envelope or serializer framework for a hypothetical API.
 
-## Axios calling pattern
+<a id="axios-calling-pattern"></a>
 
-Use the shared [http client](../static/js/http.js) as the single transport configuration. Page modules orchestrate browser behavior; domain decisions remain on the server. Add a feature-specific request function only when the feature actually makes a call, with one action and explicit inputs/return type. Avoid a generic API service class or duplicated Axios instances.
+## Browser interactions
 
-| Concern | Convention |
-| --- | --- |
-| Files and imports | Top-level browser entries such as static/js/inventory.js import `{ http }` from `./http.js`; load their compiled build/*.js using Django static tags. Follow the current build's entry layout |
-| Names | Use action-specific camelCase names such as loadEquipment or approveRequest, handlers such as handleApprovalSubmit, and semantic variables such as approvalForm. Use stable kebab-case data-testid values for automation |
-| URLs and GET filters | Render URLs with Django reverse/static facilities into escaped data attributes; do not hardcode role paths or trust a client URL to establish ownership. Pass allowlisted GET filters through Axios params rather than concatenating a query string |
-| POST encoding | Use normal browser form submission by default. For an authorized enhanced form, use URLSearchParams with validated string fields for the contracted URL-encoded body. FormData/multipart is reserved for a contract that accepts it; JSON is not interchangeable with request.POST |
-| Sessions and CSRF | Keep same-origin session authentication and the shared csrftoken/X-CSRFToken names. State-changing forms render csrf_token, or their feature explicitly ensures cookie issuance. Do not turn on cross-origin credentials, force tokens to external origins, or exempt views from CSRF |
-| Responses | Set responseType to the contracted format. HTML remains HTML; a resolved Axios promise or status 200 is not proof of a successful mutation because invalid forms also use 200 and browser HTTP redirects are followed. The feature must preserve bound-form/error/redirect behavior; use native navigation when that behavior has no implemented enhancement contract |
-| Types and validation | Use JSDoc parameter/return/structured typedefs in JavaScript. Generic Axios types do not validate incoming data; runtime-check any agreed JSON fields before using them, require the fields consumed, and ignore unrelated extras. Never insert untrusted response values through innerHTML |
-| Failures and UI state | Keep the finite shared timeout. Catch recognized Axios/network errors at the page boundary, present actionable feedback in an accessible error region, and restore pending controls in finally. Distinguish permission/conflict/network/server failures without exposing private response details; preserve unexpected failures rather than hiding them |
-| Repeated calls | Do not install global interceptors that silently return empty data, redirect every error, swallow exceptions, or retry mutations. Disable duplicate submissions for usability while keeping the server's transaction checks authoritative. Safe read retries, if needed by an authorized external integration, follow the existing bounded-retry rule |
+Use native Django form submission and links for the current server-rendered interface, including login and CSRF-protected POST logout. No browser HTTP library or shared JavaScript request client is installed. Do not reintroduce Axios or add a transport abstraction for hypothetical use.
 
-Axios is for optional enhancements; it does not turn HTML responses into a JSON API. Downloads can remain ordinary authorized links, and normal forms retain their named actions and server-side validation. Keep browser event/DOM wiring in the feature entry module and reusable pure calculations separate from network effects.
+Page modules own browser behavior; domain decisions, validation, authorization, and workflow writes remain on the server. Load actual compiled page modules through the shared shell's scripts block, use stable data-testid values for automation, and keep JavaScript in its feature source file.
+
+If an explicitly authorized feature needs a browser request, use native browser APIs and first document its named route, encoding, response, and access rules in [the HTTP contract](api_spec.md#common-protocol). Preserve same-origin sessions and Django CSRF protection for mutations. Existing HTML redirects, invalid-form responses, and CSV downloads retain their native behavior; HTTP 200 alone does not establish workflow success. Validate any data consumed, report actionable failures, bound requests, and never silently retry mutations. No JSON API or browser request helper is implemented by this guidance.
 
 ## Tailwind styling pattern
 

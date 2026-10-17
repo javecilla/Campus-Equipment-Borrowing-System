@@ -30,7 +30,7 @@ Pins: [requirements.txt](../requirements.txt) and [requirements-dev.txt](../requ
 
 ## npm runtime, build, and optional packages
 
-Every package entry in [package-lock.json](../package-lock.json) is listed below, including native binaries for other platforms. Optional entries may not be installed locally. Runtime graph dependencies can support Axios's Node adapter without entering the browser bundle; the current browser bundle contains Axios source only. Build/dev tools do not implement application HTTP endpoints or generate administration pages.
+Every package entry in [package-lock.json](../package-lock.json) is listed below, including native binaries for other platforms. Optional entries may not be installed locally. All current npm packages support build/development tooling; page JavaScript bundles no third-party runtime package. Build/dev tools do not implement application HTTP endpoints or generate administration pages.
 
 | Lockfile package path | Version | Role | Introduced by | Declared license |
 | --- | --- | --- | --- | --- |
@@ -99,41 +99,19 @@ Every package entry in [package-lock.json](../package-lock.json) is listed below
 | `node_modules/@tailwindcss/oxide-wasm32-wasi/node_modules/tslib` | 2.8.1 | Build/dev; optional | `@emnapi/core`, `@emnapi/runtime`, `@emnapi/wasi-threads`, `@tailwindcss/oxide-wasm32-wasi`, `@tybys/wasm-util` | 0BSD |
 | `node_modules/@tailwindcss/oxide-win32-arm64-msvc` | 4.3.0 | Build/dev; optional | `@tailwindcss/oxide` | MIT |
 | `node_modules/@tailwindcss/oxide-win32-x64-msvc` | 4.3.0 | Build/dev; optional | `@tailwindcss/oxide` | MIT |
-| `node_modules/agent-base` | 6.0.2 | Runtime graph | `https-proxy-agent` | MIT |
 | `node_modules/ansi-regex` | 6.4.0 | Build/dev | `strip-ansi` | MIT |
 | `node_modules/ansi-styles` | 6.2.3 | Build/dev | `wrap-ansi` | MIT |
-| `node_modules/asynckit` | 0.4.0 | Runtime graph | `form-data` | MIT |
-| `node_modules/axios` | 1.20.0 | Runtime graph | `package.json (dependencies)` | MIT |
-| `node_modules/call-bind-apply-helpers` | 1.0.2 | Runtime graph | `dunder-proto`, `get-intrinsic` | MIT |
 | `node_modules/chalk` | 5.6.2 | Build/dev | `concurrently` | MIT |
 | `node_modules/cliui` | 9.0.1 | Build/dev | `yargs` | ISC |
-| `node_modules/combined-stream` | 1.0.8 | Runtime graph | `form-data` | MIT |
 | `node_modules/concurrently` | 10.0.6 | Build/dev | `package.json (devDependencies)` | MIT |
-| `node_modules/debug` | 4.4.3 | Runtime graph | `agent-base`, `https-proxy-agent` | MIT |
-| `node_modules/delayed-stream` | 1.0.0 | Runtime graph | `combined-stream` | MIT |
 | `node_modules/detect-libc` | 2.1.2 | Build/dev | `@parcel/watcher`, `lightningcss` | Apache-2.0 |
-| `node_modules/dunder-proto` | 1.0.1 | Runtime graph | `get-proto` | MIT |
 | `node_modules/emoji-regex` | 10.6.0 | Build/dev | `string-width` | MIT |
 | `node_modules/enhanced-resolve` | 5.26.0 | Build/dev | `@tailwindcss/cli`, `@tailwindcss/node` | MIT |
-| `node_modules/es-define-property` | 1.0.1 | Runtime graph | `get-intrinsic` | MIT |
-| `node_modules/es-errors` | 1.3.0 | Runtime graph | `call-bind-apply-helpers`, `dunder-proto`, `es-object-atoms`, `es-set-tostringtag`, `get-intrinsic` | MIT |
-| `node_modules/es-object-atoms` | 1.1.2 | Runtime graph | `get-intrinsic`, `get-proto` | MIT |
-| `node_modules/es-set-tostringtag` | 2.1.0 | Runtime graph | `form-data` | MIT |
 | `node_modules/esbuild` | 0.28.2 | Build/dev | `package.json (devDependencies)` | MIT |
 | `node_modules/escalade` | 3.2.0 | Build/dev | `yargs` | MIT |
-| `node_modules/follow-redirects` | 1.16.1 | Runtime graph | `axios` | MIT |
-| `node_modules/form-data` | 4.0.6 | Runtime graph | `axios` | MIT |
-| `node_modules/function-bind` | 1.1.2 | Runtime graph | `call-bind-apply-helpers`, `get-intrinsic`, `hasown` | MIT |
 | `node_modules/get-caller-file` | 2.0.5 | Build/dev | `yargs` | ISC |
 | `node_modules/get-east-asian-width` | 1.7.0 | Build/dev | `string-width` | MIT |
-| `node_modules/get-intrinsic` | 1.3.0 | Runtime graph | `es-set-tostringtag` | MIT |
-| `node_modules/get-proto` | 1.0.1 | Runtime graph | `get-intrinsic` | MIT |
-| `node_modules/gopd` | 1.2.0 | Runtime graph | `dunder-proto`, `get-intrinsic` | MIT |
 | `node_modules/graceful-fs` | 4.2.11 | Build/dev | `enhanced-resolve` | ISC |
-| `node_modules/has-symbols` | 1.1.0 | Runtime graph | `get-intrinsic`, `has-tostringtag` | MIT |
-| `node_modules/has-tostringtag` | 1.0.2 | Runtime graph | `es-set-tostringtag` | MIT |
-| `node_modules/hasown` | 2.0.4 | Runtime graph | `es-set-tostringtag`, `form-data`, `get-intrinsic` | MIT |
-| `node_modules/https-proxy-agent` | 5.0.1 | Runtime graph | `axios` | MIT |
 | `node_modules/is-extglob` | 2.1.1 | Build/dev | `is-glob` | MIT |
 | `node_modules/is-glob` | 4.0.3 | Build/dev | `@parcel/watcher` | MIT |
 | `node_modules/jiti` | 2.7.0 | Build/dev | `@tailwindcss/node` | MIT |
@@ -150,16 +128,11 @@ Every package entry in [package-lock.json](../package-lock.json) is listed below
 | `node_modules/lightningcss-win32-arm64-msvc` | 1.32.0 | Build/dev; optional | `lightningcss` | MPL-2.0 |
 | `node_modules/lightningcss-win32-x64-msvc` | 1.32.0 | Build/dev; optional | `lightningcss` | MPL-2.0 |
 | `node_modules/magic-string` | 0.30.21 | Build/dev | `@tailwindcss/node` | MIT |
-| `node_modules/math-intrinsics` | 1.1.0 | Runtime graph | `get-intrinsic` | MIT |
-| `node_modules/mime-db` | 1.52.0 | Runtime graph | `mime-types` | MIT |
-| `node_modules/mime-types` | 2.1.35 | Runtime graph | `form-data` | MIT |
 | `node_modules/mri` | 1.2.0 | Build/dev | `@tailwindcss/cli` | MIT |
-| `node_modules/ms` | 2.1.3 | Runtime graph | `debug` | MIT |
 | `node_modules/node-addon-api` | 7.1.1 | Build/dev | `@parcel/watcher` | MIT |
 | `node_modules/picocolors` | 1.1.1 | Build/dev | `@tailwindcss/cli` | ISC |
 | `node_modules/picomatch` | 4.0.7 | Build/dev | `@parcel/watcher` | MIT |
 | `node_modules/prettier` | 3.9.10 | Build/dev | `package.json (devDependencies)` | MIT |
-| `node_modules/proxy-from-env` | 2.1.0 | Runtime graph | `axios` | MIT |
 | `node_modules/rxjs` | 7.8.2 | Build/dev | `concurrently` | Apache-2.0 |
 | `node_modules/shell-quote` | 1.12.0 | Build/dev | `concurrently` | MIT |
 | `node_modules/source-map-js` | 1.2.2 | Build/dev | `@tailwindcss/node` | BSD-3-Clause |
@@ -187,8 +160,8 @@ All declared dependency and optional-dependency references in this application l
 
 DBHub's published 1.5.0 manifest declares zod ^4.2.0, ssh2 ^1.16.0, dotenv ^16.4.7, express ^4.18.2, ssh-config ^5.0.3, @iarna/toml ^2.2.5, @modelcontextprotocol/node ^2.0.0, and @modelcontextprotocol/server ^2.0.0. Its execution-cache resolution is separate from package-lock.json; this document does not invent resolved versions or a complete lock for that optional tool. Use its linked published dependency/license declarations and DEV.md's pinned launch. It is not bundled with the application.
 
-Node/npm, Python/pip, Git, PostgreSQL, and the optional uv resolver are workstation tools described in DEV.md, not application package entries. The generated browser bundle retains the complete Axios license through scripts/copy-licenses.mjs. Original font notices stay in static/fonts/.
+Node/npm, Python/pip, Git, PostgreSQL, and the optional uv resolver are workstation tools described in DEV.md, not application package entries. Current page JavaScript contains no bundled third-party runtime package. Original font notices stay in static/fonts/.
 
 ## Inventory coverage
 
-This snapshot contains 17 pinned Python distributions and 140 npm lock entries. Refresh names, versions, licenses, parent links, optional flags, and counts from actual locks/installed metadata after a dependency change. Check that direct selections have a README rationale and required browser notices remain in the built artifact.
+This snapshot contains 17 pinned Python distributions and 113 npm lock entries. Refresh names, versions, licenses, parent links, optional flags, and counts from actual locks/installed metadata after a dependency change. Check that direct selections have a README rationale and required browser notices remain in the built artifact.

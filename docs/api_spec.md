@@ -6,7 +6,7 @@ Feature contracts for the server-rendered application in [architecture.md](archi
 
 Use named Django URLs and integer primary-key path converters. `<id>` below denotes the relevant record ID. Successful mutations redirect to the related detail/list page with a message. All management pages are custom group-authored Django views/forms/templates.
 
-The [coding standards](coding-standards.md#http-endpoint-design) define endpoint implementation and [Axios calling conventions](coding-standards.md#axios-calling-pattern) within these contracts. They do not add a JSON response format or change the status table below.
+The [coding standards](coding-standards.md#http-endpoint-design) define endpoint implementation and [browser interaction conventions](coding-standards.md#browser-interactions) within these contracts. They do not add a JSON response format or change the status table below.
 
 ## Common protocol
 

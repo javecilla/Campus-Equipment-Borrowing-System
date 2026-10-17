@@ -6,7 +6,7 @@ This architecture guides implementation. The T01–T03 foundation is integrated 
 
 Use a single server-rendered Django application with Python 3.13, Django 5.2 LTS, PostgreSQL 17, and Psycopg 3. Pin tested patch versions during implementation. Django 5.2 supports the proposed Python series and database; consult the [release notes](https://docs.djangoproject.com/en/5.2/releases/5.2/) and [database documentation](https://docs.djangoproject.com/en/5.2/ref/databases/).
 
-HTML/CSS and minimal JavaScript serve both roles. The user selected Tailwind CSS for styling and Axios for optional same-origin HTTP enhancements. The local npm build and shared HTML shell are implemented; role layouts and feature pages remain their owners' work. A chart library remains unselected. There are no required external APIs, background workers, message brokers, or separate frontend services.
+HTML/CSS and minimal JavaScript serve both roles. The user selected Tailwind CSS for styling. Ordinary Django forms and links handle the current HTTP interactions; no browser HTTP library is installed. The local npm build and shared HTML shell are implemented; role layouts and feature pages remain their owners' work. A chart library remains unselected. There are no required external APIs, background workers, message brokers, or separate frontend services.
 
 ## Required patterns and selected libraries
 
@@ -19,13 +19,13 @@ The [course brief](Project-Requirements.txt), CO2 and Parts 5–6, requires the 
 | Template inheritance and reusable components | Shared `templates/base.html` supplies the asset/document shell. Feature owners create `manage/base.html` and `portal/base.html` extending it, plus reusable navigation/form/table/message fragments; those role layouts are still planned |
 | Compare two suitable system options and justify one | The comparison below is design evidence, rather than a software design pattern; later course evidence must evaluate the implemented system and actual user needs |
 
-Part 5 permits third-party packages when declared and justified, and forbids generating the required custom administration side. Tailwind and Axios are not named by the brief; using them under that general rule is our interpretation. They do not generate views, forms, admin pages, or authorization.
+Part 5 permits third-party packages when declared and justified, and forbids generating the required custom administration side. Tailwind is not named by the brief; using it under that general rule is our interpretation. It does not generate views, forms, admin pages, or authorization.
 
 The [README dependency disclosure](../README.md#third-party-packages-and-assets) owns package purposes, tradeoffs, runtime/build roles, and license declarations. The [complete inventory](third-party-dependencies.md) lists locked indirect/optional packages as well. Keep those sources current instead of duplicating a second justification table here.
 
-Exact package pins and transitive dependencies are in [package.json](../package.json) and [package-lock.json](../package-lock.json), separate from Python requirements. Build/watch commands and usage belong in [DEV.md](../DEV.md#frontend-assets-tailwind-and-axios). Source fonts retain their OFL notices; generated JavaScript license notices travel with the build. Follow the [Tailwind CLI](https://tailwindcss.com/docs/installation/tailwind-cli), [esbuild](https://esbuild.github.io/getting-started/), and [Axios request configuration](https://github.com/axios/axios#request-config) documentation.
+Exact package pins and transitive dependencies are in [package.json](../package.json) and [package-lock.json](../package-lock.json), separate from Python requirements. Build/watch commands and usage belong in [DEV.md](../DEV.md#frontend-assets-tailwind-and-page-scripts). Source fonts retain their OFL notices; include any future browser-bundled package notices with runnable artifacts. Follow the [Tailwind CLI](https://tailwindcss.com/docs/installation/tailwind-cli) and [esbuild](https://esbuild.github.io/getting-started/) documentation.
 
-The canonical [coding guide](coding-standards.md#http-endpoint-design) owns endpoint design, Axios calling boundaries, Tailwind styling/naming, and formatter responsibilities. These conventions retain the existing HTML/form/session interface; no new REST or JSON endpoint is implemented by documenting them.
+The canonical [coding guide](coding-standards.md#http-endpoint-design) owns endpoint design, native browser interaction boundaries, Tailwind styling/naming, and formatter responsibilities. These conventions retain the existing HTML/form/session interface; no new REST or JSON endpoint is implemented by documenting them.
 
 ## Options comparison
 
