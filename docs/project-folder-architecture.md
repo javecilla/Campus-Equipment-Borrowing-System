@@ -36,15 +36,15 @@ Campus-Equipment-Borrowing-System/
 ├── inventory/                                   [existing]
 │   ├── models.py                                [existing] catalog, units, maintenance
 │   ├── migrations/                              [existing]
-│   ├── views.py                                 [existing] category/catalog handlers; units/maintenance remain placeholders
-│   ├── forms.py                                 [existing] category/catalog forms; unit/maintenance inputs planned
-│   ├── manage_urls.py                           [existing] catalog actions and protected unit/maintenance placeholders
-│   ├── services.py                              [existing] audited category/catalog writes; unit/maintenance writes planned
-│   ├── queries.py                               [existing] catalog selection and derived inventory counts
+│   ├── views.py                                 [existing] category/catalog/unit handlers; maintenance remains a placeholder
+│   ├── forms.py                                 [existing] category/catalog/unit forms; maintenance inputs planned
+│   ├── manage_urls.py                           [existing] catalog/unit actions and protected maintenance placeholder
+│   ├── services.py                              [existing] audited catalog/unit writes and initial damaged-unit maintenance; lifecycle planned
+│   ├── queries.py                               [existing] catalog/unit selection, history and derived inventory counts
 │   ├── photo_views.py / restore_views.py            [existing] protected photo and restoration handlers
 │   ├── photo_services.py / photos.py                [existing] audited storage and image validation
 │   ├── photo_forms.py                              [existing] upload field validation
-│   └── tests/                                   [existing] catalog/restore/photo integration checks
+│   └── tests/                                   [existing] catalog/restore/photo/unit integration checks
 │
 ├── borrowing/                                   [existing]
 │   ├── models.py                                [existing] requests, allocations, loans, returns
@@ -84,8 +84,8 @@ Campus-Equipment-Borrowing-System/
 │   │   ├── manage/                              [existing] T05 account management pages
 │   │   ├── register.html                        [existing] T09 public borrower registration
 │   │   └── portal/                              [existing] protected home, editable profile and pending modules
-│   ├── inventory/                               [existing/planned] catalog pages present; unit/portal pages planned
-│   │   ├── manage/                              [existing/planned] category/catalog/photo/restore pages; units/maintenance planned
+│   ├── inventory/                               [existing/planned] catalog/unit pages present; portal pages planned
+│   │   ├── manage/                              [existing/planned] catalog/photo/restore/unit pages; maintenance lifecycle planned
 │   │   └── portal/                              [planned] equipment browsing pages
 │   ├── borrowing/                               [planned] request/loan feature pages
 │   │   ├── manage/                              [planned] review, release, returns, slips
@@ -136,7 +136,7 @@ When rendering the unit list, the template name passed to Django would be `inven
 
 ## How a page connects
 
-For the planned physical-unit list, the file flow is:
+For the implemented physical-unit list, the file flow is:
 
 ```text
 Browser: GET /manage/units/

@@ -31,5 +31,8 @@ urlpatterns: list[URLPattern] = [
         "items/<int:item_id>/photo/remove/", photo_views.item_photo_remove, name="item-photo-remove"
     ),
     path("units/", views.unit_list, name="unit-list"),
+    path("units/new/", views.unit_create, name="unit-create"),
+    path("units/<int:unit_id>/", views.unit_detail, name="unit-detail"),
+    path("units/<int:unit_id>/edit/", views.unit_update, name="unit-update"),
     path("maintenance/", views.maintenance_list, name="maintenance-list"),
 ]

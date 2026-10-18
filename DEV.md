@@ -4,7 +4,7 @@
 
 Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv`, `.env.local`, and local PostgreSQL database. Git shares source and migrations, not credentials or database contents.
 
-**Current phase: equipment inventory and borrower accounts; T08 physical units next.** T01–T07 are integrated into `main`; PR #20 at `a4634b9` includes the T07 continuation. Ellyssa's T09 registration/profile implementation is integrated through PR #21 at `9101586`, with 125 existing PostgreSQL tests passing. Review reproduced an invalid-username validation failure; T09 remains In progress until corrected. See [HANDOFF.md](HANDOFF.md) for evidence and next-owner actions. Equipment browsing, borrowing workflows, maintenance and live reporting remain pending.
+**Current phase: T08 physical-unit management is integrated; T16 prerequisites are satisfied for Kenneth.** T01-T08 are integrated into main, including PR #22 at `6c91d48`. Ellyssa's T09 registration/profile implementation is integrated through PR #21 at `9101586` but remains In progress for invalid username validation. The combined PostgreSQL suite passes 148 tests. See [HANDOFF.md](HANDOFF.md) for evidence and next-owner actions. Browsing, borrowing workflows, maintenance lifecycle and live reporting remain pending.
 
 For where to add views, models, forms, URLs, and page templates, use [Project Folder Architecture](docs/project-folder-architecture.md).
 
@@ -385,7 +385,7 @@ Write the required [dated handoff](.agents/skills/project-handoff/SKILL.md), upd
 
 ## Continuing with T08
 
-Kenneth's next inventory task is **T08**, currently Not started. T07 and its continuation are integrated into `main` through PR #20 at `a4634b9`, satisfying T08's prerequisite. Follow [the member-branch workflow](#assigned-branches-and-main-integration) to sync `kenneth` with integrated main, then run:
+**T08 is Done and integrated** through PR #22 at `6c91d48`. Its physical-unit list, registration, detail/history and metadata editing are available under `/manage/units/`. Kenneth's next inventory task is **T16**, currently Not started; its T03/T08 prerequisites are integrated. Follow [the member-branch workflow](#assigned-branches-and-main-integration) to sync `kenneth` with main, then prepare the workstation with:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
@@ -396,13 +396,13 @@ npm.cmd run build
 .\.venv\Scripts\python.exe manage.py test --noinput
 ```
 
-The T07 continuation adds `inventory.0002_category_name_case_insensitive`, `inventory.0003_catalog_item_photo`, and `operations.0003_catalog_restore_audit_actions`. T09 adds no migration or dependency. Do not rewrite existing migrations. Use the existing catalog forms, distinct services, read-only queries, active-admin boundary and parent-before-child lock order; see the [HTTP contract](docs/api_spec.md#custom-administration-accounts-and-inventory), [coding standards](docs/coding-standards.md) and [T08 acceptance](docs/tasks.md#inventory-and-borrower-portal). `/manage/units/` remains a protected placeholder until T08 implements registration, edits, filters and history. Integration does not start T08 or supply the full demonstration dataset.
+The T07 continuation adds `inventory.0002_category_name_case_insensitive`, `inventory.0003_catalog_item_photo`, and `operations.0003_catalog_restore_audit_actions`. T08 and T09 add no migration or dependency. Do not rewrite existing migrations. Use the existing catalog forms, distinct services, read-only queries, active-admin boundary and parent-before-child lock order; see the [HTTP contract](docs/api_spec.md#custom-administration-accounts-and-inventory), [coding standards](docs/coding-standards.md) and [T08 acceptance](docs/tasks.md#inventory-and-borrower-portal). `/manage/units/` now implements those T08 operations; `/manage/maintenance/` remains a protected placeholder until T16. Registering an initially damaged unit opens maintenance atomically, while subsequent maintenance closure/status transitions remain T16 work. Integration does not start T16 or supply the full demonstration dataset.
 
 ### Borrower account verification after T09 integration
 
 Anonymous users can register at `/accounts/register/`, then sign in through the shared login page. Registration fixes the role to BASIC_USER; an active borrower edits only their own name, email and optional contact number at `/portal/profile/`. The administrator profile remains read-only. Registration/profile changes use transactional audit services; see the [HTTP contract](docs/api_spec.md#shared-account-routes) for fields and access rules.
 
-Run `.\.venv\Scripts\python.exe manage.py test accounts.tests.test_borrower_portal operations.tests.test_navigation --noinput` for the focused integration suites. The full suite currently contains 125 passing tests. The [integration review](handoffs/t09-main-integration-and-documentation-review-10-18-2026.md) records an additional failing behavior outside that suite: a username containing an internal space passes the form and raises an unhandled model ValidationError. Ellyssa should correct field validation and verify the bound-error response before T09 acceptance closes. T10/T11 still require T08 and accepted T09.
+Run `.\.venv\Scripts\python.exe manage.py test accounts.tests.test_borrower_portal operations.tests.test_navigation --noinput` for the focused integration suites. The combined full suite currently contains 148 passing tests. The [integration review](handoffs/t09-main-integration-and-documentation-review-10-18-2026.md) records an additional failing behavior outside that suite: a username containing an internal space passes the form and raises an unhandled model ValidationError. Ellyssa should correct field validation and verify the bound-error response before T09 acceptance closes. T08 is integrated; T10/T11 still require accepted T09.
 
 `.idea/` is ignored and removed from tracked files through main commit `f08fb04`. Each developer may keep local IDE settings; do not force-add them. Generated builds, uploads, dependencies and private environment files also stay outside Git.
 

@@ -107,6 +107,13 @@
             <section class="space-y-4">
                 <div class="flex items-center justify-between">
                     <h2 class="font-heading text-xl font-semibold">Physical units</h2>
+                    {% if not item.is_archived and not item.category.is_archived %}
+                        <a href="{% url 'inventory_manage:unit-create' %}?item={{ item.pk }}"
+                           data-testid="register-unit-for-item-button"
+                           class="inline-flex h-9 items-center justify-center rounded-md bg-accent px-3 text-xs font-semibold text-white transition-colors hover:bg-emerald-800">
+                            Register physical unit
+                        </a>
+                    {% endif %}
                 </div>
                 <div class="overflow-x-auto border-y border-slate-200">
                     <table class="min-w-full divide-y divide-slate-200">
@@ -122,7 +129,13 @@
                         <tbody class="divide-y divide-slate-100">
                             {% for unit in units %}
                                 <tr>
-                                    <td class="px-5 py-4 font-mono font-semibold text-slate-900">{{ unit.asset_code }}</td>
+                                    <td class="px-5 py-4 font-mono font-semibold text-slate-900">
+                                        <a href="{% url 'inventory_manage:unit-detail' unit.pk %}"
+                                           data-testid="item-unit-link-{{ unit.pk }}"
+                                           class="hover:text-accent hover:underline">
+                                            {{ unit.asset_code }}
+                                        </a>
+                                    </td>
                                     <td class="px-5 py-4 text-sm text-slate-700">{{ unit.get_condition_display }}</td>
                                     <td class="px-5 py-4 text-sm font-medium">{{ unit.get_status_display }}</td>
                                     <td class="px-5 py-4 text-sm text-slate-600">{{ unit.acquired_on|date:"Y-m-d" }}</td>
@@ -132,7 +145,7 @@
                                 <tr>
                                     <td colspan="5"
                                         class="px-5 py-8 text-center text-sm text-slate-500">
-                                        No physical units registered for this item yet. (Unit registration is managed under T08 · Kenneth).
+                                        No physical units registered for this item yet.
                                     </td>
                                 </tr>
                             {% endfor %}
