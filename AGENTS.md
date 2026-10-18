@@ -2,7 +2,7 @@
 
 ## Current authorization and context
 
-The user authorized T07 continuation publication, T09 review publication and Kenneth's T08 main integration through PR #22 at 6c91d48. The current request authorizes updating current documentation, completing the existing main-to-jerome merge, and pushing jerome with Kenneth and Codex co-author credit. Preserve Ellyssa's T09 source and the user's audit/guide changes. No new PR, main update, T16 implementation or T09 code correction is authorized by this publication request. See the backlog/current handoff for verified acceptance and integration state.
+The user authorized T07/T08 publication and integration, including PR #22 at 6c91d48 and jerome sync 83a4e74. The user confirms T09 is Done, authorized the registration username-validation correction, and now authorizes committing/pushing that verified fix and documentation on jerome with Ellyssa and Codex co-author credit. Keep T09 complete and retain existing contributor credit. No new PR, main update or T10/T11/T16 implementation is authorized by this publication request. See the backlog/current handoff for actual delivery and integration evidence.
 
 The user authorized implementation of Jerome Avecilla's assigned work on `jerome`, and explicitly allowed T01–T03 as one local, uncommitted batch before main integration. This exception does not unlock tasks requiring other members' features or authorize commits, pushes, PRs, or merges. The user also requested runnable setup steps in README.md and detailed migrations/team guidance in DEV.md. Follow the backlog and current handoff for verified scope; remaining feature designs are contracts, not delivered software.
 

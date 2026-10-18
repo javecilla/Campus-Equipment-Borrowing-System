@@ -2,7 +2,7 @@
 
 ## Status, references, and terminology
 
-This specification covers implemented and future behavior. The [backlog](tasks.md#verified-task-evidence) records acceptance and main integration separately, including T01-T08 and the integrated T09 implementation with its open validation finding. Remaining requirements stay planned until their own acceptance evidence exists. Requirement identifiers A1–A8 and U1–U4 refer to [Project-Requirements.txt](Project-Requirements.txt). Product purpose is defined in [PRD.md](PRD.md), field definitions in [db_design.md](db_design.md), and HTTP contracts in [api_spec.md](api_spec.md).
+This specification covers implemented and future behavior. The [backlog](tasks.md#verified-task-evidence) records acceptance and main integration separately, including completed and integrated T01-T09. The local registration validation follow-up is recorded in that evidence. Remaining requirements stay planned until their own acceptance evidence exists. Requirement identifiers A1–A8 and U1–U4 refer to [Project-Requirements.txt](Project-Requirements.txt). Product purpose is defined in [PRD.md](PRD.md), field definitions in [db_design.md](db_design.md), and HTTP contracts in [api_spec.md](api_spec.md).
 
 A **catalog item** describes an equipment type; an **equipment unit** is one physical asset. An **allocation** holds a specific unit for a request item. A **loan** records release; a **loan unit** records one issued allocation; a **return** records one loan unit coming back. An **active allocation** has no end timestamp and continues through reservation and issue until cancellation or return.
 

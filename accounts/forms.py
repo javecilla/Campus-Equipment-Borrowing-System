@@ -116,11 +116,12 @@ class AccountStatusForm(forms.Form):
 class RegistrationForm(forms.Form):
     """Validate student self-registration inputs and reject unauthorized role assignment."""
 
-    username = forms.CharField(
+    username = UsernameField(
         label="Username",
         max_length=150,
         required=True,
         strip=True,
+        validators=[User.username_validator],
         error_messages={"required": "Username cannot be blank."},
         widget=forms.TextInput(
             attrs={

@@ -183,6 +183,33 @@ class BorrowerRegistrationTests(TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertContains(response, expected_error)
 
+    def test_invalid_username_returns_field_errors_without_writes(self) -> None:
+        user_count: int = User.objects.count()
+        profile_count: int = Profile.objects.count()
+        audit_count: int = AuditLog.objects.count()
+        for username in ("review student", "review/student", "review\u00bc"):
+            with self.subTest(username=username):
+                response = self.client.post(
+                    reverse("accounts:register"),
+                    {
+                        "username": username,
+                        "first_name": "Review",
+                        "last_name": "Student",
+                        "email": "review.student@example.invalid",
+                        "contact_number": "",
+                        "password1": PASSWORD,
+                        "password2": PASSWORD,
+                    },
+                )
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, "Enter a valid username.")
+                self.assertEqual(
+                    response.context["form"].errors.as_data()["username"][0].code, "invalid"
+                )
+                self.assertEqual(User.objects.count(), user_count)
+                self.assertEqual(Profile.objects.count(), profile_count)
+                self.assertEqual(AuditLog.objects.count(), audit_count)
+
     def test_registration_rolls_back_if_audit_fails(self) -> None:
         registration_data: dict[str, str] = {
             "username": "rollback_student",
