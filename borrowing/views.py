@@ -52,7 +52,9 @@ def request_detail(request: HttpRequest, request_id: int) -> HttpResponse:
     )
 
 
-def _decide(request: HttpRequest, request_id: int, service, heading: str, button: str) -> HttpResponse:
+def _decide(
+    request: HttpRequest, request_id: int, service, heading: str, button: str
+) -> HttpResponse:
     """GET shows a confirmation form and changes nothing; POST applies the decision."""
     borrow_request = get_object_or_404(BorrowRequest.objects.select_related("owner"), pk=request_id)
     form = DecisionForm(request.POST if request.method == "POST" else None)
@@ -80,7 +82,9 @@ def _decide(request: HttpRequest, request_id: int, service, heading: str, button
 @require_http_methods(["GET", "HEAD", "POST"])
 @admin_required
 def request_approve(request: HttpRequest, request_id: int) -> HttpResponse:
-    return _decide(request, request_id, approve_request, "Approve request", "Approve and reserve units")
+    return _decide(
+        request, request_id, approve_request, "Approve request", "Approve and reserve units"
+    )
 
 
 @require_http_methods(["GET", "HEAD", "POST"])

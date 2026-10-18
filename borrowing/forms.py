@@ -56,6 +56,7 @@ class RequestQueueForm(forms.Form):
             raise ValidationError("The start date must be on or before the end date.")
         return cleaned_data
 
+
 class DecisionForm(forms.Form):
     """The written reason that every approval or rejection must carry."""
 

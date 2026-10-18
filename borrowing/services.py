@@ -68,7 +68,9 @@ def approve_request(actor_id: int, request_id: int, reason: str) -> BorrowReques
             plan.append((line, chosen))
         if shortages:
             # Raising inside atomic() rolls back everything: nothing is reserved.
-            raise WorkflowConflict("Not enough available units. " + "; ".join(shortages) + ". Nothing was reserved.")
+            raise WorkflowConflict(
+                "Not enough available units. " + "; ".join(shortages) + ". Nothing was reserved."
+            )
         now = timezone.now()
         for line, chosen in plan:
             for unit in chosen:
@@ -83,7 +85,10 @@ def approve_request(actor_id: int, request_id: int, reason: str) -> BorrowReques
         borrow_request.decision_reason = reason
         borrow_request.save(update_fields=["status", "decided_by", "decided_at", "decision_reason"])
         write_audit(
-            actor_id, AuditAction.REQUEST_APPROVED, AuditTarget.BORROW_REQUEST, borrow_request.pk,
+            actor_id,
+            AuditAction.REQUEST_APPROVED,
+            AuditTarget.BORROW_REQUEST,
+            borrow_request.pk,
             f"Approved request #{borrow_request.pk}: {reason}",
         )
         return borrow_request
@@ -108,7 +113,10 @@ def reject_request(actor_id: int, request_id: int, reason: str) -> BorrowRequest
         borrow_request.decision_reason = reason
         borrow_request.save(update_fields=["status", "decided_by", "decided_at", "decision_reason"])
         write_audit(
-            actor_id, AuditAction.REQUEST_REJECTED, AuditTarget.BORROW_REQUEST, borrow_request.pk,
+            actor_id,
+            AuditAction.REQUEST_REJECTED,
+            AuditTarget.BORROW_REQUEST,
+            borrow_request.pk,
             f"Rejected request #{borrow_request.pk}: {reason}",
         )
         return borrow_request

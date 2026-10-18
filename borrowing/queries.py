@@ -46,7 +46,11 @@ def request_lines(borrow_request: BorrowRequest) -> list[dict]:
         .values_list("catalog_item_id")
         .annotate(total=Count("pk"))
     )
-    allocations = UnitAllocation.objects.filter(request_item__request=borrow_request).select_related("unit").order_by("unit__asset_code")
+    allocations = (
+        UnitAllocation.objects.filter(request_item__request=borrow_request)
+        .select_related("unit")
+        .order_by("unit__asset_code")
+    )
     units_by_line: dict[int, list[UnitAllocation]] = {}
     for allocation in allocations:
         units_by_line.setdefault(allocation.request_item_id, []).append(allocation)
