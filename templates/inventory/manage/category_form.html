@@ -1,0 +1,60 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}{{ title }} · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section data-testid="category-form-section">
+        {% include "inventory/manage/nav.html" with active_tab="categories" %}
+        <div class="max-w-2xl space-y-6">
+            <header>
+                <p class="text-xs font-semibold tracking-widest text-accent uppercase">Category management</p>
+                <h1 class="font-heading text-3xl font-semibold">{{ title }}</h1>
+            </header>
+            {% if form.non_field_errors %}
+                <div class="rounded-md border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700"
+                     role="alert">{{ form.non_field_errors }}</div>
+            {% endif %}
+            <form method="post" data-testid="category-form" class="space-y-6">
+                {% csrf_token %}
+                <div>
+                    <label for="{{ form.name.id_for_label }}"
+                           class="mb-2 block text-sm font-medium text-slate-900">
+                        {{ form.name.label }} <span class="text-rose-600">*</span>
+                    </label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <p class="mt-1.5 text-xs text-rose-600">{{ form.name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.description.id_for_label }}"
+                           class="mb-2 block text-sm font-medium text-slate-900">
+                        {{ form.description.label }}
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <p class="mt-1.5 text-xs text-rose-600">{{ form.description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div class="flex flex-wrap items-center gap-3 pt-2">
+                    <button type="submit"
+                            data-testid="category-submit"
+                            class="inline-flex h-11 items-center justify-center rounded-md bg-accent px-6 text-sm font-semibold text-white transition-colors hover:bg-emerald-800">
+                        {{ action_label }}
+                    </button>
+                    {% if category %}
+                        <a href="{% url 'inventory_manage:category-detail' category.pk %}"
+                           data-testid="category-cancel"
+                           class="inline-flex h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">
+                            Cancel
+                        </a>
+                    {% else %}
+                        <a href="{% url 'inventory_manage:category-list' %}"
+                           data-testid="category-cancel"
+                           class="inline-flex h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">
+                            Cancel
+                        </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </section>
+{% endblock %}
