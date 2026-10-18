@@ -52,7 +52,7 @@ Campus-Equipment-Borrowing-System/
 │   ├── migrations/                              [existing]
 │   ├── views.py                                 [existing] borrower request submission; admin workflows remain planned
 │   ├── forms.py                                 [existing] request submission form/formset; returns planned
-│   ├── manage_urls.py                           [existing] catalog actions and protected unit/maintenance placeholders
+│   ├── manage_urls.py                           [existing] protected administrator request/loan placeholders
 │   ├── services.py                              [existing] atomic request submission; approval/issue/return planned
 │   ├── queries.py                               [planned] request/loan/history reads
 │   ├── tests/                                   [existing] request submission; remaining workflows planned
