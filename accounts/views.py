@@ -20,7 +20,7 @@ from accounts.access import (
     basic_user_required,
     require_active_user,
 )
-from accounts.forms import AccountSearchForm, AccountStatusForm, LoginForm
+from accounts.forms import AccountSearchForm, AccountStatusForm, LoginForm, RegistrationForm
 from accounts.models import User, UserRole
 from accounts.queries import (
     account_loan_history,
@@ -32,6 +32,7 @@ from accounts.services import (
     AccountStatusConflict,
     activate_basic_user,
     deactivate_basic_user,
+    register_basic_user,
 )
 from borrowing.models import BorrowRequest, Loan
 
@@ -109,6 +110,32 @@ def logout_view(request: HttpRequest) -> HttpResponse:
     """End the current session through a CSRF-protected POST."""
     logout(request)
     return redirect("accounts:login")
+
+
+@require_http_methods(["GET", "POST"])
+def register_view(request: HttpRequest) -> HttpResponse:
+    """Register a new student account as an active BASIC_USER."""
+    if request.user.is_authenticated:
+        user: User = require_active_user(cast(User, request.user))
+        return redirect(_role_home_name(user))
+    form: RegistrationForm = RegistrationForm(
+        data=request.POST if request.method == "POST" else None
+    )
+    if request.method == "POST" and form.is_valid():
+        register_basic_user(
+            username=form.cleaned_data["username"],
+            first_name=form.cleaned_data["first_name"],
+            last_name=form.cleaned_data["last_name"],
+            email=form.cleaned_data["email"],
+            contact_number=str(form.cleaned_data.get("contact_number") or ""),
+            raw_password=form.cleaned_data["password1"],
+        )
+        messages.success(
+            request,
+            "Your account has been created successfully. You may now sign in.",
+        )
+        return redirect("accounts:login")
+    return render(request, "accounts/register.html", {"form": form})
 
 
 @require_safe

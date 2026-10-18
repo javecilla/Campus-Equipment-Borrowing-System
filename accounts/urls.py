@@ -10,6 +10,7 @@ urlpatterns: list[URLPattern] = [
     path("", views.home, name="home"),
     path("accounts/login/", views.login_view, name="login"),
     path("accounts/logout/", views.logout_view, name="logout"),
+    path("accounts/register/", views.register_view, name="register"),
     path("manage/accounts/", views.manage_account_list, name="manage-list"),
     path(
         "manage/accounts/<int:account_id>/",
