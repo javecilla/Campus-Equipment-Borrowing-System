@@ -49,12 +49,12 @@ Campus-Equipment-Borrowing-System/
 ├── borrowing/                                   [existing]
 │   ├── models.py                                [existing] requests, allocations, loans, returns
 │   ├── migrations/                              [existing]
-│   ├── views.py                                 [existing] read-only module placeholders; workflows planned
-│   ├── forms.py                                 [planned] request and return formsets
+│   ├── views.py                                 [existing] borrower request submission; admin workflows remain planned
+│   ├── forms.py                                 [existing] request submission form/formset; return formsets planned
 │   ├── manage_urls.py                           [existing] catalog actions and protected unit/maintenance placeholders
-│   ├── services.py                              [planned] submission/approval/issue/return actions
+│   ├── services.py                              [existing] atomic request submission; approval/issue/return actions planned
 │   ├── queries.py                               [planned] request/loan/history reads
-│   ├── tests/                                   [planned] borrowing workflow checks
+│   ├── tests/                                   [existing] request submission; remaining workflow checks planned
 │   └── management/commands/                     [planned] controlled demonstration seed
 │
 ├── operations/                                  [existing]
@@ -114,7 +114,7 @@ The root also contains the setup/review documents, dependency files, and private
 
 A **view** is a Python request handler in the relevant app's `views.py`. The page's **HTML** is a template. For example, an inventory management page uses `inventory/views.py` and a template under `templates/inventory/manage/`.
 
-The role prefix selects the audience; the feature app selects the Python module. Real basic-user equipment handlers belong in `inventory/`, and borrowing handlers in `borrowing/`. UI-07 temporarily renders the four pending portal destinations from `accounts/portal_views.py`; owners replace these presentation handlers when implementing their features, keeping the named `portal` URLs. Feature pages extend the existing `operations/manage/base.html` or `accounts/portal/base.html` and fill `workspace_content`; both inherit `components/workspace.html` and the `base.html` document/asset shell. The [coding guide](coding-standards.md#tailwind-styling-pattern) defines the shared layout pattern.
+The role prefix selects the audience; the feature app selects the Python module. Real basic-user equipment handlers belong in `inventory/`, and borrowing handlers in `borrowing/`. UI-07's remaining pending portal destinations are rendered from `accounts/portal_views.py`; T11's request-creation handler lives in `borrowing/views.py` and keeps its namespaced `portal` URL. Feature pages extend the existing `operations/manage/base.html` or `accounts/portal/base.html` and fill `workspace_content`; both inherit `components/workspace.html` and the `base.html` document/asset shell. The [coding guide](coding-standards.md#tailwind-styling-pattern) defines the shared layout pattern.
 
 These page placements include existing account/settings/audit pages and planned inventory/borrowing examples; route names come from the HTTP contract:
 

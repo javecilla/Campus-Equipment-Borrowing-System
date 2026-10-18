@@ -4,7 +4,7 @@
 
 Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv`, `.env.local`, and local PostgreSQL database. Git shares source and migrations, not credentials or database contents.
 
-**Current phase: T08 physical-unit management is integrated; T16 prerequisites are satisfied for Kenneth.** T01-T08 are integrated into main, including PR #22 at `6c91d48`. Ellyssa's T09 registration/profile task is Done and integrated through PR #21 at `9101586`; the local username-validation follow-up is implemented and awaiting main integration. The combined PostgreSQL suite passes 149 tests. See [HANDOFF.md](HANDOFF.md) for evidence and next-owner actions. Browsing, borrowing workflows, maintenance lifecycle and live reporting remain pending.
+**Current phase: T11 request submission is Done locally on `ralph`, not integrated.** T01-T09 are integrated into main; T08 merged through PR #22 at `6c91d48`, and the T09 username-validation follow-up through PR #24 at `f29bd91`. The final T11 full PostgreSQL suite passed 156 tests. T10 / Ellyssa and T16 / Kenneth are ready; Ralph's T12 waits for T11 review and main integration. See [HANDOFF.md](HANDOFF.md) for evidence and next-owner actions. Borrower history/cancellation, maintenance lifecycle, and live reporting remain pending.
 
 For where to add views, models, forms, URLs, and page templates, use [Project Folder Architecture](docs/project-folder-architecture.md).
 
@@ -402,7 +402,13 @@ The T07 continuation adds `inventory.0002_category_name_case_insensitive`, `inve
 
 Anonymous users can register at `/accounts/register/`, then sign in through the shared login page. Registration fixes the role to BASIC_USER; an active borrower edits only their own name, email and optional contact number at `/portal/profile/`. The administrator profile remains read-only. Registration/profile changes use transactional audit services; see the [HTTP contract](docs/api_spec.md#shared-account-routes) for fields and access rules.
 
-Run `.\.venv\Scripts\python.exe manage.py test accounts.tests.test_borrower_portal operations.tests.test_navigation --noinput` for the focused integration suites. The combined full suite currently contains 149 passing tests. The [original integration review](handoffs/t09-main-integration-and-documentation-review-10-18-2026.md) identified invalid usernames causing an unhandled model ValidationError. The local [validation follow-up](handoffs/registration-username-validation-and-t09-status-10-18-2026.md) now uses Django normalization and the model username validator to return bound field errors before any writes. T09 remains Done, as confirmed by the user; integrated T08/T09 satisfy T10/T11 prerequisites.
+Run `.\.venv\Scripts\python.exe manage.py test accounts.tests.test_borrower_portal operations.tests.test_navigation --noinput` for the focused integration suites. The T09 validation follow-up passed 149 tests in its then-current full suite. The [original integration review](handoffs/t09-main-integration-and-documentation-review-10-18-2026.md) identified invalid usernames causing an unhandled model ValidationError. The local [validation follow-up](handoffs/registration-username-validation-and-t09-status-10-18-2026.md) now uses Django normalization and the model username validator to return bound field errors before any writes. T09 remains Done, as confirmed by the user; integrated T08/T09 satisfy T10/T11 prerequisites.
+
+### Borrower request submission (T11)
+
+An active BASIC_USER can submit a request from `/portal/requests/new/` with a purpose, desired return date, and one to three distinct active catalog items. The service rechecks the borrower, current settings, and catalog eligibility under locks, snapshots both limits, then writes the Pending request and all items atomically. `/portal/requests/` provides submission confirmation and a link to create another request; T12 still owns request/loan history and cancellation.
+
+Run `.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_request_submission --noinput` for the focused PostgreSQL submission checks. The latest T11 local verification and integration status are recorded in the [Ralph handoff](handoffs/ralph-t11-request-submission-10-18-2026.md); source is uncommitted on `ralph` and not integrated into main.
 
 `.idea/` is ignored and removed from tracked files through main commit `f08fb04`. Each developer may keep local IDE settings; do not force-add them. Generated builds, uploads, dependencies and private environment files also stay outside Git.
 

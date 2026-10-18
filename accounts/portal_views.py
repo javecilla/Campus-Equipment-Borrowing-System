@@ -1,4 +1,4 @@
-"""Borrower portal views and UI placeholders for feature owners."""
+"""Borrower profile and remaining portal placeholder views."""
 
 from typing import cast
 
@@ -59,16 +59,10 @@ def equipment_list(request: HttpRequest) -> HttpResponse:
 @require_safe
 @basic_user_required
 def request_list(request: HttpRequest) -> HttpResponse:
-    """Display the pending T11 / T12 · Ralph module without exposing another user's data."""
+    """Display submission confirmation while T12 history and tracking remain pending."""
     return render(
         request,
-        "accounts/portal/pending.html",
-        {
-            "heading": "My requests",
-            "module": "T11 / T12 · Ralph",
-            "description": "Submit borrowing requests and follow their progress here.",
-            "next_work": "Add atomic request submission, your own request history, and eligible cancellation after T08 and T09. Enforce ownership on every lookup.",
-        },
+        "accounts/portal/request_list.html",
     )
 
 
