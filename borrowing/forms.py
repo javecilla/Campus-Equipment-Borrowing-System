@@ -1,14 +1,145 @@
-"""Filters for the administrator request queue."""
+"""Request forms: borrower submission forms/formsets and administrator queue and decision forms."""
+
+from datetime import date
 
 from django import forms
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator
+from django.forms import BaseFormSet, formset_factory
+from django.utils import timezone
 
 from borrowing.models import RequestStatus
-from operations.forms import CONTROL_CLASSES
+from inventory.models import CatalogItem
+from operations.validation import LoanLimits, validate_requested_due_date
+
+CONTROL_CLASSES: str = (
+    "h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 "
+    "transition-colors hover:border-slate-300 focus:border-accent focus:outline-none "
+    "focus:ring-2 focus:ring-accent/15 aria-invalid:border-rose-500"
+)
+TEXTAREA_CLASSES: str = (
+    "min-h-28 w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm "
+    "text-slate-900 transition-colors hover:border-slate-300 focus:border-accent "
+    "focus:outline-none focus:ring-2 focus:ring-accent/15 aria-invalid:border-rose-500"
+)
+
+
+class CatalogItemChoiceField(forms.ModelChoiceField):
+    """Show borrowers the item and its category instead of a generic model label."""
+
+    def label_from_instance(self, obj: CatalogItem) -> str:
+        return f"{obj.name} ({obj.category.name})"
+
+
+class RequestForm(forms.Form):
+    """Validate the borrower-controlled purpose and campus-calendar due date."""
+
+    purpose = forms.CharField(
+        label="Purpose",
+        strip=True,
+        widget=forms.Textarea(attrs={"id": "request-purpose", "class": TEXTAREA_CLASSES}),
+    )
+    desired_due_date = forms.DateField(
+        label="Desired return date",
+        input_formats=["%Y-%m-%d"],
+        widget=forms.DateInput(
+            attrs={"id": "request-due-date", "type": "date", "class": CONTROL_CLASSES},
+            format="%Y-%m-%d",
+        ),
+    )
+
+    def __init__(
+        self,
+        *args: object,
+        limits: LoanLimits,
+        submitted_on: date | None = None,
+        **kwargs: object,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.limits: LoanLimits = limits
+        self.submitted_on: date = submitted_on or timezone.localdate()
+        maximum_due_date: date = date.fromordinal(
+            min(
+                date.max.toordinal(),
+                self.submitted_on.toordinal() + self.limits.max_loan_days,
+            )
+        )
+        self.fields["desired_due_date"].widget.attrs.update(
+            {
+                "min": date.fromordinal(self.submitted_on.toordinal() + 1).isoformat(),
+                "max": maximum_due_date.isoformat(),
+            }
+        )
+
+    def clean_desired_due_date(self) -> date:
+        desired_due_date: date = self.cleaned_data["desired_due_date"]
+        try:
+            return validate_requested_due_date(self.submitted_on, desired_due_date, self.limits)
+        except ValidationError as error:
+            raise forms.ValidationError(error.messages) from error
+
+
+class RequestItemForm(forms.Form):
+    """Validate one active catalog item and its positive per-item quantity."""
+
+    catalog_item = CatalogItemChoiceField(
+        label="Equipment item",
+        queryset=CatalogItem.objects.none(),
+        empty_label="Choose equipment",
+        widget=forms.Select(attrs={"class": CONTROL_CLASSES}),
+    )
+    quantity = forms.IntegerField(
+        label="Quantity",
+        min_value=1,
+        widget=forms.NumberInput(
+            attrs={"class": CONTROL_CLASSES, "min": 1, "inputmode": "numeric"}
+        ),
+    )
+
+    def __init__(self, *args: object, max_quantity: int, **kwargs: object) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields["catalog_item"].queryset = (
+            CatalogItem.objects.filter(is_archived=False, category__is_archived=False)
+            .select_related("category")
+            .order_by("name", "pk")
+        )
+        quantity_field: forms.IntegerField = self.fields["quantity"]
+        quantity_field.max_value = max_quantity
+        quantity_field.validators.append(MaxValueValidator(max_quantity))
+        quantity_field.help_text = f"Maximum per item: {max_quantity}."
+
+
+class RequestItemFormSet(BaseFormSet):
+    """Require one to three complete, distinct item rows on a new request."""
+
+    def clean(self) -> None:
+        super().clean()
+        if any(self.errors):
+            return
+        if self.initial_form_count() != 0:
+            raise forms.ValidationError("Existing item rows cannot be submitted as a new request.")
+
+        selected_ids: list[int] = [
+            form.cleaned_data["catalog_item"].pk for form in self.forms if form.cleaned_data
+        ]
+        if len(selected_ids) != len(set(selected_ids)):
+            raise forms.ValidationError("Choose each catalog item only once.")
+
+
+RequestItemFormSetFactory = formset_factory(
+    RequestItemForm,
+    formset=RequestItemFormSet,
+    extra=3,
+    min_num=1,
+    max_num=3,
+    validate_min=True,
+    validate_max=True,
+    absolute_max=3,
+)
 
 
 class RequestQueueForm(forms.Form):
-    """Validate optional queue filters before querying requests."""
+    """Validate optional administrator queue filters before querying requests."""
 
     q = forms.CharField(
         label="Request ID or borrower username",
