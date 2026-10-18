@@ -4,7 +4,7 @@
 
 Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv`, `.env.local`, and local PostgreSQL database. Git shares source and migrations, not credentials or database contents.
 
-**Current phase: T07 category/catalog management complete; T08 physical units next.** T01–T06 and Kenneth's initial T07 are integrated into `main` (T07 PR #19). The continuation, committed and pushed on `jerome` as [32b7cc2](https://github.com/javecilla/Campus-Equipment-Borrowing-System/commit/32b7cc29f7815ad51d976f8c1ee1b08db56b8b5b), includes optional equipment photos, archive/restore, responsive layouts and 110 passing PostgreSQL tests. Integrate that continuation into main before Kenneth starts T08 against its corrected interfaces and migrations. See [HANDOFF.md](HANDOFF.md) for publication/integration evidence. Registration, borrower workflows, maintenance and live reporting remain pending.
+**Current phase: equipment inventory and borrower accounts; T08 physical units next.** T01–T07 are integrated into `main`; PR #20 at `a4634b9` includes the T07 continuation. Ellyssa's T09 registration/profile implementation is integrated through PR #21 at `9101586`, with 125 existing PostgreSQL tests passing. Review reproduced an invalid-username validation failure; T09 remains In progress until corrected. See [HANDOFF.md](HANDOFF.md) for evidence and next-owner actions. Equipment browsing, borrowing workflows, maintenance and live reporting remain pending.
 
 For where to add views, models, forms, URLs, and page templates, use [Project Folder Architecture](docs/project-folder-architecture.md).
 
@@ -385,7 +385,7 @@ Write the required [dated handoff](.agents/skills/project-handoff/SKILL.md), upd
 
 ## Continuing with T08
 
-Kenneth's next inventory task is **T08**, currently Not started. T07 acceptance is complete on `jerome`; its continuation must be reviewed and integrated into `main` before dependent work starts. Follow [the member-branch workflow](#assigned-branches-and-main-integration) to sync `kenneth` with integrated main, then run:
+Kenneth's next inventory task is **T08**, currently Not started. T07 and its continuation are integrated into `main` through PR #20 at `a4634b9`, satisfying T08's prerequisite. Follow [the member-branch workflow](#assigned-branches-and-main-integration) to sync `kenneth` with integrated main, then run:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
@@ -396,7 +396,13 @@ npm.cmd run build
 .\.venv\Scripts\python.exe manage.py test --noinput
 ```
 
-The T07 continuation adds `inventory.0002_category_name_case_insensitive`, `inventory.0003_catalog_item_photo`, and `operations.0003_catalog_restore_audit_actions`. Do not rewrite existing migrations. Use the existing catalog forms, distinct services, read-only queries, active-admin boundary and parent-before-child lock order; see the [HTTP contract](docs/api_spec.md#custom-administration-accounts-and-inventory), [coding standards](docs/coding-standards.md) and [T08 acceptance](docs/tasks.md#inventory-and-borrower-portal). `/manage/units/` remains a protected placeholder until T08 implements registration, edits, filters and history. This publication does not start T08 or supply the full demonstration dataset.
+The T07 continuation adds `inventory.0002_category_name_case_insensitive`, `inventory.0003_catalog_item_photo`, and `operations.0003_catalog_restore_audit_actions`. T09 adds no migration or dependency. Do not rewrite existing migrations. Use the existing catalog forms, distinct services, read-only queries, active-admin boundary and parent-before-child lock order; see the [HTTP contract](docs/api_spec.md#custom-administration-accounts-and-inventory), [coding standards](docs/coding-standards.md) and [T08 acceptance](docs/tasks.md#inventory-and-borrower-portal). `/manage/units/` remains a protected placeholder until T08 implements registration, edits, filters and history. Integration does not start T08 or supply the full demonstration dataset.
+
+### Borrower account verification after T09 integration
+
+Anonymous users can register at `/accounts/register/`, then sign in through the shared login page. Registration fixes the role to BASIC_USER; an active borrower edits only their own name, email and optional contact number at `/portal/profile/`. The administrator profile remains read-only. Registration/profile changes use transactional audit services; see the [HTTP contract](docs/api_spec.md#shared-account-routes) for fields and access rules.
+
+Run `.\.venv\Scripts\python.exe manage.py test accounts.tests.test_borrower_portal operations.tests.test_navigation --noinput` for the focused integration suites. The full suite currently contains 125 passing tests. The [integration review](handoffs/t09-main-integration-and-documentation-review-10-18-2026.md) records an additional failing behavior outside that suite: a username containing an internal space passes the form and raises an unhandled model ValidationError. Ellyssa should correct field validation and verify the bound-error response before T09 acceptance closes. T10/T11 still require T08 and accepted T09.
 
 `.idea/` is ignored and removed from tracked files through main commit `f08fb04`. Each developer may keep local IDE settings; do not force-add them. Generated builds, uploads, dependencies and private environment files also stay outside Git.
 
