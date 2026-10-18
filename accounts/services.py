@@ -3,7 +3,7 @@
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 
-from accounts.access import require_active_admin
+from accounts.access import require_active_admin, require_active_basic_user
 from accounts.models import Profile, User, UserRole
 from operations.audit import write_audit
 from operations.models import AuditAction, AuditTarget
@@ -93,3 +93,74 @@ def create_admin_account(
     admin.save()
     Profile.objects.create(user=admin, contact_number="")
     return admin
+
+
+@transaction.atomic
+def register_basic_user(
+    username: str,
+    first_name: str,
+    last_name: str,
+    email: str,
+    contact_number: str,
+    raw_password: str,
+) -> User:
+    """Create one active BASIC_USER and Profile for student self-registration."""
+    normalized_username: str = User.normalize_username(username.strip())
+    normalized_email: str = User.objects.normalize_email(email.strip())
+    user: User = User(
+        username=normalized_username,
+        first_name=first_name.strip(),
+        last_name=last_name.strip(),
+        email=normalized_email,
+        role=UserRole.BASIC_USER,
+        is_active=True,
+        is_staff=False,
+        is_superuser=False,
+    )
+    validate_password(raw_password, user)
+    user.set_password(raw_password)
+    user.full_clean()
+    user.save()
+    Profile.objects.create(user=user, contact_number=contact_number.strip())
+    write_audit(
+        user.pk,
+        AuditAction.ACCOUNT_CREATED,
+        AuditTarget.USER,
+        user.pk,
+        "Basic-user account self-registered.",
+    )
+    return user
+
+
+@transaction.atomic
+def update_basic_user_profile(
+    user_id: int,
+    first_name: str,
+    last_name: str,
+    email: str,
+    contact_number: str,
+) -> User:
+    """Update personal name/contact for one active BASIC_USER and audit the update."""
+    user: User = User.objects.select_for_update().get(pk=user_id)
+    require_active_basic_user(user)
+
+    user.first_name = first_name.strip()
+    user.last_name = last_name.strip()
+    user.email = User.objects.normalize_email(email.strip())
+    user.full_clean()
+    user.save(update_fields=["first_name", "last_name", "email"])
+
+    profile: Profile
+    profile, _ = Profile.objects.select_for_update().get_or_create(user=user)
+    profile.contact_number = contact_number.strip()
+    profile.full_clean()
+    profile.save(update_fields=["contact_number"])
+
+    write_audit(
+        user.pk,
+        AuditAction.ACCOUNT_UPDATED,
+        AuditTarget.USER,
+        user.pk,
+        "Borrower updated personal profile details.",
+    )
+    return user
