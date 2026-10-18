@@ -1,6 +1,6 @@
 ---
 name: django-mtv
-description: Design, implement, review, or refactor Django features in the Campus Equipment Borrowing project using its MTV coding standards and existing contracts. Use for models, forms, views, templates, ORM queries, workflow services, and feature tests; documentation or MCP setup alone does not authorize application implementation.
+description: Design, implement, review, or refactor Django features in the Campus Equipment Borrowing project using its MTV coding standards and existing contracts. Use for models, forms, views, templates, ORM queries, workflow services, feature tests and manual testing guides; documentation or MCP setup alone does not authorize application implementation.
 ---
 
 # Django MTV Project Workflow
@@ -28,5 +28,7 @@ When reviewing, identify the concrete violation, file/location, consequence, and
 ## Verify and transfer
 
 Use the guide's verification table and actual configured project commands. Prefer meaningful real integration checks for the affected behavior; record unavailable commands or unrun checks honestly. For design/documentation work, check links and consistency without adding application code.
+
+For every newly implemented feature, create or update its section in [docs/manual-test-guide.md](../../../docs/manual-test-guide.md) before completing the implementation handoff. Follow the canonical [manual testing guide requirements](../../../docs/coding-standards.md#manual-testing-guide-for-feature-delivery) for concrete Field / Value cases, read-only local record/settings checks, dated examples and honest expected-versus-executed results. Refresh existing cases when their flow changes; keep pending features and member-branch integration state explicit. Guide creation is part of authorized feature work and does not authorize seeding, database writes or publication.
 
 For file-changing work, follow the [project-handoff skill](../project-handoff/SKILL.md) as required by AGENTS.md: save the work snapshot in project-root `handoffs/{title-of-work}-{MM-DD-YYYY}.md` using the current Asia/Manila date, then update HANDOFF.md's current state/index and affected tasks. Preserve other members' work and leave changes uncommitted unless explicitly requested. Summarize the outcome, relevant checks, and remaining limitations. Using this skill alone does not authorize commits, publishing, unrelated dependencies, or database changes beyond the user's requested scope.

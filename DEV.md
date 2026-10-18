@@ -1,10 +1,10 @@
 # Team Development Guide
 
-[First-time setup](#first-time-setup) | [Everyday startup](#everyday-startup) | [Error pages](#preview-custom-error-pages) | [Reset local data](#reset-local-development-data) | [Frontend assets](#frontend-assets-tailwind-and-page-scripts) | [Formatting](#formatting-and-code-consistency) | [Migrations](#working-with-migrations) | [Checks](#before-handing-over-work) | [Fonts](#fonts-and-static-assets) | [Team Git](#assigned-branches-and-main-integration) | [Optional MCP](#configure-your-mcp-client) | [Troubleshooting](#troubleshooting)
+[First-time setup](#first-time-setup) | [Everyday startup](#everyday-startup) | [Error pages](#preview-custom-error-pages) | [Reset local data](#reset-local-development-data) | [Frontend assets](#frontend-assets-tailwind-and-page-scripts) | [Formatting](#formatting-and-code-consistency) | [Migrations](#working-with-migrations) | [Checks](#before-handing-over-work) | [Manual browser tests](docs/manual-test-guide.md) | [Fonts](#fonts-and-static-assets) | [Team Git](#assigned-branches-and-main-integration) | [Optional MCP](#configure-your-mcp-client) | [Troubleshooting](#troubleshooting)
 
 Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv`, `.env.local`, and local PostgreSQL database. Git shares source and migrations, not credentials or database contents.
 
-**Current phase: T01-T10 are Done and integrated; T11 is under PR #27 review.** Main is `3817e7e` (PR #26), preserving T10 and the T09 username correction. The local conflict resolution combines Ralph's request submission with current main; T11 is not yet integrated. See [HANDOFF.md](HANDOFF.md) for verified checks and readiness. Request history/cancellation, maintenance lifecycle and live reporting remain pending.
+**Current phase: T01-T11 are Done and integrated into main** through PR #27 at `6c5ea8f`. The verified combined source passed 181 PostgreSQL tests and preserves T10 browsing plus the T09 username correction. Ralph / T12, Margareth / T13 and Kenneth / T16 have satisfied prerequisites and remain Not started. Request history/cancellation, approval, maintenance lifecycle and live reporting remain pending; see [HANDOFF.md](HANDOFF.md).
 
 For where to add views, models, forms, URLs, and page templates, use [Project Folder Architecture](docs/project-folder-architecture.md).
 
@@ -381,7 +381,7 @@ git --no-pager diff --check
 
 Tests create and remove a separate `test_<DB_NAME>` PostgreSQL database. Your local account needs permission to create test databases; keep personal data out of them. The foundation suite does not establish acceptance for unimplemented workflows or T14 competing approvals. To format edited Python files, run `.\.venv\Scripts\ruff.exe format .`.
 
-Write the required [dated handoff](.agents/skills/project-handoff/SKILL.md), update affected task evidence/current readiness, and leave AI changes uncommitted unless the user requests a commit.
+For each new feature or changed documented flow, update the relevant [manual testing section](docs/manual-test-guide.md) using the [manual-guide requirements](docs/coding-standards.md#manual-testing-guide-for-feature-delivery). Then write the required [dated handoff](.agents/skills/project-handoff/SKILL.md), link that section, update affected task evidence/current readiness, and leave AI changes uncommitted unless the user requests a commit.
 
 ## Continuing with T08
 
@@ -402,19 +402,19 @@ The T07 continuation adds `inventory.0002_category_name_case_insensitive`, `inve
 
 Anonymous users can register at `/accounts/register/`, then sign in through the shared login page. Registration fixes the role to BASIC_USER; an active borrower edits only their own name, email and optional contact number at `/portal/profile/`. The administrator profile remains read-only. Registration/profile changes use transactional audit services; see the [HTTP contract](docs/api_spec.md#shared-account-routes) for fields and access rules.
 
-Run `.\.venv\Scripts\python.exe manage.py test accounts.tests.test_borrower_portal operations.tests.test_navigation --noinput` for the focused integration suites. The T10 integration review passed 174 tests; the combined PR #27 candidate now passes 181 tests. The [username-validation follow-up](handoffs/registration-username-validation-and-t09-status-10-18-2026.md) uses Django normalization and the model validator to return bound field errors before writes; it is integrated through PR #24 at `f29bd91`. T09 remains Done.
+Run `.\.venv\Scripts\python.exe manage.py test accounts.tests.test_borrower_portal operations.tests.test_navigation --noinput` for the focused integration suites. The T10 integration review passed 174 tests; the combined source integrated through PR #27 passed 181 tests. The [username-validation follow-up](handoffs/registration-username-validation-and-t09-status-10-18-2026.md) uses Django normalization and the model validator to return bound field errors before writes; it is integrated through PR #24 at `f29bd91`. T09 remains Done.
 
 ### Borrower equipment verification after T10 integration
 
 Active BASIC_USER accounts browse `/portal/equipment/` with name/description search, active-category filtering and 25-item pagination. Detail pages show descriptions, protected photos or the shared default, and database-derived serviceable/available counts. Archived items and items under archived categories are excluded from browsing, detail and photo access. Admins and inactive accounts are denied; internal unit notes and asset codes stay outside these catalog pages. See the [portal contract](docs/api_spec.md#basic-user-portal).
 
-Run `.\.venv\Scripts\python.exe manage.py test inventory.tests.test_portal_equipment --noinput` for the 25 T10 integration tests. The [integration review](handoffs/t10-main-integration-and-documentation-review-10-18-2026.md) records fresh full-suite checks and remaining review items: the photo fixture currently leaves a file in local media, and the detail page refers to request submission before T11 exists. The merged candidate adds T11 submission and a create link on the request section; request/loan history and cancellation remain T12 work. The user subsequently reported successful manual T10 testing; detailed mobile/keyboard scenarios were not supplied. See [publication evidence](handoffs/t10-documentation-publication-10-18-2026.md).
+Run `.\.venv\Scripts\python.exe manage.py test inventory.tests.test_portal_equipment --noinput` for the 25 T10 integration tests. The [integration review](handoffs/t10-main-integration-and-documentation-review-10-18-2026.md) records earlier checks and the open test-photo-storage follow-up. Integrated T11 now supplies submission and a create link from the request section, resolving the earlier premature-request-guidance gap; request/loan history and cancellation remain T12 work. The user subsequently reported successful manual T10 testing; detailed mobile/keyboard scenarios were not supplied. See [publication evidence](handoffs/t10-documentation-publication-10-18-2026.md).
 
 ### Borrower request submission (T11)
 
 An active BASIC_USER can submit `/portal/requests/new/` with a purpose, desired return date and one to three distinct active catalog items. The service locks/rechecks the borrower, current settings and eligible catalog records, snapshots both limits and writes the Pending request/items atomically without allocating units. `/portal/requests/` displays submission confirmation and a create link; history, details and cancellation remain T12 work.
 
-Run `.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_request_submission --noinput` for focused checks. See the [Ralph implementation snapshot](handoffs/ralph-t11-request-submission-10-18-2026.md) and [PR #27 resolution review](handoffs/pr27-t11-conflict-resolution-review-10-18-2026.md) for current verification and integration state.
+Run `.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_request_submission --noinput` for focused checks. See the [Ralph implementation snapshot](handoffs/ralph-t11-request-submission-10-18-2026.md), [resolution review](handoffs/pr27-t11-conflict-resolution-review-10-18-2026.md) and [main integration receipt](handoffs/pr27-t11-main-integration-10-18-2026.md) for actual verification/integration evidence. No new migration or dependency is required by T11. After pulling, run the existing asset build to include the request templates; request history/cancellation and administrative approval are still pending.
 
 `.idea/` is ignored and removed from tracked files through main commit `f08fb04`. Each developer may keep local IDE settings; do not force-add them. Generated builds, uploads, dependencies and private environment files also stay outside Git.
 
