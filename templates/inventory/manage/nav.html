@@ -1,0 +1,15 @@
+<nav class="mb-8 flex flex-wrap gap-5 text-sm font-medium"
+     aria-label="Equipment sections">
+    <a href="{% url 'inventory_manage:item-list' %}"
+       data-testid="equipment-catalog"
+       class="transition-colors hover:text-accent {% if active_tab == 'items' %}font-semibold text-accent underline{% else %}text-slate-600{% endif %}">Catalog items</a>
+    <a href="{% url 'inventory_manage:category-list' %}"
+       data-testid="equipment-categories"
+       class="transition-colors hover:text-accent {% if active_tab == 'categories' %}font-semibold text-accent underline{% else %}text-slate-600{% endif %}">Categories</a>
+    <a href="{% url 'inventory_manage:unit-list' %}"
+       data-testid="equipment-units"
+       class="transition-colors hover:text-accent {% if active_tab == 'units' %}font-semibold text-accent underline{% else %}text-slate-600{% endif %}">Physical units</a>
+    <a href="{% url 'inventory_manage:maintenance-list' %}"
+       data-testid="equipment-maintenance"
+       class="transition-colors hover:text-accent {% if active_tab == 'maintenance' %}font-semibold text-accent underline{% else %}text-slate-600{% endif %}">Maintenance</a>
+</nav>

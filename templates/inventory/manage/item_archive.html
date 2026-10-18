@@ -1,0 +1,36 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}Archive {{ item.name }} · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section data-testid="item-archive-confirmation">
+        {% include "inventory/manage/nav.html" with active_tab="items" %}
+        <div class="w-full max-w-2xl py-2">
+            <p class="mb-3 text-xs font-semibold tracking-widest text-accent uppercase">Equipment catalog</p>
+            <h1 class="mb-4 font-heading text-3xl font-semibold">Archive {{ item.name }}?</h1>
+            {% if error %}
+                <p class="mb-5 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"
+                   role="alert">{{ error }}</p>
+            {% endif %}
+            <div class="mb-6 space-y-3 text-slate-600">
+                <p>
+                    Archiving this equipment item blocks it from being selected in new borrowing requests and prevents future request approvals.
+                </p>
+                <p>
+                    Existing borrowing requests, active loans, physical units, maintenance records, and return workflows for this item are preserved.
+                </p>
+            </div>
+            <form method="post" class="flex flex-wrap gap-3">
+                {% csrf_token %}
+                <button data-testid="item-archive-submit"
+                        type="submit"
+                        class="min-h-11 rounded-md bg-rose-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-rose-700">
+                    Confirm archive
+                </button>
+                <a href="{% url 'inventory_manage:item-detail' item.pk %}"
+                   data-testid="item-archive-cancel"
+                   class="inline-flex min-h-11 items-center rounded-md border border-slate-200 px-4 text-sm font-semibold hover:bg-slate-50">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </section>
+{% endblock %}

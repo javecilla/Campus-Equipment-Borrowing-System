@@ -1,0 +1,129 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}{{ item.name }} · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section data-testid="item-detail">
+        {% include "inventory/manage/nav.html" with active_tab="items" %}
+        <div class="space-y-8">
+            <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <a href="{% url 'inventory_manage:category-detail' item.category.pk %}"
+                           class="text-xs font-semibold tracking-widest text-accent uppercase hover:underline">
+                            {{ item.category.name }}
+                        </a>
+                        {% if item.is_archived %}
+                            <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">Archived</span>
+                        {% elif item.category.is_archived %}
+                            <span class="inline-flex rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700">Category archived</span>
+                        {% else %}
+                            <span class="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-accent">Active</span>
+                        {% endif %}
+                    </div>
+                    <h1 class="font-heading text-3xl font-semibold">{{ item.name }}</h1>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <a href="{% url 'inventory_manage:item-update' item.pk %}"
+                       data-testid="edit-item-button"
+                       class="inline-flex h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">
+                        Edit item
+                    </a>
+                    {% if not item.is_archived %}
+                        <a href="{% url 'inventory_manage:item-archive' item.pk %}"
+                           data-testid="archive-item-button"
+                           class="inline-flex h-11 items-center justify-center rounded-md border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100">
+                            Archive item
+                        </a>
+                    {% endif %}
+                </div>
+            </header>
+            <section class="rounded-lg border border-slate-200 bg-slate-50/50 p-6">
+                <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">Borrower-facing description</h2>
+                <p class="text-slate-800 whitespace-pre-line">{{ item.description }}</p>
+                <div class="mt-4 flex flex-wrap gap-6 text-xs text-slate-500 border-t border-slate-200/60 pt-4">
+                    <div>Category: <span class="font-medium text-slate-700">{{ item.category.name }}</span></div>
+                    <div>Created: <span class="font-medium text-slate-700">{{ item.created_at|date:"M d, Y H:i" }}</span></div>
+                    <div>Last updated: <span class="font-medium text-slate-700">{{ item.updated_at|date:"M d, Y H:i" }}</span></div>
+                    {% if has_history %}
+                        <div class="text-amber-700 font-medium">Category locked (has transactional history)</div>
+                    {% endif %}
+                </div>
+            </section>
+            <section class="space-y-4">
+                <h2 class="font-heading text-xl font-semibold">Live inventory counts</h2>
+                <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-7">
+                    <div class="rounded-md border border-slate-200 bg-white p-4 text-center">
+                        <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Serviceable</div>
+                        <div data-testid="count-serviceable"
+                             class="mt-1 text-2xl font-bold text-accent">{{ counts.serviceable }}</div>
+                    </div>
+                    <div class="rounded-md border border-slate-200 bg-white p-4 text-center">
+                        <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Available</div>
+                        <div data-testid="count-available"
+                             class="mt-1 text-2xl font-bold text-emerald-600">{{ counts.available }}</div>
+                    </div>
+                    <div class="rounded-md border border-slate-200 bg-white p-4 text-center">
+                        <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Reserved</div>
+                        <div data-testid="count-reserved"
+                             class="mt-1 text-2xl font-bold text-sky-600">{{ counts.reserved }}</div>
+                    </div>
+                    <div class="rounded-md border border-slate-200 bg-white p-4 text-center">
+                        <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Issued</div>
+                        <div data-testid="count-issued"
+                             class="mt-1 text-2xl font-bold text-indigo-600">{{ counts.issued }}</div>
+                    </div>
+                    <div class="rounded-md border border-slate-200 bg-white p-4 text-center">
+                        <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Maintenance</div>
+                        <div data-testid="count-maintenance"
+                             class="mt-1 text-2xl font-bold text-amber-600">{{ counts.maintenance }}</div>
+                    </div>
+                    <div class="rounded-md border border-slate-200 bg-white p-4 text-center">
+                        <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Retired</div>
+                        <div data-testid="count-retired"
+                             class="mt-1 text-2xl font-bold text-slate-500">{{ counts.retired }}</div>
+                    </div>
+                    <div class="rounded-md border border-slate-200 bg-white p-4 text-center">
+                        <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total units</div>
+                        <div data-testid="count-total"
+                             class="mt-1 text-2xl font-bold text-slate-900">{{ counts.total }}</div>
+                    </div>
+                </div>
+            </section>
+            <section class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-heading text-xl font-semibold">Physical units</h2>
+                </div>
+                <div class="overflow-x-auto border-y border-slate-200">
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50 text-left text-sm text-slate-600">
+                            <tr>
+                                <th scope="col" class="px-5 py-3">Asset code</th>
+                                <th scope="col" class="px-5 py-3">Condition</th>
+                                <th scope="col" class="px-5 py-3">Status</th>
+                                <th scope="col" class="px-5 py-3">Acquired on</th>
+                                <th scope="col" class="px-5 py-3">Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for unit in units %}
+                                <tr>
+                                    <td class="px-5 py-4 font-mono font-semibold text-slate-900">{{ unit.asset_code }}</td>
+                                    <td class="px-5 py-4 text-sm text-slate-700">{{ unit.get_condition_display }}</td>
+                                    <td class="px-5 py-4 text-sm font-medium">{{ unit.get_status_display }}</td>
+                                    <td class="px-5 py-4 text-sm text-slate-600">{{ unit.acquired_on|date:"Y-m-d" }}</td>
+                                    <td class="px-5 py-4 text-sm text-slate-500">{{ unit.internal_notes|default:"—" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5"
+                                        class="px-5 py-8 text-center text-sm text-slate-500">
+                                        No physical units registered for this item yet. (Unit registration is managed under T08 · Kenneth).
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </section>
+{% endblock %}
