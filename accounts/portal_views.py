@@ -42,22 +42,6 @@ def profile(request: HttpRequest) -> HttpResponse:
 
 @require_safe
 @basic_user_required
-def equipment_list(request: HttpRequest) -> HttpResponse:
-    """Display the pending T10 · Ellyssa module without exposing another user's data."""
-    return render(
-        request,
-        "accounts/portal/pending.html",
-        {
-            "heading": "Browse equipment",
-            "module": "T10 · Ellyssa",
-            "description": "Find campus equipment and check borrowing availability here.",
-            "next_work": "Add active catalog search and item details after T08 and T09. Show only borrower-safe descriptions and quantities.",
-        },
-    )
-
-
-@require_safe
-@basic_user_required
 def request_list(request: HttpRequest) -> HttpResponse:
     """Display submission confirmation while T12 history and tracking remain pending."""
     return render(

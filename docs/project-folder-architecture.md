@@ -37,24 +37,25 @@ Campus-Equipment-Borrowing-System/
 │   ├── models.py                                [existing] catalog, units, maintenance
 │   ├── migrations/                              [existing]
 │   ├── views.py                                 [existing] category/catalog/unit handlers; maintenance remains a placeholder
-│   ├── forms.py                                 [existing] category/catalog/unit forms; maintenance inputs planned
+│   ├── portal_views.py                          [existing] borrower catalog list/detail and protected photos
+│   ├── forms.py                                 [existing] category/catalog/unit forms and portal search; maintenance inputs planned
 │   ├── manage_urls.py                           [existing] catalog/unit actions and protected maintenance placeholder
 │   ├── services.py                              [existing] audited catalog/unit writes and initial damaged-unit maintenance; lifecycle planned
 │   ├── queries.py                               [existing] catalog/unit selection, history and derived inventory counts
 │   ├── photo_views.py / restore_views.py            [existing] protected photo and restoration handlers
 │   ├── photo_services.py / photos.py                [existing] audited storage and image validation
 │   ├── photo_forms.py                              [existing] upload field validation
-│   └── tests/                                   [existing] catalog/restore/photo/unit integration checks
+│   └── tests/                                   [existing] catalog/restore/photo/unit/portal integration checks
 │
 ├── borrowing/                                   [existing]
 │   ├── models.py                                [existing] requests, allocations, loans, returns
 │   ├── migrations/                              [existing]
 │   ├── views.py                                 [existing] borrower request submission; admin workflows remain planned
-│   ├── forms.py                                 [existing] request submission form/formset; return formsets planned
+│   ├── forms.py                                 [existing] request submission form/formset; returns planned
 │   ├── manage_urls.py                           [existing] catalog actions and protected unit/maintenance placeholders
-│   ├── services.py                              [existing] atomic request submission; approval/issue/return actions planned
+│   ├── services.py                              [existing] atomic request submission; approval/issue/return planned
 │   ├── queries.py                               [planned] request/loan/history reads
-│   ├── tests/                                   [existing] request submission; remaining workflow checks planned
+│   ├── tests/                                   [existing] request submission; remaining workflows planned
 │   └── management/commands/                     [planned] controlled demonstration seed
 │
 ├── operations/                                  [existing]
@@ -84,12 +85,12 @@ Campus-Equipment-Borrowing-System/
 │   │   ├── manage/                              [existing] T05 account management pages
 │   │   ├── register.html                        [existing] T09 public borrower registration
 │   │   └── portal/                              [existing] protected home, editable profile and pending modules
-│   ├── inventory/                               [existing/planned] catalog/unit pages present; portal pages planned
+│   ├── inventory/                               [existing/planned] catalog/unit/portal pages present; maintenance lifecycle planned
 │   │   ├── manage/                              [existing/planned] catalog/photo/restore/unit pages; maintenance lifecycle planned
-│   │   └── portal/                              [planned] equipment browsing pages
-│   ├── borrowing/                               [planned] request/loan feature pages
+│   │   └── portal/                              [existing] equipment browsing list/detail pages
+│   ├── borrowing/                               [existing/planned] request form present; history/loans planned
 │   │   ├── manage/                              [planned] review, release, returns, slips
-│   │   └── portal/                              [planned] submission and own history pages
+│   │   └── portal/                              [existing/planned] request submission; own history planned
 │   └── operations/manage/                       [existing/planned] settings/audit pages; live dashboard/reports planned
 │
 ├── static/                                      [existing] shared source static files
@@ -114,7 +115,7 @@ The root also contains the setup/review documents, dependency files, and private
 
 A **view** is a Python request handler in the relevant app's `views.py`. The page's **HTML** is a template. For example, an inventory management page uses `inventory/views.py` and a template under `templates/inventory/manage/`.
 
-The role prefix selects the audience; the feature app selects the Python module. Real basic-user equipment handlers belong in `inventory/`, and borrowing handlers in `borrowing/`. UI-07's remaining pending portal destinations are rendered from `accounts/portal_views.py`; T11's request-creation handler lives in `borrowing/views.py` and keeps its namespaced `portal` URL. Feature pages extend the existing `operations/manage/base.html` or `accounts/portal/base.html` and fill `workspace_content`; both inherit `components/workspace.html` and the `base.html` document/asset shell. The [coding guide](coding-standards.md#tailwind-styling-pattern) defines the shared layout pattern.
+The role prefix selects the audience; the feature app selects the Python module. Real basic-user equipment handlers belong in `inventory/`, and borrowing handlers in `borrowing/`. T10 equipment handlers are in `inventory/portal_views.py`, mounted through `accounts/portal_urls.py`. T11 request creation lives in `borrowing/views.py`, mounted through the same portal URLs. The request section and loan placeholder remain in `accounts/portal_views.py`; history and cancellation remain T12 work. Feature pages extend the existing `operations/manage/base.html` or `accounts/portal/base.html` and fill `workspace_content`; both inherit `components/workspace.html` and the `base.html` document/asset shell. The [coding guide](coding-standards.md#tailwind-styling-pattern) defines the shared layout pattern.
 
 These page placements include existing account/settings/audit pages and planned inventory/borrowing examples; route names come from the HTTP contract:
 
@@ -124,7 +125,7 @@ These page placements include existing account/settings/audit pages and planned 
 | Register a borrower | `accounts/views.py` | `templates/accounts/register.html` | `accounts:register` |
 | Edit own profile | `accounts/portal_views.py` | `templates/accounts/portal/profile.html` | `portal:profile` |
 | Manage physical units | `inventory/views.py` | `templates/inventory/manage/unit_list.html` | `inventory_manage:unit-list` |
-| Browse equipment | `inventory/views.py` | `templates/inventory/portal/equipment_list.html` | `portal:equipment-list` |
+| Browse equipment | `inventory/portal_views.py` | `templates/inventory/portal/equipment_list.html` | `portal:equipment-list` |
 | Submit a request | `borrowing/views.py` | `templates/borrowing/portal/request_form.html` | `portal:request-create` |
 | Approve a request | `borrowing/views.py` | `templates/borrowing/manage/request_approve.html` | `borrowing_manage:request-approve` |
 | Record returns | `borrowing/views.py` | `templates/borrowing/manage/return_form.html` | `borrowing_manage:return-create` |
