@@ -16,6 +16,7 @@
                     class="mb-2 font-heading text-2xl font-semibold tracking-tight">Welcome back.</h1>
                 <p class="text-sm leading-6 text-slate-500">Sign in to Campus Equipment.</p>
             </header>
+            {% include "components/messages.html" %}
             <form method="post" action="{% url 'accounts:login' %}" class="space-y-4">
                 {% csrf_token %}
                 {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
@@ -40,7 +41,12 @@
                         class="h-11 w-full rounded-md bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                         data-testid="login-submit">Sign in</button>
             </form>
-            <p class="mt-6 text-center text-xs leading-5 text-slate-500">Need access? Contact your campus administrator.</p>
+            <p class="mt-6 text-center text-xs leading-5 text-slate-500">
+                Need a borrower account?
+                <a href="{% url 'accounts:register' %}"
+                   class="font-medium text-accent hover:underline"
+                   data-testid="login-register-link">Register here</a>.
+            </p>
         </section>
         <div class="pointer-events-none -mx-6 mt-auto pt-12 sm:pt-16">
             <svg xmlns="http://www.w3.org/2000/svg"
