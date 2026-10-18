@@ -23,9 +23,9 @@ Keep task status in the backlog and current readiness in HANDOFF.md. Update this
 
 ## Current starting point
 
-The documentation baseline is integrated. The user authorized Jerome's foundation implementation and explicitly allowed **T01–T03 as one local, uncommitted batch** before main integration. This is an exception to the integration gate within this batch only; other members' prerequisites and the normal integration/review gates remain in force. Actual task status and checks belong in the backlog and current handoff.
+The current stage is **equipment inventory**: T07 category/catalog acceptance is complete, and T08 physical-unit management is next for Kenneth. T01–T06 and Kenneth's initial T07 are integrated into main. The completed T07 continuation on `jerome` must be integrated before T08 consumes its corrected interfaces and migrations. Actual task/publication/integration evidence belongs in the [backlog](docs/tasks.md#verified-task-evidence) and [current handoff](HANDOFF.md); T08 remains Not started.
 
-Alex's first implementation handoff remains T04 after T02 is verified and integrated into main; he does not need to wait for every later Jerome task. Jerome's T06 still requires T04 as well as T03. Branch and private-repository access instructions remain in DEV.md. No commit or main integration is authorized by the local-batch exception.
+The original T01–T03 local-batch exception is completed and does not relax later integration gates. Ellyssa's T09 can proceed independently against integrated T04; T10/T11 still require T08 and T09. Branch and private-repository access instructions remain in DEV.md. Publishing the T07 continuation does not authorize its main merge or implementation of T08.
 
 ## Delivery stages and handoff gates
 

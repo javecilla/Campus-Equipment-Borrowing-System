@@ -1,0 +1,23 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}Remove equipment photo · {{ item.name }}{% endblock %}
+{% block workspace_content %}
+    {% include "inventory/manage/nav.html" with active_tab="items" %}
+    <section class="max-w-2xl space-y-6"
+             data-testid="equipment-photo-remove-section">
+        <h1 class="font-heading text-3xl font-semibold">Remove photo for {{ item.name }}?</h1>
+        {% if error %}
+            <p role="alert" class="text-amber-800">{{ error }}</p>
+        {% endif %}
+        {% include "inventory/manage/photo.html" with photo_classes="h-72 w-54 max-w-full" %}
+        <p class="text-slate-600">The default equipment image will be displayed. The uploaded photo will be removed.</p>
+        <form method="post" class="flex flex-wrap gap-3">
+            {% csrf_token %}
+            <button type="submit"
+                    data-testid="equipment-photo-remove-submit"
+                    class="min-h-11 rounded-md bg-rose-600 px-5 text-sm font-semibold text-white hover:bg-rose-700">Remove photo</button>
+            <a href="{% url 'inventory_manage:item-detail' item.pk %}"
+               data-testid="equipment-photo-remove-cancel"
+               class="inline-flex min-h-11 items-center rounded-md border border-slate-200 px-4 text-sm font-semibold">Cancel</a>
+        </form>
+    </section>
+{% endblock %}

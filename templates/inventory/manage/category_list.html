@@ -49,7 +49,7 @@
                                 <th scope="col" class="px-5 py-3 text-center">Items</th>
                                 <th scope="col" class="px-5 py-3">Status</th>
                                 <th scope="col"
-                                    class="px-5 py-3 text-right"><span class="sr-only">Actions</span></th>
+                                    class="relative px-5 py-3 text-right"><span class="sr-only">Actions</span></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -98,14 +98,14 @@
                     </div>
                     <div class="flex gap-2">
                         {% if page.has_previous %}
-                            <a href="?page={{ page.previous_page_number }}{% if form.q.value %}&q={{ form.q.value }}{% endif %}{% if form.archived.value %}&archived={{ form.archived.value }}{% endif %}"
+                            <a href="{% querystring page=page.previous_page_number %}"
                                data-testid="pagination-prev"
                                class="inline-flex h-9 items-center rounded border border-slate-200 px-3 text-sm font-medium hover:bg-slate-50">
                                 Previous
                             </a>
                         {% endif %}
                         {% if page.has_next %}
-                            <a href="?page={{ page.next_page_number }}{% if form.q.value %}&q={{ form.q.value }}{% endif %}{% if form.archived.value %}&archived={{ form.archived.value }}{% endif %}"
+                            <a href="{% querystring page=page.next_page_number %}"
                                data-testid="pagination-next"
                                class="inline-flex h-9 items-center rounded border border-slate-200 px-3 text-sm font-medium hover:bg-slate-50">
                                 Next

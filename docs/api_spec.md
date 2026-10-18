@@ -4,7 +4,7 @@
 
 Feature contracts for the server-rendered application in [architecture.md](architecture.md). T04 implements the shared home, login, logout, role landing, and access-control interfaces; registration and the remaining feature endpoints are still planned. There is no separate frontend/backend or microservice API in this scope, so a REST/OpenAPI document would imply an interface the project does not require. This document specifies the HTML form and download interfaces instead. Add OpenAPI only if a real programmatic API is later authorized.
 
-T05 implements the account-management list/detail and activation/deactivation routes. T06 implements operational settings and read-only audit search as described below. UI-07 adds shared role layouts and **GET/HEAD-only placeholder pages** at the following contracted destinations: `portal:equipment-list`, `portal:request-list`, `portal:loan-list`, `inventory_manage:item-list`, `inventory_manage:unit-list`, `inventory_manage:maintenance-list`, `borrowing_manage:request-list`, `borrowing_manage:loan-list`, and `operations:loan-report`. Each placeholder enforces its active role, displays pending-module guidance, and rejects POST with 405. The tables below describe the eventual feature behavior; these placeholders provide no domain queries, forms, mutations, reports, or exports. `/manage/` remains a dashboard placeholder until T18. Feature owners replace the pending views while preserving the contracted names and shared layout.
+T05 implements the account-management list/detail and activation/deactivation routes. T06 implements operational settings and read-only audit search as described below. T07 implements the category and catalog item list/detail/create/update/archive routes and optional restoration, including derived inventory counts and protected references; implementation and integration evidence are in [the backlog](tasks.md#verified-task-evidence). UI-07 adds shared role layouts and **GET/HEAD-only placeholder pages** at the following remaining contracted destinations: `portal:equipment-list`, `portal:request-list`, `portal:loan-list`, `inventory_manage:unit-list`, `inventory_manage:maintenance-list`, `borrowing_manage:request-list`, `borrowing_manage:loan-list`, and `operations:loan-report`. Each placeholder enforces its active role, displays pending-module guidance, and rejects POST with 405. The tables below describe the eventual feature behavior; these placeholders provide no domain queries, forms, mutations, reports, or exports. `/manage/` remains a dashboard placeholder until T18. Feature owners replace the pending views while preserving the contracted names and shared layout.
 
 UI-08 supplies the role-specific account dropdown and read-only My profile pages: `operations:profile` at `/manage/profile/` and `portal:profile` at `/portal/profile/`. Both accept GET/HEAD only, require their active role, and display the signed-in account's own identity, role, email, and contact details with the supplied default avatar. Submitted account identifiers are not used; POST returns 405. The portal profile's eventual editing contract below remains T09 work. Log out remains the existing CSRF-protected POST action inside the dropdown.
 
@@ -15,12 +15,12 @@ The [coding standards](coding-standards.md#http-endpoint-design) define endpoint
 ## Common protocol
 
 - Authentication: Django session cookie. All protected routes require an active account; every `/manage/` route requires ADMIN, every `/portal/` route requires BASIC_USER. Portal requests/loans are filtered by the current owner before lookup.
-- Form encoding: `application/x-www-form-urlencoded`. All POST forms include `csrfmiddlewaretoken`; GET never changes application state.
+- Form encoding: `application/x-www-form-urlencoded`, except catalog item forms and the equipment photo upload use `multipart/form-data`. All POST forms include `csrfmiddlewaretoken`; GET never changes application state.
 - Confirmation: GET on an action route renders a confirmation form only; POST performs the explicitly named action. POST-only sign-out has no GET mutation.
 - Dates: `YYYY-MM-DD` calendar dates, interpreted using Asia/Manila. Operational timestamps and actors are always assigned server-side.
 - Numeric IDs/quantities: validated positive integers. Invalid or missing values produce field/non-field errors; ignore unrelated extra fields, and never assign them to models. Tampered read-only values cannot change state.
 - URL names in tables are proposed stable names, referenced with Django URL reversing. Do not hardcode links in templates.
-- `page`: positive integer, 25 rows per page. Malformed or nonexistent pages return 404. `q`: optional trimmed search text, maximum 200 characters. Invalid enum/date filters render useful errors without executing a mutation.
+- `page`: positive integer, 25 rows per page except the administrator catalog at `/manage/items/`, which uses 10. Malformed or nonexistent pages return 404. `q`: optional trimmed search text, maximum 200 characters. Invalid enum/date filters render useful errors without executing a mutation.
 - Missing filter values mean no restriction. `date_from` and `date_to` are inclusive campus dates; reject reversed ranges. Date ranges on request queues use submission date, on reports use issue date, and on audit search use occurrence date.
 - Response bodies: UTF-8 HTML unless CSV is explicitly requested. CSV responses use `text/csv; charset=utf-8` and attachment filenames without private borrower data.
 
@@ -104,17 +104,24 @@ All routes in the following tables require an active ADMIN.
 | GET, POST | `/manage/categories/new/` | `inventory_manage:category-create` | `name`, `description` |
 | GET, POST | `/manage/categories/<id>/edit/` | `inventory_manage:category-update` | `name`, `description` |
 | GET, POST | `/manage/categories/<id>/archive/` | `inventory_manage:category-archive` | Confirmation; preserve referenced records |
+| GET, POST | `/manage/categories/<id>/restore/` | `inventory_manage:category-restore` | Optional enhancement; confirmation and CSRF only; restore category, preserve individual item archive flags; already active returns 409 |
 | GET | `/manage/items/` | `inventory_manage:item-list` | `q`, `category`, `archived`, `page` |
 | GET | `/manage/items/<id>/` | `inventory_manage:item-detail` | Item, units, and derived counts |
-| GET, POST | `/manage/items/new/` | `inventory_manage:item-create` | `category`, `name`, `description` |
+| GET, POST | `/manage/items/new/` | `inventory_manage:item-create` | `category`, `name`, `description`; optional multipart `photo` with the validation below. Invalid photo or audit failure leaves no new item/file |
 | GET, POST | `/manage/items/<id>/edit/` | `inventory_manage:item-update` | `name`, `description`; category only before transactional use |
 | GET, POST | `/manage/items/<id>/archive/` | `inventory_manage:item-archive` | Confirmation; block new requests/approval without destroying existing workflow |
+| GET, POST | `/manage/items/<id>/restore/` | `inventory_manage:item-restore` | Optional enhancement; confirmation and CSRF only; clear item archive flag, preserve category/unit statuses; already active returns 409 |
+| GET, HEAD | `/manage/items/<id>/photo/` | `inventory_manage:item-photo` | Active ADMIN only; stored WebP response, private/no-store; 404 when no uploaded photo |
+| GET, POST | `/manage/items/<id>/photo/upload/` | `inventory_manage:item-photo-upload` | Separate optional photo action after item creation; multipart `photo`; one JPEG/PNG/WebP, max 5 MiB / 20 million pixels; no animations; generated WebP fitted within 1600×1600 |
+| GET, POST | `/manage/items/<id>/photo/remove/` | `inventory_manage:item-photo-remove` | Confirmation and CSRF only; remove uploaded photo, display static default; repeat removal returns 409 |
 | GET | `/manage/units/` | `inventory_manage:unit-list` | `q` for asset code, `category`, `item`, `status`, `page` |
 | GET | `/manage/units/<id>/` | `inventory_manage:unit-detail` | Physical unit and its allocation/loan/maintenance history |
 | GET, POST | `/manage/units/new/` | `inventory_manage:unit-create` | `catalog_item`, `asset_code`, `condition`, `acquired_on`, `internal_notes`; if DAMAGED, required `maintenance_problem` opens maintenance atomically |
 | GET, POST | `/manage/units/<id>/edit/` | `inventory_manage:unit-update` | `internal_notes`; `asset_code`, `catalog_item`, `acquired_on` only before any transactional use |
 
 Existing unit condition/status changes occur through return/maintenance services. A catalog item's category cannot change after any of its units or request items has transactional history, preserving category reporting. No generic delete, role-edit, allocation-edit, or status-edit route exists.
+
+Restoration is an active-ADMIN-only enhancement to the required archive workflow. GET confirms without writing; POST rechecks the actor and locked record, clears only the target's archive flag, writes `CATEGORY_RESTORED` or `ITEM_RESTORED` atomically, and redirects to its detail page. Restoring an item under an archived category is allowed, with a warning; the item remains ineligible for new requests/approvals until the category is active. Restoring a category never clears individually archived items. Photos, physical-unit statuses (including RETIRED), allocations, loans, and history remain unchanged. Find archived records through the list's Status filter, open View, and choose Restore category or Restore item.
 
 ## Custom administration: requests, loans, and maintenance
 

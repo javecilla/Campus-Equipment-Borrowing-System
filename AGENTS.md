@@ -2,6 +2,8 @@
 
 ## Current authorization and context
 
+The user explicitly authorized Jerome to complete Kenneth's partial T07 on `jerome`, including optional equipment photos, responsive catalog layouts and audited category/item restoration. T07 acceptance is complete. The user now authorizes committing and pushing the whole pending continuation/documentation batch with Kenneth and Codex co-author credit, preserving the `.idea/` ignore/removal. This publication request does not authorize merging into main, opening a PR, or starting T08; integrate T07's continuation before dependent work. See the backlog and current handoff for actual publication evidence.
+
 The user authorized implementation of Jerome Avecilla's assigned work on `jerome`, and explicitly allowed T01–T03 as one local, uncommitted batch before main integration. This exception does not unlock tasks requiring other members' features or authorize commits, pushes, PRs, or merges. The user also requested runnable setup steps in README.md and detailed migrations/team guidance in DEV.md. Follow the backlog and current handoff for verified scope; remaining feature designs are contracts, not delivered software.
 
 The user subsequently authorized committing all completed foundation/documentation/assets changes with `Co-authored-by: Codex <codex@openai.com>`, pushing `jerome`, and opening a PR into `main`. This publication request does not authorize merging that PR or starting another member's features.
