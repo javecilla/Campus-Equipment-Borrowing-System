@@ -4,7 +4,7 @@
 
 Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv`, `.env.local`, and local PostgreSQL database. Git shares source and migrations, not credentials or database contents.
 
-**Current phase: T07 category/catalog management complete; T08 physical units next.** T01–T06 and Kenneth's initial T07 are integrated into `main` (T07 PR #19). The completed continuation on `jerome` includes optional equipment photos, archive/restore, responsive layouts and 110 passing PostgreSQL tests. Integrate that continuation into main before Kenneth starts T08 against its corrected interfaces and migrations. See [HANDOFF.md](HANDOFF.md) for publication/integration evidence. Registration, borrower workflows, maintenance and live reporting remain pending.
+**Current phase: T07 category/catalog management complete; T08 physical units next.** T01–T06 and Kenneth's initial T07 are integrated into `main` (T07 PR #19). The continuation, committed and pushed on `jerome` as [32b7cc2](https://github.com/javecilla/Campus-Equipment-Borrowing-System/commit/32b7cc29f7815ad51d976f8c1ee1b08db56b8b5b), includes optional equipment photos, archive/restore, responsive layouts and 110 passing PostgreSQL tests. Integrate that continuation into main before Kenneth starts T08 against its corrected interfaces and migrations. See [HANDOFF.md](HANDOFF.md) for publication/integration evidence. Registration, borrower workflows, maintenance and live reporting remain pending.
 
 For where to add views, models, forms, URLs, and page templates, use [Project Folder Architecture](docs/project-folder-architecture.md).
 

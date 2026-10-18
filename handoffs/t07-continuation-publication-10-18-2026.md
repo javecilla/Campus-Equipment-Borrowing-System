@@ -3,7 +3,7 @@
 - Date/time zone: October 18, 2026, Asia/Manila (UTC+08:00).
 - Work/owner: Kenneth Cortez's T07, completed by Jerome Avecilla with Codex assistance under the user's explicit implementation and publication requests.
 - Branch/base: `jerome`, fast-forwarded to fetched main `f08fb04`. Kenneth source `e107dcb` is preserved through PR #19 at `20c4452`. The user authorizes committing and pushing all pending continuation/documentation changes with Kenneth and Codex co-author trailers; no main merge, new PR or T08 implementation is authorized.
-- Publication state: checks complete; source commit/push pending. This in-progress receipt will be finalized with actual Git results after publication. **Continuation Not integrated into main.**
+- Publication state: source [32b7cc2](https://github.com/javecilla/Campus-Equipment-Borrowing-System/commit/32b7cc29f7815ad51d976f8c1ee1b08db56b8b5b) committed and pushed to `origin/jerome` on October 18, 2026, 14:55 Asia/Manila. Both requested co-author trailers are present. `git ls-remote` independently confirmed the exact full source SHA `32b7cc29f7815ad51d976f8c1ee1b08db56b8b5b`; remote main remains `f08fb0432905f0e3b74689ddea33ced93a9a910d`. This receipt is published in a documentation-only follow-up on top of that source commit. **Continuation Not integrated into main.**
 
 ## Accepted outcome and interfaces
 
@@ -11,7 +11,7 @@ T07 acceptance is complete: category/catalog CRUD with archive/restore, validate
 
 The [HTTP contract](../docs/api_spec.md#custom-administration-accounts-and-inventory), [catalog services](../inventory/services.py), [photo services](../inventory/photo_services.py), [queries](../inventory/queries.py), [forms](../inventory/forms.py) and [lock helpers](../operations/locking.py) are the actual T08 consumption interfaces. The continuation adds `inventory.0002_category_name_case_insensitive`, `inventory.0003_catalog_item_photo` and `operations.0003_catalog_restore_audit_actions`; all are applied locally. No new dependency beyond the documented, pinned Pillow photo requirement.
 
-The user's main commit `f08fb04` removes eight tracked `.idea/` files. The member branch was fast-forwarded to it without discarding pending work; `.idea/` is now untracked and ignored by the pending `.gitignore`. Private configuration, uploads and generated bundles remain ignored. This cleanup does not remove teammates' future local IDE settings.
+The user's main commit `f08fb04` removes eight tracked `.idea/` files. The member branch was fast-forwarded to it without discarding pending work; `.idea/` is now untracked and ignored by the committed `.gitignore`. Private configuration, uploads and generated bundles remain ignored. This cleanup does not remove teammates' future local IDE settings.
 
 [README](../README.md), [DEV](../DEV.md#continuing-with-t08), [PLAN](../PLAN.md), [current handoff](../HANDOFF.md), [backlog](../docs/tasks.md), [architecture](../docs/architecture.md) and [folder map](../docs/project-folder-architecture.md) now describe the T07-to-T08 stage. Source requirement/member files remain unchanged. Verified ancestry reconciles older current-state claims: T06 source `c3d2c01` is integrated by PR #17 at `f7c32f8`; shared UI `a444de9` and tooling ignore `8d6accf` by PR #16 at `c2ff921`; Axios cleanup `4e46cee` by PR #13 at `b129a3f`. Their old dated receipts retain the state at their original publication.
 
@@ -24,6 +24,7 @@ The user's main commit `f08fb04` removes eight tracked `.idea/` files. The membe
 | Python/templates | Ruff lint passed; 160 files passed Ruff formatting; all 48 templates passed djLint |
 | Assets/dependencies | npm build and source format check passed; npm audit zero vulnerabilities; pip check passed |
 | Review | Manually reviewed the continuation diff and actual photo/restore/storage/asset interfaces against the MTV contracts; no new code change required for publication |
+| Publication | Ordinary push succeeded from origin/jerome `5af7219` to source `32b7cc2`; no force push, main update, PR or branch deletion |
 | Git hygiene | `.idea/` has no tracked files; real Git ignore checks cover IDE files, private environment, media and generated bundles; whitespace check passed |
 | Documentation | 585 local Markdown links across 19 current/affected documents resolve; code fences balanced; original requirement/member files unchanged |
 

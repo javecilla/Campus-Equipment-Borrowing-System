@@ -6,7 +6,7 @@ Private team repository: [javecilla/Campus-Equipment-Borrowing-System](https://g
 
 The system tracks individual physical units by asset code, preserves their transaction history, and prevents the same unit from being reserved or issued to multiple borrowers simultaneously.
 
-**Current phase: equipment inventory, T07 complete; T08 next.** T01–T06 and Kenneth's initial T07 are integrated into `main`. The completed T07 continuation on `jerome` adds validated category/catalog management, optional equipment photos, archive/restore, responsive layouts and audited actions; 110 PostgreSQL tests pass. Main integration of this continuation is the remaining gate before Kenneth starts T08 physical-unit management. Registration, borrower workflows, maintenance and live reporting remain pending. See [current readiness](HANDOFF.md) and [task/integration evidence](docs/tasks.md#verified-task-evidence).
+**Current phase: equipment inventory, T07 complete; T08 next.** T01–T06 and Kenneth's initial T07 are integrated into `main`. The T07 continuation, committed and pushed on `jerome` as [32b7cc2](https://github.com/javecilla/Campus-Equipment-Borrowing-System/commit/32b7cc29f7815ad51d976f8c1ee1b08db56b8b5b), adds validated category/catalog management, optional equipment photos, archive/restore, responsive layouts and audited actions; 110 PostgreSQL tests pass. Main integration of this continuation is the remaining gate before Kenneth starts T08 physical-unit management. Registration, borrower workflows, maintenance and live reporting remain pending. See [current readiness](HANDOFF.md) and [task/integration evidence](docs/tasks.md#verified-task-evidence).
 
 ## Run locally
 
