@@ -5,8 +5,14 @@ from dataclasses import dataclass
 from django.db.models import Count, Q, QuerySet
 from django.http import Http404
 
-from borrowing.models import RequestItem
-from inventory.models import CatalogItem, Category, EquipmentUnit, UnitStatus
+from borrowing.models import RequestItem, UnitAllocation
+from inventory.models import (
+    CatalogItem,
+    Category,
+    EquipmentUnit,
+    MaintenanceRecord,
+    UnitStatus,
+)
 
 
 @dataclass(frozen=True)
@@ -142,3 +148,97 @@ def get_catalog_item_or_404(item_id: int) -> CatalogItem:
         return CatalogItem.objects.select_related("category").get(pk=item_id)
     except CatalogItem.DoesNotExist as error:
         raise Http404("The requested equipment item does not exist.") from error
+
+
+def has_unit_transactional_history(unit_id: int) -> bool:
+    """Return True if any allocations or maintenance records reference this physical unit."""
+    return (
+        UnitAllocation.objects.filter(unit_id=unit_id).exists()
+        or MaintenanceRecord.objects.filter(unit_id=unit_id).exists()
+    )
+
+
+def get_overall_inventory_counts() -> ItemInventoryCounts:
+    """Derive system-wide physical unit counts across all equipment."""
+    result: dict[str, int | None] = EquipmentUnit.objects.aggregate(
+        available=Count("pk", filter=Q(status=UnitStatus.AVAILABLE)),
+        reserved=Count("pk", filter=Q(status=UnitStatus.RESERVED)),
+        issued=Count("pk", filter=Q(status=UnitStatus.ISSUED)),
+        maintenance=Count("pk", filter=Q(status=UnitStatus.MAINTENANCE)),
+        retired=Count("pk", filter=Q(status=UnitStatus.RETIRED)),
+    )
+    available: int = result["available"] or 0
+    reserved: int = result["reserved"] or 0
+    issued: int = result["issued"] or 0
+    maintenance: int = result["maintenance"] or 0
+    retired: int = result["retired"] or 0
+    serviceable: int = available + reserved + issued
+    total: int = available + reserved + issued + maintenance + retired
+    return ItemInventoryCounts(
+        available=available,
+        reserved=reserved,
+        issued=issued,
+        maintenance=maintenance,
+        retired=retired,
+        serviceable=serviceable,
+        total=total,
+    )
+
+
+def list_equipment_units(
+    search_query: str,
+    category_id: int | None,
+    item_id: int | None,
+    status: str | None,
+) -> QuerySet[EquipmentUnit]:
+    """Return physical units matching search, category, item, and status filters."""
+    units: QuerySet[EquipmentUnit] = EquipmentUnit.objects.select_related(
+        "catalog_item", "catalog_item__category"
+    )
+    if search_query:
+        units = units.filter(
+            Q(asset_code__icontains=search_query)
+            | Q(internal_notes__icontains=search_query)
+            | Q(catalog_item__name__icontains=search_query)
+        )
+    if category_id is not None:
+        units = units.filter(catalog_item__category_id=category_id)
+    if item_id is not None:
+        units = units.filter(catalog_item_id=item_id)
+    if status and status in UnitStatus.values:
+        units = units.filter(status=status)
+    return units.order_by("asset_code", "pk")
+
+
+def get_unit_or_404(unit_id: int) -> EquipmentUnit:
+    """Resolve an EquipmentUnit with related item and category, or raise Http404."""
+    try:
+        return EquipmentUnit.objects.select_related("catalog_item", "catalog_item__category").get(
+            pk=unit_id
+        )
+    except EquipmentUnit.DoesNotExist as error:
+        raise Http404("The requested physical unit does not exist.") from error
+
+
+def get_unit_allocations(unit_id: int) -> QuerySet[UnitAllocation]:
+    """Return allocations and associated loan/return details for this unit."""
+    return (
+        UnitAllocation.objects.filter(unit_id=unit_id)
+        .select_related(
+            "request_item__request__owner",
+            "request_item__catalog_item",
+            "allocated_by",
+            "loan_unit__loan__issued_by",
+            "loan_unit__return_record__received_by",
+        )
+        .order_by("-allocated_at", "-pk")
+    )
+
+
+def get_unit_maintenance_records(unit_id: int) -> QuerySet[MaintenanceRecord]:
+    """Return maintenance history for this unit."""
+    return (
+        MaintenanceRecord.objects.filter(unit_id=unit_id)
+        .select_related("opened_by", "closed_by", "source_return__received_by")
+        .order_by("-opened_at", "-pk")
+    )

@@ -1,0 +1,239 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}{{ unit.asset_code }} · Physical unit · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section data-testid="unit-detail">
+        {% include "inventory/manage/nav.html" with active_tab="units" %}
+        <div class="space-y-8">
+            <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <a href="{% url 'inventory_manage:unit-list' %}"
+                       class="text-xs font-semibold tracking-wider text-accent uppercase hover:underline">
+                        ← Back to physical units
+                    </a>
+                    <div class="mt-2 flex flex-wrap items-center gap-3">
+                        <h1 data-testid="unit-asset-code"
+                            class="font-heading font-mono text-3xl font-semibold">{{ unit.asset_code }}</h1>
+                        <span data-testid="unit-status" class="inline-flex items-center">
+                            {% if unit.status == "AVAILABLE" %}
+                                <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-accent">Available</span>
+                            {% elif unit.status == "RESERVED" %}
+                                <span class="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">Reserved</span>
+                            {% elif unit.status == "ISSUED" %}
+                                <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">Issued</span>
+                            {% elif unit.status == "MAINTENANCE" %}
+                                <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">Maintenance</span>
+                            {% elif unit.status == "RETIRED" %}
+                                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Retired</span>
+                            {% endif %}
+                        </span>
+                        <span data-testid="unit-condition" class="inline-flex items-center">
+                            {% if unit.condition == "GOOD" %}
+                                <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Good condition</span>
+                            {% elif unit.condition == "FAIR" %}
+                                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">Fair condition</span>
+                            {% elif unit.condition == "DAMAGED" %}
+                                <span class="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">Damaged</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <a href="{% url 'inventory_manage:unit-update' unit.pk %}"
+                       data-testid="unit-edit-button"
+                       class="inline-flex h-11 items-center justify-center rounded-md bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-800">
+                        Edit physical unit
+                    </a>
+                    <a href="{% url 'inventory_manage:item-detail' unit.catalog_item.pk %}"
+                       class="inline-flex h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">
+                        View catalog item
+                    </a>
+                </div>
+            </header>
+            {% if has_history %}
+                <div class="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800"
+                     role="alert">
+                    <p class="font-medium">Transaction history preserved</p>
+                    <p class="mt-1 text-xs text-amber-700">
+                        This physical unit has borrowing or maintenance records. Its asset code, equipment item, and acquisition date are locked to protect transactional history and audit integrity. Internal notes can still be updated.
+                    </p>
+                </div>
+            {% endif %}
+            <section class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 class="mb-4 font-heading text-lg font-semibold text-slate-900">Unit details</h2>
+                <dl class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div>
+                        <dt class="text-xs font-medium text-slate-500 uppercase">Equipment item</dt>
+                        <dd class="mt-1 text-sm font-semibold text-slate-900">
+                            <a href="{% url 'inventory_manage:item-detail' unit.catalog_item.pk %}"
+                               class="text-accent hover:underline">
+                                {{ unit.catalog_item.name }}
+                            </a>
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium text-slate-500 uppercase">Category</dt>
+                        <dd class="mt-1 text-sm font-semibold text-slate-900">
+                            <a href="{% url 'inventory_manage:category-detail' unit.catalog_item.category.pk %}"
+                               class="text-accent hover:underline">
+                                {{ unit.catalog_item.category.name }}
+                            </a>
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium text-slate-500 uppercase">Acquisition date</dt>
+                        <dd class="mt-1 text-sm text-slate-900">{{ unit.acquired_on|date:"F j, Y" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium text-slate-500 uppercase">Current status</dt>
+                        <dd class="mt-1 text-sm font-medium text-slate-900">{{ unit.get_status_display }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium text-slate-500 uppercase">Physical condition</dt>
+                        <dd class="mt-1 text-sm font-medium text-slate-900">{{ unit.get_condition_display }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs font-medium text-slate-500 uppercase">Registered on</dt>
+                        <dd class="mt-1 text-sm text-slate-600">{{ unit.created_at|date:"M j, Y, g:i a" }}</dd>
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-3">
+                        <dt class="text-xs font-medium text-slate-500 uppercase">Internal administrative notes</dt>
+                        <dd class="mt-1 text-sm text-slate-700 whitespace-pre-wrap">{{ unit.internal_notes|default:"No internal notes recorded." }}</dd>
+                    </div>
+                </dl>
+            </section>
+            <section class="space-y-4" data-testid="allocations-section">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-heading text-xl font-semibold">Allocation and borrowing history</h2>
+                </div>
+                <div class="overflow-x-auto border-y border-slate-200">
+                    <table data-testid="allocations-table"
+                           class="min-w-full divide-y divide-slate-200 text-sm">
+                        <thead class="bg-slate-50 text-left text-slate-600">
+                            <tr>
+                                <th scope="col" class="px-5 py-3">Request</th>
+                                <th scope="col" class="px-5 py-3">Borrower</th>
+                                <th scope="col" class="px-5 py-3">Allocated on</th>
+                                <th scope="col" class="px-5 py-3">Allocated by</th>
+                                <th scope="col" class="px-5 py-3">Release & Return</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for alloc in allocations %}
+                                <tr data-testid="allocation-row-{{ alloc.pk }}">
+                                    <td class="px-5 py-4 font-semibold text-slate-900">
+                                        Request #{{ alloc.request_item.request.pk }}
+                                        <span class="block text-xs font-normal text-slate-500">{{ alloc.request_item.request.purpose|truncatechars:40 }}</span>
+                                    </td>
+                                    <td class="px-5 py-4 text-slate-700">
+                                        {{ alloc.request_item.request.owner.username }}
+                                        <span class="block text-xs text-slate-500">{{ alloc.request_item.request.owner.get_full_name }}</span>
+                                    </td>
+                                    <td class="px-5 py-4 text-slate-600 whitespace-nowrap">{{ alloc.allocated_at|date:"M j, Y, g:i a" }}</td>
+                                    <td class="px-5 py-4 text-slate-600">{{ alloc.allocated_by.username }}</td>
+                                    <td class="px-5 py-4 text-slate-700">
+                                        {% if alloc.cancelled_at %}
+                                            <span class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
+                                                Cancelled on {{ alloc.cancelled_at|date:"M j, Y" }}
+                                            </span>
+                                        {% elif alloc.loan_unit %}
+                                            {% if alloc.loan_unit.return_record %}
+                                                <span class="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                                                    Returned on {{ alloc.loan_unit.return_record.returned_at|date:"M j, Y" }} ({{ alloc.loan_unit.return_record.get_returned_condition_display }})
+                                                </span>
+                                            {% else %}
+                                                <span class="inline-flex rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700">
+                                                    Issued on {{ alloc.released_at|date:"M j, Y" }} · Due {{ alloc.loan_unit.loan.due_date|date:"M j, Y" }}
+                                                </span>
+                                            {% endif %}
+                                        {% elif alloc.released_at %}
+                                            <span class="inline-flex rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700">
+                                                Released on {{ alloc.released_at|date:"M j, Y" }}
+                                            </span>
+                                        {% else %}
+                                            <span class="inline-flex rounded-full bg-sky-50 px-2 py-0.5 text-xs font-semibold text-sky-700">
+                                                Reserved (Pending issue)
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5"
+                                        class="px-5 py-8 text-center text-sm text-slate-500">
+                                        No borrowing or allocation records for this physical unit.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <section class="space-y-4" data-testid="maintenance-section">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-heading text-xl font-semibold">Maintenance history</h2>
+                </div>
+                <div class="overflow-x-auto border-y border-slate-200">
+                    <table data-testid="maintenance-table"
+                           class="min-w-full divide-y divide-slate-200 text-sm">
+                        <thead class="bg-slate-50 text-left text-slate-600">
+                            <tr>
+                                <th scope="col" class="px-5 py-3">Problem description</th>
+                                <th scope="col" class="px-5 py-3">Status</th>
+                                <th scope="col" class="px-5 py-3">Outcome</th>
+                                <th scope="col" class="px-5 py-3">Opened</th>
+                                <th scope="col" class="px-5 py-3">Closed / Action taken</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for record in maintenance_records %}
+                                <tr data-testid="maintenance-row-{{ record.pk }}">
+                                    <td class="px-5 py-4 font-medium text-slate-900">
+                                        {{ record.problem }}
+                                        {% if record.source_return %}
+                                            <span class="block text-xs font-normal text-amber-700">From damaged return</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        {% if record.status == "OPEN" %}
+                                            <span class="inline-flex rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700">Open</span>
+                                        {% else %}
+                                            <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">Closed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-5 py-4 text-slate-700">
+                                        {% if record.outcome == "AVAILABLE" %}
+                                            <span class="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">Repaired / Available</span>
+                                        {% elif record.outcome == "RETIRED" %}
+                                            <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">Retired</span>
+                                        {% else %}
+                                            <span class="text-xs text-slate-500">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-5 py-4 text-slate-600 whitespace-nowrap">
+                                        {{ record.opened_at|date:"M j, Y, g:i a" }}
+                                        <span class="block text-xs text-slate-500">by {{ record.opened_by.username }}</span>
+                                    </td>
+                                    <td class="px-5 py-4 text-slate-700">
+                                        {% if record.closed_at %}
+                                            <span class="block font-medium">{{ record.action }}</span>
+                                            <span class="text-xs text-slate-500">Closed on {{ record.closed_at|date:"M j, Y" }} by {{ record.closed_by.username }}</span>
+                                        {% else %}
+                                            <span class="text-xs font-medium text-amber-700">In progress</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5"
+                                        class="px-5 py-8 text-center text-sm text-slate-500">
+                                        No maintenance records for this physical unit.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </section>
+{% endblock %}

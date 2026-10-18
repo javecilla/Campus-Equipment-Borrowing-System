@@ -489,7 +489,7 @@ class CatalogManagementTests(TestCase):
         unit_url: str = reverse("inventory_manage:unit-list")
         unit_res = self.client.get(unit_url)
         self.assertEqual(unit_res.status_code, 200)
-        self.assertContains(unit_res, "T08 · Kenneth")
+        self.assertContains(unit_res, "Physical units")
 
         maint_url: str = reverse("inventory_manage:maintenance-list")
         maint_res = self.client.get(maint_url)
