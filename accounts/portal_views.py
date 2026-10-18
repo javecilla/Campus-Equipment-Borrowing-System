@@ -5,7 +5,7 @@ from typing import cast
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
-from django.views.decorators.http import require_http_methods, require_safe
+from django.views.decorators.http import require_http_methods
 
 from accounts.access import basic_user_required
 from accounts.forms import ProfileForm
@@ -37,30 +37,4 @@ def profile(request: HttpRequest) -> HttpResponse:
         request,
         "accounts/portal/profile.html",
         {"form": form, "profile": user.profile},
-    )
-
-
-@require_safe
-@basic_user_required
-def request_list(request: HttpRequest) -> HttpResponse:
-    """Display submission confirmation while T12 history and tracking remain pending."""
-    return render(
-        request,
-        "accounts/portal/request_list.html",
-    )
-
-
-@require_safe
-@basic_user_required
-def loan_list(request: HttpRequest) -> HttpResponse:
-    """Display the pending T12 · Ralph module without exposing another user's data."""
-    return render(
-        request,
-        "accounts/portal/pending.html",
-        {
-            "heading": "My loans",
-            "module": "T12 · Ralph",
-            "description": "Your issued equipment, due dates, and return progress will appear here.",
-            "next_work": "Add owner-scoped loan lists and details after T11. Verify tracking against the integrated release and return workflows.",
-        },
     )

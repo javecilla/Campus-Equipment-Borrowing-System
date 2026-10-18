@@ -2,16 +2,26 @@
 
 from datetime import date, datetime
 
-from django.core.exceptions import ImproperlyConfigured, PermissionDenied, ValidationError
+from django.core.exceptions import (
+    ImproperlyConfigured,
+    PermissionDenied,
+    ValidationError,
+)
 from django.db import transaction
 from django.utils import timezone
 
 from accounts.access import require_active_basic_user
 from accounts.models import User
-from borrowing.models import BorrowRequest, RequestItem, RequestStatus
-from inventory.models import CatalogItem, Category
-from operations.locking import lock_borrower, lock_catalog
-from operations.models import SystemSetting
+from borrowing.models import (
+    BorrowRequest,
+    RequestItem,
+    RequestStatus,
+    UnitAllocation,
+)
+from inventory.models import CatalogItem, Category, EquipmentUnit, UnitStatus
+from operations.audit import write_audit
+from operations.locking import lock_borrower, lock_catalog, lock_request, lock_units
+from operations.models import AuditAction, AuditTarget, SystemSetting
 from operations.validation import (
     LoanLimits,
     RequestedItem,
@@ -19,6 +29,10 @@ from operations.validation import (
     validate_requested_due_date,
     validate_requested_items,
 )
+
+
+class RequestCancellationConflict(Exception):
+    """The request or its reservation state no longer permits borrower cancellation."""
 
 
 def submit_request(
@@ -97,5 +111,146 @@ def submit_request(
                 )
                 for item in validated_items
             ]
+        )
+        return borrow_request
+
+
+def cancel_request(owner_id: int, request_id: int) -> BorrowRequest:
+    """Cancel an eligible owner request and release its reservations atomically."""
+    with transaction.atomic():
+        try:
+            locked_request = lock_request(owner_id, request_id)
+        except User.DoesNotExist as error:
+            raise PermissionDenied("The cancelling borrower account does not exist.") from error
+        require_active_basic_user(locked_request.borrower)
+
+        borrow_request: BorrowRequest = locked_request.request
+        if borrow_request.status not in (RequestStatus.PENDING, RequestStatus.APPROVED):
+            raise RequestCancellationConflict("Only Pending or Approved requests can be cancelled.")
+        cancelled_at = timezone.now()
+
+        request_items: tuple[RequestItem, ...] = tuple(
+            RequestItem.objects.select_for_update()
+            .filter(request_id=borrow_request.pk)
+            .order_by("pk")
+        )
+        allocations: tuple[UnitAllocation, ...] = tuple(
+            UnitAllocation.objects.filter(request_item__request_id=borrow_request.pk).order_by("pk")
+        )
+
+        if borrow_request.status == RequestStatus.PENDING:
+            if allocations:
+                raise RequestCancellationConflict(
+                    "The Pending request has unexpected reservation history and cannot be cancelled."
+                )
+        else:
+            if locked_request.loan is not None or not request_items:
+                raise RequestCancellationConflict(
+                    "The Approved request no longer has a cancellable reservation."
+                )
+            if not allocations:
+                raise RequestCancellationConflict(
+                    "The Approved request has no reservation to release."
+                )
+
+            catalog_item_ids: tuple[int, ...] = tuple(
+                item.catalog_item_id for item in request_items
+            )
+            try:
+                locked_catalog = lock_catalog(catalog_item_ids)
+            except (CatalogItem.DoesNotExist, ValidationError) as error:
+                raise RequestCancellationConflict(
+                    "The reserved equipment changed; refresh the request before retrying."
+                ) from error
+
+            request_item_by_id: dict[int, RequestItem] = {item.pk: item for item in request_items}
+            catalog_ids: set[int] = {item.pk for item in locked_catalog.items}
+            if len(catalog_ids) != len(catalog_item_ids) or not set(catalog_item_ids).issubset(
+                catalog_ids
+            ):
+                raise RequestCancellationConflict(
+                    "The Approved request's equipment items are inconsistent."
+                )
+
+            allocation_counts: dict[int, int] = {}
+            unit_ids: list[int] = []
+            for allocation in allocations:
+                allocation_counts[allocation.request_item_id] = (
+                    allocation_counts.get(allocation.request_item_id, 0) + 1
+                )
+                unit_ids.append(allocation.unit_id)
+                if (
+                    allocation.released_at is not None
+                    or allocation.cancelled_at is not None
+                    or allocation.ended_at is not None
+                    or allocation.request_item_id not in request_item_by_id
+                ):
+                    raise RequestCancellationConflict(
+                        "A reservation has already been released or ended."
+                    )
+
+            if len(unit_ids) != len(set(unit_ids)) or any(
+                allocation_counts.get(item.pk, 0) != item.quantity for item in request_items
+            ):
+                raise RequestCancellationConflict(
+                    "The Approved request does not have its complete reservation."
+                )
+
+            try:
+                locked_units: tuple[EquipmentUnit, ...] = lock_units(tuple(unit_ids))
+            except (EquipmentUnit.DoesNotExist, ValidationError) as error:
+                raise RequestCancellationConflict(
+                    "A reserved equipment unit changed; refresh the request before retrying."
+                ) from error
+            units_by_id: dict[int, EquipmentUnit] = {unit.pk: unit for unit in locked_units}
+            for allocation in allocations:
+                unit: EquipmentUnit = units_by_id[allocation.unit_id]
+                request_item: RequestItem = request_item_by_id[allocation.request_item_id]
+                if (
+                    unit.status != UnitStatus.RESERVED
+                    or unit.catalog_item_id != request_item.catalog_item_id
+                ):
+                    raise RequestCancellationConflict(
+                        "A reserved equipment unit is no longer available for release."
+                    )
+
+            locked_allocations: tuple[UnitAllocation, ...] = tuple(
+                UnitAllocation.objects.select_for_update()
+                .filter(pk__in=[allocation.pk for allocation in allocations])
+                .order_by("pk")
+            )
+            allocations_by_id: dict[int, UnitAllocation] = {
+                allocation.pk: allocation for allocation in allocations
+            }
+            if len(locked_allocations) != len(allocations) or any(
+                allocation.ended_at is not None
+                or allocation.cancelled_at is not None
+                or allocation.released_at is not None
+                or allocation.unit_id != allocations_by_id[allocation.pk].unit_id
+                or allocation.request_item_id != allocations_by_id[allocation.pk].request_item_id
+                for allocation in locked_allocations
+            ):
+                raise RequestCancellationConflict(
+                    "A reservation changed while cancellation was in progress."
+                )
+
+            for allocation in locked_allocations:
+                allocation.cancelled_at = cancelled_at
+                allocation.ended_at = cancelled_at
+                allocation.save(update_fields=["cancelled_at", "ended_at"])
+            for unit in locked_units:
+                unit.status = UnitStatus.AVAILABLE
+                unit.save(update_fields=["status", "updated_at"])
+
+        borrow_request.status = RequestStatus.CANCELLED
+        borrow_request.cancelled_by_id = owner_id
+        borrow_request.cancelled_at = cancelled_at
+        borrow_request.save(update_fields=["status", "cancelled_by", "cancelled_at"])
+        write_audit(
+            actor_id=owner_id,
+            action=AuditAction.REQUEST_CANCELLED,
+            target_model=AuditTarget.BORROW_REQUEST,
+            target_id=borrow_request.pk,
+            summary=f"Request #{borrow_request.pk} cancelled by its borrower.",
         )
         return borrow_request

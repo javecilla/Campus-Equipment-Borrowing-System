@@ -2,7 +2,7 @@
 
 ## Status and proposed stack
 
-This architecture guides implementation. T01-T11 are integrated into main, including the registration username correction, borrower equipment browsing and atomic T11 request submission through PR #27 at `6c5ea8f`. Request/loan history and cancellation remain T12 work; maintenance lifecycle and reporting remain planned. [The backlog](tasks.md#verified-task-evidence) owns current acceptance/integration evidence. Behavioral authority is [SRS.md](SRS.md); persistence is specified in [db_design.md](db_design.md) and actual models/migrations. The canonical [coding standards](coding-standards.md) define MTV responsibility boundaries and implementation/review rules.
+This architecture guides implementation. T01-T11 are integrated into main, including the registration username correction, borrower equipment browsing and atomic T11 request submission through PR #27 at `6c5ea8f`. T12 request/loan history and audited cancellation are implemented locally on `ralph` but not integrated; maintenance lifecycle and reporting remain planned. [The backlog](tasks.md#verified-task-evidence) owns current acceptance/integration evidence. Behavioral authority is [SRS.md](SRS.md); persistence is specified in [db_design.md](db_design.md) and actual models/migrations. The canonical [coding standards](coding-standards.md) define MTV responsibility boundaries and implementation/review rules.
 
 Use a single server-rendered Django application with Python 3.13, Django 5.2 LTS, PostgreSQL 17, and Psycopg 3. Pin tested patch versions during implementation. Django 5.2 supports the proposed Python series and database; consult the [release notes](https://docs.djangoproject.com/en/5.2/releases/5.2/) and [database documentation](https://docs.djangoproject.com/en/5.2/ref/databases/).
 
@@ -123,7 +123,7 @@ Overdue is calculated from outstanding loan units and the local date, so it is n
 
 Query ORM data directly for the required live cards/charts/reports. Use `select_related`, `prefetch_related`, filtering, ordering, pagination, and aggregate/annotate queries where appropriate. Avoid cached counters initially. Query counts independently or aggregate carefully so joining returns does not multiply issued quantities.
 
-Owner-specific portal request/loan queries take the signed-in owner explicitly. T10 catalog queries select active items under active categories with serviceable/available counts; catalog templates expose borrower-safe descriptions and quantities. Management query functions require admin authorization at the view boundary. CSV and printable slips receive the same access checks as their corresponding pages. Operational notes are never placed into portal template context.
+Owner-specific portal request/loan queries take the signed-in owner explicitly. T10 catalog queries select active items under active categories with serviceable/available counts; catalog templates expose borrower-safe descriptions and quantities. T12 request/loan queries additionally prefetch each request's items and each loan unit's return record; no other borrower's history or unit-internal notes reach the portal. Management query functions require admin authorization at the view boundary. CSV and printable slips receive the same access checks as their corresponding pages. Operational notes are never placed into portal template context.
 
 ## Configuration and technical limits
 
