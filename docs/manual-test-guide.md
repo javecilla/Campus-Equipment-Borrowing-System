@@ -2,7 +2,7 @@
 
 ## Purpose and scope
 
-This guide covers **T01-T11 integrated into main at `6c5ea8f`** and the local, not-yet-integrated T12 implementation on `ralph`, as of October 18, 2026. Request history/cancellation can be explored on that branch; approval, release and returns remain pending. Use it to check individual modules and regressions; it does not establish full-system acceptance. Expected results below are instructions, not recorded passes.
+This guide covers **T01-T12 integrated into main at `170cc38` through PR #29**, as of October 19, 2026. Request history/cancellation is available after syncing main; approval, release and returns remain pending. Use it to check individual modules and regressions; it does not establish full-system acceptance. Expected results below are instructions, not recorded passes. The user is manually testing T12; no results have been supplied yet.
 
 For the current borrower checks, go directly to [Module 9: request submission](#module-9--borrower-request-submission-t11) or [Module 10: request and loan tracking](#module-10--borrower-request-and-loan-tracking-t12). Use the [result record](#recording-manual-results) to report what actually happened.
 
@@ -12,7 +12,7 @@ For automated tests, see [Running the automated suite](#running-the-automated-te
 
 ### Server must be running
 
-Follow [DEV startup](../DEV.md#everyday-startup) and rebuild assets after pulling template changes with `npm.cmd run build`. T11 adds no migration or dependency. Keep the existing local database and test records.
+Follow [DEV startup](../DEV.md#everyday-startup) and rebuild assets after pulling template changes with `npm.cmd run build`. T11/T12 add no migration or dependency. Keep the existing local database and test records.
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py runserver
@@ -931,12 +931,39 @@ T12 supplies the request/loan history pages and highlights the corresponding nav
 
 **Entry:** `/portal/requests/` and `/portal/loans/`\
 **Login required:** active BASIC_USER\
-**Implementation status:** local on `ralph`, not integrated into main\
+**Implemented revision:** PR #29, main `170cc38`, preserving Ralph source `eb04470`\
 **Prerequisite:** T11 is integrated through PR #27; T13 approval, T15 issue and T17 returns are separate pending workflows.
 
 These are expected outcomes, not tests claimed as run. Use a borrower request created through T11. For foreign-record checks, use a second fictional BASIC_USER account and its own request/loan ID. Do not expose or copy another borrower's fields in screenshots.
 
+### Verified local preparation
+
+A read-only PostgreSQL transaction on **October 19, 2026 at 07:36 Asia/Manila**, using source `170cc38`, found active `auth_demo_user` / `auth_demo_admin` seed accounts, three Pending requests (IDs 1, 2 and 3) owned by `auth_demo_user`, and **no loans**. No Approved, Issued or returned requests existed in that snapshot. Settings were 7 loan days / 3 units per item. HDMI Projector (Audio Visual Equipment), item ID 1, and its category were active. This snapshot does not establish a manual pass; recheck status before acting because ongoing tests can change it.
+
+Keep admin and borrower logins in separate browser profiles. To preserve existing request records, create one fresh request at `/portal/requests/new/` for the Pending-cancellation case:
+
+| Field | Value |
+| --- | --- |
+| Borrower | `auth_demo_user`, using its private existing password |
+| Purpose | `T12-02 Pending cancellation 2026-10-19 run-01` |
+| Desired return date | `2026-10-22` |
+| Row 1 - Item | HDMI Projector (Audio Visual Equipment), ID 1 |
+| Row 1 - Quantity | `1` |
+| Rows 2 and 3 | Leave all item and quantity fields blank |
+
+Record the actual new request ID from the confirmation/list. On October 19 with these settings, valid dates are October 20–26 inclusive. Recalculate from today's Asia/Manila date and current settings on later runs; use a fresh purpose suffix and recheck that the catalog choice is active. T11 does not reserve units, so this record does not require available stock.
+
 ### 10.1 Request history and status filtering
+
+**Case T12-01.** Start with your newly created Pending request, then repeat after T12-02 cancels it.
+
+| Field / URL | Value | Expected result |
+| --- | --- | --- |
+| Status | Pending (`PENDING`) | Only own Pending requests; includes the new record before cancellation |
+| Status | Cancelled (`CANCELLED`) | Includes the new record after cancellation; excludes it before cancellation |
+| Status | All statuses | Restores all own requests, including the cancelled record |
+| URL | `/portal/requests/?status=UNKNOWN` | 200 with a filter error and no records |
+| URL | `/portal/requests/?page=bad` or `?page=0` | 404 |
 
 1. Sign in as an active borrower and open `/portal/requests/`.
 2. Verify the page lists only requests belonging to the signed-in borrower, with purpose, requested items/quantities, status, submission date and desired/agreed due dates.
@@ -945,17 +972,31 @@ These are expected outcomes, not tests claimed as run. Use a borrower request cr
 5. Open a request. Verify its item/category details, decision status/reason when decided, and current due dates.
 6. Substitute another borrower's request ID in the detail URL. The response should be 404 without revealing record contents. Invalid page numbers should also return 404; invalid status filters should show a validation error and no records.
 
+Pagination shows 25 records per page. If a fictional borrower already has more than 25, verify Previous/Next retains the selected status and does not duplicate/skip rows. The three-record snapshot cannot exercise that boundary; leave it Not run until suitable records exist. Cross-user checks also need a second fictional borrower's known request; the snapshot found no such request.
+
 ### 10.2 Cancel a Pending request
 
-1. Open a Pending request you created and choose **Cancel request**.
-2. Load the confirmation page with GET and refresh it. The request must remain Pending and no cancellation audit entry should be created by either GET.
-3. Confirm using the form's POST.
+**Case T12-02.** Use the fresh request from the preparation table; cancellation is terminal.
 
-✅ Redirected to the request details with a success message. The request is Cancelled, the borrower and server timestamp are recorded, and one `REQUEST_CANCELLED` audit entry exists. A repeated cancellation attempt should return 409 and must not create another audit entry.
+1. Record its request ID and the current inventory count. Open its detail and choose **Cancel request**.
+2. Load the confirmation page with GET and refresh it. The request must remain Pending and no cancellation audit entry should be created by either GET.
+3. Choose **Keep request** once: expect a return to details with no mutation. Reopen cancellation and confirm using the form's POST.
+
+✅ Redirected to `/portal/requests/<request_id>/` with a success message. The request is Cancelled and its cancel link is absent. Items and due dates are preserved; inventory counts do not change because Pending requests have no reservations. The borrower and server timestamp are stored, and one `REQUEST_CANCELLED` audit entry exists. Reopening `/portal/requests/<request_id>/cancel/` returns 409; resubmitting the original confirmation POST also returns 409 without another audit entry.
+
+As admin, open `/manage/audit/`, select action **Request cancelled**, and search the record reference `borrowing.BorrowRequest#<request_id>` using the actual ID. Expect exactly one matching row identifying the borrower actor, timestamp and request. `/manage/requests/` is still a placeholder; use the audit page and admin account detail for current verification.
+
+The borrower detail does not display cancellation actor/time. To verify those stored fields, replace `123` below with the actual fictional request ID and run this read-only query before and after the action:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py shell -c "from borrowing.models import BorrowRequest; from operations.models import AuditLog, AuditAction, AuditTarget; request_id = 123; print(list(BorrowRequest.objects.filter(pk=request_id).values('id', 'owner_id', 'status', 'cancelled_by_id', 'cancelled_at'))); print(AuditLog.objects.filter(action=AuditAction.REQUEST_CANCELLED, target_model=AuditTarget.BORROW_REQUEST, target_id=request_id).count())"
+```
+
+Before: Pending, null cancellation fields, zero matching audits. After: Cancelled, `cancelled_by_id` equals `owner_id`, a non-null timestamp and one audit; after retry: the same stored values and count.
 
 ### 10.3 Cancel an Approved request and release its reservations
 
-This scenario requires a request approved by the separate T13 workflow; no browser-based T13 approval action exists yet.
+**Case T12-03 — pending prerequisite.** This scenario requires a request approved by the separate T13 workflow; no browser-based T13 approval action or local Approved request exists yet. Do not manually edit database statuses to substitute for the missing workflow.
 
 1. After T13 is integrated, record the Approved request ID and the Reserved status of every unit assigned to it.
 2. As that same borrower, open the request details and confirm cancellation.
@@ -964,7 +1005,9 @@ This scenario requires a request approved by the separate T13 workflow; no brows
 
 ### 10.4 Issued request and loan tracking
 
-These browser scenarios require the separate T15 release and T17 return workflows.
+**Case T12-04.** Open `/portal/loans/` now: the snapshot has no loans, so expect **No loans yet**, with no fabricated records. An absent loan ID at `/portal/loans/<loan_id>/` returns 404.
+
+The populated loan/return browser scenarios below require the separate T15 release and T17 return workflows. Leave them Not run until those workflows and suitable fictional records exist.
 
 1. After T15 is integrated, release an Approved request for a fictional borrower. Sign in as that borrower and open `/portal/requests/`, the request detail, and `/portal/loans/`.
 2. Verify only that borrower's loan is listed, with issue/due dates and a link to its detail. The request detail should also show issued asset codes.
@@ -979,7 +1022,7 @@ These browser scenarios require the separate T15 release and T17 return workflow
 2. Send POST to the read-only request and loan list/detail routes; each should return 405. GET of the cancellation confirmation should never mutate state. POST cancellation without a valid CSRF token should return 403.
 3. Use only the keyboard to reach filters, request/loan links, cancel confirmation and controls. Confirm visible focus, associated labels, readable errors and sensible reflow at narrow mobile width.
 
-The automated T12 client tests cover role/method/CSRF, owner isolation, invalid filters/pages, cancellation conflicts, full reservation release, audit rollback, and loan-unit status display. The browser, keyboard and mobile scenarios above have **not** been run for this local T12 implementation.
+The automated T12 client tests cover role/method/CSRF, owner isolation, invalid filters/pages, cancellation conflicts, full reservation release, audit rollback, and loan-unit status display using records created in the separate test database. They do not exercise multi-page traversal or a separate-connection cancellation/issue race. Browser, keyboard and mobile outcomes for the integrated revision remain **Not run / awaiting user results**.
 
 ---
 
@@ -990,7 +1033,7 @@ Use one row per actual test run. Expected outcomes in this guide do not count as
 | Case | Revision / browser / date | Actual result | Pass / Fail / Not run | Evidence / issue |
 | --- | --- | --- | --- | --- |
 | Example: T11-15 | `6c5ea8f`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Screenshot or request marker/ID, without private data |
-| Example: T12-01 | `ralph` revision, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request/loan ID; no private data |
+| Example: T12-01 | `170cc38`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request/loan ID; no private data |
 
 Report the purpose marker/request ID and the smallest reproduction steps for a failure. Retain test records rather than deleting history to make counts match. Save real findings in the current handoff or the team's review record when supplied.
 
@@ -1015,7 +1058,7 @@ The following features are **Not started** and have no implementation to test in
 
 ## Running the automated test suite
 
-The integrated T01-T11 source passed **181 PostgreSQL tests**. The local T12 implementation on `ralph` passed **191 PostgreSQL tests**. To run the current suite yourself:
+The integrated T01-T12 source at `170cc38` passed **191 PostgreSQL tests in 32.738s** during the October 19 integration review. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput
@@ -1049,8 +1092,8 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests --noinput
 ```
 
-All tests in the current suite must pass before handing over work; 191 is the verified count on the current local T12 branch. Record the actual count and timing in your handoff. See [DEV.md — Before handing over work](../DEV.md#before-handing-over-work) for the full required check list.
+All tests in the current suite must pass before handing over work; 191 is the verified count on the integrated T12 revision. Record the actual count and timing in your handoff. See [DEV.md — Before handing over work](../DEV.md#before-handing-over-work) for the full required check list.
 
 ---
 
-*Manual testing guide — scope: T01-T11 integrated features plus local, not-yet-integrated T12 on `ralph`. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Reconcile integration labels after a real main merge.*
+*Manual testing guide — scope: T01-T12 integrated features. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*

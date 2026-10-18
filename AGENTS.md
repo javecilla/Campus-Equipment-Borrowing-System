@@ -2,7 +2,7 @@
 
 ## Current authorization and context
 
-PR #27 is merged into main at 6c5ea8f, preserving Ralph's T11, Ellyssa's T10, the T09 correction and existing contributor credit. The user explicitly authorizes validating, committing and pushing all current changes on jerome: integration documentation, the concrete manual-test guide, required manual-guide skill updates and the user's request-form spacing edit. Include Ralph and Codex co-author trailers. Manual test outcomes have not been supplied; do not invent passes. This publication does not authorize a new PR/main merge or dependent-feature implementation.
+PR #29 integrated Ralph's T12 into main at `170cc38`, preserving source `eb04470`; the user pulled that revision into `jerome`. The user now explicitly authorizes committing and pushing the completed T12 review/documentation batch, including the user's DEV.md edits, on `jerome` with Ralph and Codex co-author trailers. Manual outcomes remain pending until supplied. This publication does not authorize a new PR, main merge or dependent-feature implementation. See [HANDOFF.md](HANDOFF.md) for current verification and readiness.
 
 The user authorized implementation of Jerome Avecilla's assigned work on `jerome`, and explicitly allowed T01–T03 as one local, uncommitted batch before main integration. This exception does not unlock tasks requiring other members' features or authorize commits, pushes, PRs, or merges. The user also requested runnable setup steps in README.md and detailed migrations/team guidance in DEV.md. Follow the backlog and current handoff for verified scope; remaining feature designs are contracts, not delivered software.
 

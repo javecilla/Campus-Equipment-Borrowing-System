@@ -4,7 +4,7 @@
 
 Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv`, `.env.local`, and local PostgreSQL database. Git shares source and migrations, not credentials or database contents.
 
-**Current phase: T01-T11 are Done and integrated into main** through PR #27 at `6c5ea8f`. Ralph / T12 request history, loan tracking and cancellation are Done locally on `ralph` but not integrated. Margareth / T13 and Kenneth / T16 have satisfied integrated prerequisites. The integrated T11 source passed 181 PostgreSQL tests; T12 verification is recorded in the [current handoff](HANDOFF.md).
+**Current phase: T01-T12 are Done and integrated into main** through PR #29 at `170cc38`. Ralph's request/loan history and cancellation are available on the synced `jerome` checkout. The integrated source passes 191 PostgreSQL tests; T12 manual results remain pending. Margareth / T13 and Kenneth / T16 have satisfied integrated prerequisites. See the [current handoff](HANDOFF.md) for verification and remaining checks.
 
 For where to add views, models, forms, URLs, and page templates, use [Project Folder Architecture](docs/project-folder-architecture.md).
 
@@ -16,12 +16,12 @@ Follow these steps once, in order. Keep an existing environment, database, or pr
 
 ### Tools to download
 
-| Required tool | Version | Download |
-| --- | --- | --- |
-| Git | Git for Windows | [Install Git](https://git-scm.com/install/windows) |
-| Python | Python 3.13 | [Windows downloads](https://www.python.org/downloads/windows/) |
-| PostgreSQL | PostgreSQL 17, including pgAdmin | [Windows installer](https://www.postgresql.org/download/windows/) |
-| Node.js with npm | Node 22+ and npm 10+; tested with Node 24.5.0/npm 11.6.2 | [Node.js downloads](https://nodejs.org/en/download) |
+| Required tool    | Version                                                  | Download                                                          |
+| ---------------- | -------------------------------------------------------- | ----------------------------------------------------------------- |
+| Git              | Git for Windows                                          | [Install Git](https://git-scm.com/install/windows)                |
+| Python           | Python 3.13                                              | [Windows downloads](https://www.python.org/downloads/windows/)    |
+| PostgreSQL       | PostgreSQL 17, including pgAdmin                         | [Windows installer](https://www.postgresql.org/download/windows/) |
+| Node.js with npm | Node 22+ and npm 10+; tested with Node 24.5.0/npm 11.6.2 | [Node.js downloads](https://nodejs.org/en/download)               |
 
 Open a new terminal after installation. Check `git --version`, `py -3.13 --version`, `node --version`, and `npm.cmd --version`. Node/npm now build the shared frontend assets as well as supporting optional MCP tooling. On PowerShell, `npm.cmd` avoids execution-policy blocks affecting the npm PowerShell shim.
 
@@ -89,14 +89,14 @@ New-Item -Path .env.local -ItemType File -Value (Get-Content -LiteralPath .env.e
 
 Open `.env.local` in your editor. The command above deliberately fails if the file already exists, preserving your values.
 
-| Setting | What to enter |
-| --- | --- |
-| `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | Your database name, account, raw password, host, and port. Usual local values are `campus_equipment`, your account, `127.0.0.1`, and `5432` |
-| `DJANGO_SECRET_KEY` | A unique secret generated with the command below |
-| `DJANGO_DEBUG` | `True` for normal local debugging and static serving; use the [error-page preview steps](#preview-custom-error-pages) to inspect the custom 404 |
-| `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` | Keep the template's localhost entries when using port 8000 |
-| `MCP_DATABASE_URL` | Leave blank unless using optional MCP tooling |
-| `SEED_ACCOUNT_PASSWORD` | Your shared private password for both authentication test accounts; required only when running `seed_auth_accounts` |
+| Setting                                                   | What to enter                                                                                                                                   |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | Your database name, account, raw password, host, and port. Usual local values are `campus_equipment`, your account, `127.0.0.1`, and `5432`     |
+| `DJANGO_SECRET_KEY`                                       | A unique secret generated with the command below                                                                                                |
+| `DJANGO_DEBUG`                                            | `True` for normal local debugging and static serving; use the [error-page preview steps](#preview-custom-error-pages) to inspect the custom 404 |
+| `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`     | Keep the template's localhost entries when using port 8000                                                                                      |
+| `MCP_DATABASE_URL`                                        | Leave blank unless using optional MCP tooling                                                                                                   |
+| `SEED_ACCOUNT_PASSWORD`                                   | Your shared private password for both authentication test accounts; required only when running `seed_auth_accounts`                             |
 
 Generate a secret locally, then paste the result into `.env.local`:
 
@@ -170,10 +170,10 @@ It creates the fictional `auth_demo_admin` (`ADMIN`) and `auth_demo_user` (`BASI
 
 Open `/accounts/login/` and sign in with each account separately using the "Username or email" field:
 
-| Role | Username | Email |
-| --- | --- | --- |
-| Admin | `auth_demo_admin` | `auth-admin@example.invalid` |
-| Basic user | `auth_demo_user` | `auth-user@example.invalid` |
+| Role       | Username          | Email                        |
+| ---------- | ----------------- | ---------------------------- |
+| Admin      | `auth_demo_admin` | `auth-admin@example.invalid` |
+| Basic user | `auth_demo_user`  | `auth-user@example.invalid`  |
 
 Both accounts use your private `SEED_ACCOUNT_PASSWORD`; there is no password shipped in the repository. Choose your own value in `.env.local`. To replace the password on existing accounts, follow [password changes](#change-seed-passwords-while-keeping-records); changing the environment value alone does not update them. Email matching ignores letter case; shared or otherwise ambiguous email addresses require an unambiguous username instead.
 
@@ -237,6 +237,7 @@ Run the seed command only after deletion succeeds. It recreates both identities 
     ```
 
     If PostgreSQL reports active connections, disconnect the clients it identifies before retrying. If it reports insufficient privileges, use the database owner/administrator to recreate the database with `DB_USER` as its owner, following [local database setup](#create-your-local-database). Stop on an error; do not continue to migrations until recreation succeeds.
+
 3. From the project root, run these commands one at a time. Continue only after each succeeds:
 
     ```powershell
@@ -247,6 +248,7 @@ Run the seed command only after deletion succeeds. It recreates both identities 
     ```
 
     Migrations rebuild the schema, initialize the required settings singleton (7 days / 3 units per item) and its SYSTEM audit, and recreate Django metadata. The seed recreates both authentication accounts and Profiles using the current private password. All migrations should show `[X]`; no equipment or borrowing demonstration records are supplied by this two-account seed.
+
 4. Restart Django using [everyday startup](#everyday-startup) and verify both roles using the [authentication test steps](#seed-authentication-test-accounts). Existing login sessions were deleted, so sign in again.
 
 Do not use `manage.py flush` as this project's fresh-start procedure. It deletes data created by migrations, including `SystemSetting` row 1, but retains migration history; running ordinary `migrate` afterward will not rerun the already-applied initialization migration. Use database recreation above even if you have already flushed the disposable database. Keep the migration files in Git; deleting them or using `--fake` is not a data-reset procedure.
@@ -278,14 +280,14 @@ After team updates, [sync your branch](#bring-main-into-your-work-before-startin
 
 The library rationale and course-pattern requirements are in [architecture.md](docs/architecture.md#required-patterns-and-selected-libraries). This setup adds a shared template shell and asset build; feature owners still implement the role layouts and pages.
 
-| Path | Purpose |
-| --- | --- |
-| `static/css/app.css` | Tailwind entry point, local font import, font theme, and explicit source locations |
-| `static/css/fonts.css` | Existing local font declarations; imported into Tailwind's base layer |
-| `static/js/*.js` | Browser page modules; the JavaScript build compiles every top-level module |
-| `static/build/` | Generated CSS, browser ES modules/chunks, and any generated dependency license notices |
-| `templates/base.html` | Shared document shell loading `build/app.css`, favicon links, and metadata; blocks: title, meta_description, extra_head, content, scripts |
-| `static/images/favicon/` | Supplied browser/touch icons and web manifest; manifest icon paths are relative to this directory |
+| Path                     | Purpose                                                                                                                                   |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `static/css/app.css`     | Tailwind entry point, local font import, font theme, and explicit source locations                                                        |
+| `static/css/fonts.css`   | Existing local font declarations; imported into Tailwind's base layer                                                                     |
+| `static/js/*.js`         | Browser page modules; the JavaScript build compiles every top-level module                                                                |
+| `static/build/`          | Generated CSS, browser ES modules/chunks, and any generated dependency license notices                                                    |
+| `templates/base.html`    | Shared document shell loading `build/app.css`, favicon links, and metadata; blocks: title, meta_description, extra_head, content, scripts |
+| `static/images/favicon/` | Supplied browser/touch icons and web manifest; manifest icon paths are relative to this directory                                         |
 
 `npm.cmd run build` creates a minified build. `npm.cmd run dev` runs CSS and JavaScript watchers together and stops the sibling if either exits. Build before running `collectstatic` or assembling a submission; include the complete generated build, including chunks/license files, in a runnable artifact. Source control keeps the npm lockfile and source assets; the submission process must build assets explicitly because ignored files are not supplied by Git.
 
@@ -342,11 +344,11 @@ Review and include models and migrations together. Preserve applied/shared migra
 
 Formatting is split by language so Django tags and Python keep their correct parsers:
 
-| Files | Write formatting | Check without rewriting |
-| --- | --- | --- |
-| Source JS/MJS/CSS and project JSON | `npm.cmd run format` | `npm.cmd run format:check` |
-| Django templates | `.\.venv\Scripts\djlint.exe templates --reformat` | `.\.venv\Scripts\djlint.exe templates --check` |
-| Python | `.\.venv\Scripts\ruff.exe format .` | `.\.venv\Scripts\ruff.exe format --check .` |
+| Files                              | Write formatting                                  | Check without rewriting                        |
+| ---------------------------------- | ------------------------------------------------- | ---------------------------------------------- |
+| Source JS/MJS/CSS and project JSON | `npm.cmd run format`                              | `npm.cmd run format:check`                     |
+| Django templates                   | `.\.venv\Scripts\djlint.exe templates --reformat` | `.\.venv\Scripts\djlint.exe templates --check` |
+| Python                             | `.\.venv\Scripts\ruff.exe format .`               | `.\.venv\Scripts\ruff.exe format --check .`    |
 
 Install both dependency sets first: `npm.cmd ci` and `.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt`. Prettier is pinned in package.json; djLint/Ruff are pinned in requirements-dev.txt. `.prettierrc.json` and pyproject.toml hold shared options; `.prettierignore` excludes Django HTML, Python, private files, dependencies, fonts, and generated output. The npm scripts target source/config files, without rewriting historical Markdown. To format a changed Markdown file deliberately, run `.\node_modules\.bin\prettier.cmd path/to/changed-file.md --write` with its actual path; prose wrapping is preserved.
 
@@ -408,19 +410,19 @@ Run `.\.venv\Scripts\python.exe manage.py test accounts.tests.test_borrower_port
 
 Active BASIC_USER accounts browse `/portal/equipment/` with name/description search, active-category filtering and 25-item pagination. Detail pages show descriptions, protected photos or the shared default, and database-derived serviceable/available counts. Archived items and items under archived categories are excluded from browsing, detail and photo access. Admins and inactive accounts are denied; internal unit notes and asset codes stay outside these catalog pages. See the [portal contract](docs/api_spec.md#basic-user-portal).
 
-Run `.\.venv\Scripts\python.exe manage.py test inventory.tests.test_portal_equipment --noinput` for the 25 T10 integration tests. The [integration review](handoffs/t10-main-integration-and-documentation-review-10-18-2026.md) records earlier checks and the open test-photo-storage follow-up. Integrated T11 now supplies submission and a create link from the request section, resolving the earlier premature-request-guidance gap; T12 history/cancellation is implemented locally on `ralph` but not integrated. The user subsequently reported successful manual T10 testing; detailed mobile/keyboard scenarios were not supplied. See [publication evidence](handoffs/t10-documentation-publication-10-18-2026.md).
+Run `.\.venv\Scripts\python.exe manage.py test inventory.tests.test_portal_equipment --noinput` for the 25 T10 integration tests. The [integration review](handoffs/t10-main-integration-and-documentation-review-10-18-2026.md) records earlier checks and the open test-photo-storage follow-up. Integrated T11 now supplies submission and a create link from the request section, resolving the earlier premature-request-guidance gap; T12 adds integrated history/cancellation. The user subsequently reported successful manual T10 testing; detailed mobile/keyboard scenarios were not supplied. See [publication evidence](handoffs/t10-documentation-publication-10-18-2026.md).
 
 ### Borrower request submission (T11)
 
-An active BASIC_USER can submit `/portal/requests/new/` with a purpose, desired return date and one to three distinct active catalog items. The service locks/rechecks the borrower, current settings and eligible catalog records, snapshots both limits and writes the Pending request/items atomically without allocating units. `/portal/requests/` displays submission confirmation and a create link; request/loan tracking is implemented separately as T12 on `ralph` and is not yet integrated.
+An active BASIC_USER can submit `/portal/requests/new/` with a purpose, desired return date and one to three distinct active catalog items. The service locks/rechecks the borrower, current settings and eligible catalog records, snapshots both limits and writes the Pending request/items atomically without allocating units. `/portal/requests/` displays submission confirmation, a create link and the integrated T12 owner-scoped history.
 
-Run `.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_request_submission --noinput` for focused checks. See the [Ralph implementation snapshot](handoffs/ralph-t11-request-submission-10-18-2026.md), [resolution review](handoffs/pr27-t11-conflict-resolution-review-10-18-2026.md) and [main integration receipt](handoffs/pr27-t11-main-integration-10-18-2026.md) for actual verification/integration evidence. No new migration or dependency is required by T11. After pulling, run the existing asset build to include the request templates. T12 history/cancellation is implemented locally on `ralph` but not integrated; administrative approval remains T13 work.
+Run `.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_request_submission --noinput` for focused checks. See the [Ralph implementation snapshot](handoffs/ralph-t11-request-submission-10-18-2026.md), [resolution review](handoffs/pr27-t11-conflict-resolution-review-10-18-2026.md) and [main integration receipt](handoffs/pr27-t11-main-integration-10-18-2026.md) for actual verification/integration evidence. No new migration or dependency is required by T11. After pulling, run the existing asset build to include the request templates. T12 history/cancellation is integrated through PR #29; administrative approval remains T13 work.
 
-### Borrower request and loan tracking (T12; local on `ralph`, not integrated)
+### Borrower request and loan tracking (T12)
 
 The request list at `/portal/requests/` shows only the signed-in borrower's requests, with status filtering and 25-row pagination. Request details show requested items, decision, due dates and any issued/returned units. `/portal/loans/` and `/portal/loans/<id>/` show only that borrower's loans, due dates, asset codes and individual return progress. Pending and Approved requests can be cancelled through a GET confirmation followed by a CSRF-protected POST; approved reservations are released in the same audited transaction. Foreign IDs return 404; ineligible or changed request states return 409 without partial writes.
 
-Run `.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_request_submission borrowing.tests.test_request_tracking --noinput` for focused checks. The manual browser scenarios are in [Module 10 of the manual test guide](docs/manual-test-guide.md#module-10--borrower-request-and-loan-tracking-t12). The integrated branch does not yet include these local changes; no migration or dependency was added.
+Run `.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_request_submission borrowing.tests.test_request_tracking --noinput` for focused checks. PR #29 integrates source `eb04470` at main `170cc38`; the [integration review](handoffs/t12-main-integration-and-documentation-review-10-19-2026.md) records 191 passing PostgreSQL tests on that tree. No migration or dependency was added. Rebuild assets after pulling. [Module 10 of the manual test guide](docs/manual-test-guide.md#module-10--borrower-request-and-loan-tracking-t12) provides current Pending-request cases and read-only audit verification. Approved cancellation awaits T13 browser approval; issued/returned-unit checks await T15/T17. An empty loan history is expected until loans exist; manual results remain pending.
 
 `.idea/` is ignored and removed from tracked files through main commit `f08fb04`. Each developer may keep local IDE settings; do not force-add them. Generated builds, uploads, dependencies and private environment files also stay outside Git.
 
@@ -468,14 +470,14 @@ Runserver serves static files during local debugging. `STATIC_ROOT` (`staticfile
 
 Assignments come from [Project-Members.txt](docs/Project-Members.txt). Keep permanent member branches after PR merges.
 
-| Member | GitHub | Branch |
-| --- | --- | --- |
-| Jerome | `javecilla` | `jerome` |
-| Alex | `AlexCayanan` | `alex` |
-| Kenneth | `corkenneth` | `kenneth` |
-| Ellyssa | `ellieebeann` | `elly` |
-| Margareth | `raifun` | `marga` |
-| Ralph | `dreygigz` | `ralph` |
+| Member    | GitHub        | Branch    |
+| --------- | ------------- | --------- |
+| Jerome    | `javecilla`   | `jerome`  |
+| Alex      | `AlexCayanan` | `alex`    |
+| Kenneth   | `corkenneth`  | `kenneth` |
+| Ellyssa   | `ellieebeann` | `elly`    |
+| Margareth | `raifun`      | `marga`   |
+| Ralph     | `dreygigz`    | `ralph`   |
 
 Work and push on your own branch. Only Jerome integrates `main`; do not push another member's branch, force-push, or rewrite shared history. The [main-owner-only ruleset](https://github.com/javecilla/Campus-Equipment-Borrowing-System/rules/25213591) controls main updates; branch assignments are a team convention, not exclusive authorship.
 
@@ -560,18 +562,17 @@ postgresql://YOUR_USER:YOUR_URL_ENCODED_PASSWORD@127.0.0.1:5432/campus_equipment
 
 Include the database name and percent-encode special characters in URI credentials; `DB_PASSWORD` stays raw. This URI may use a separate inspection account. `sslmode=disable` is for the local loopback connection. Node explicitly loads `.env.local` through `--env-file`, with existing process values taking precedence. The file is not automatically loaded into your terminal or pgAdmin.
 
-
 ### Shared JSON template
 
 [.agents/mcp.json](.agents/mcp.json) contains the `mcpServers` entry named `campus_equipment`. It is a shared template; `.agents/mcp.json` is not a universal auto-discovery location. Import/copy the entry into your client's supported local configuration, preserving other existing servers. Some clients use a different top-level key or do not support `cwd`; follow that client's schema rather than renaming fields by guesswork.
 
 In your **local client copy**, change these machine-specific values:
 
-| Value | Required adjustment |
-| --- | --- |
-| `cwd` | Replace `REPLACE_WITH_ABSOLUTE_PROJECT_PATH` with your project's absolute root, such as `C:/School/PythonProject`; this makes `.env.local` and `.agents/dbhub.toml` resolve correctly |
-| `command` | `node` must resolve in the AI client's PATH; use the absolute `node.exe` path if necessary |
-| Second `args` entry | Default Windows npm entry point is `C:/Program Files/nodejs/node_modules/npm/bin/npx-cli.js`; replace it if Node/npm is installed elsewhere |
+| Value               | Required adjustment                                                                                                                                                                   |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cwd`               | Replace `REPLACE_WITH_ABSOLUTE_PROJECT_PATH` with your project's absolute root, such as `C:/School/PythonProject`; this makes `.env.local` and `.agents/dbhub.toml` resolve correctly |
+| `command`           | `node` must resolve in the AI client's PATH; use the absolute `node.exe` path if necessary                                                                                            |
+| Second `args` entry | Default Windows npm entry point is `C:/Program Files/nodejs/node_modules/npm/bin/npx-cli.js`; replace it if Node/npm is installed elsewhere                                           |
 
 Keep `--env-file=.env.local` before the npm entry point. Keep the pinned package version, stdio transport, and `.agents/dbhub.toml` path. Do not add passwords to `args`, `env`, or the shared JSON. For a client without a working-directory option, replace the env-file and DBHub config paths with absolute paths in its private configuration.
 
@@ -633,18 +634,18 @@ Expected: database `campus_equipment`, your own account, PostgreSQL 17.x, and `r
 
 ## Troubleshooting
 
-| Symptom | Fix |
-| --- | --- |
-| Missing or invalid configuration | Fill every required `DB_*`/`DJANGO_*` key in `.env.local`; check quotes, duplicates, and stale process values |
-| Database connection refused | Start PostgreSQL and check `DB_HOST`/`DB_PORT` |
-| Database login fails | Verify the local account, raw `DB_PASSWORD`, and database ownership |
-| Tables missing or migrations pending | Check `DB_NAME`, then inspect/apply [existing migrations](#apply-existing-migrations) |
-| Root redirects to login | Expected after T04; use `/test` with `DJANGO_DEBUG=True` for the frontend/font preview |
-| Font or CSS returns 404 | Use `DJANGO_DEBUG=True` with runserver; run `findstatic` and use paths relative to `static/` |
-| Port 8000 is busy | Stop your previous server or choose another port and update CSRF origins if needed |
-| pip missing | Run `.\.venv\Scripts\python.exe -m ensurepip --upgrade` |
-| Tests cannot create a database | Use a local account permitted to create `test_<DB_NAME>` |
-| MCP cannot find files or tools | Check client working directory, Node/npm paths, enable/reload the server, and keep credentials private |
-| MCP read_only is off | Check the shared DBHub policy; do not enable writes to test the connection |
+| Symptom                              | Fix                                                                                                           |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Missing or invalid configuration     | Fill every required `DB_*`/`DJANGO_*` key in `.env.local`; check quotes, duplicates, and stale process values |
+| Database connection refused          | Start PostgreSQL and check `DB_HOST`/`DB_PORT`                                                                |
+| Database login fails                 | Verify the local account, raw `DB_PASSWORD`, and database ownership                                           |
+| Tables missing or migrations pending | Check `DB_NAME`, then inspect/apply [existing migrations](#apply-existing-migrations)                         |
+| Root redirects to login              | Expected after T04; use `/test` with `DJANGO_DEBUG=True` for the frontend/font preview                        |
+| Font or CSS returns 404              | Use `DJANGO_DEBUG=True` with runserver; run `findstatic` and use paths relative to `static/`                  |
+| Port 8000 is busy                    | Stop your previous server or choose another port and update CSRF origins if needed                            |
+| pip missing                          | Run `.\.venv\Scripts\python.exe -m ensurepip --upgrade`                                                       |
+| Tests cannot create a database       | Use a local account permitted to create `test_<DB_NAME>`                                                      |
+| MCP cannot find files or tools       | Check client working directory, Node/npm paths, enable/reload the server, and keep credentials private        |
+| MCP read_only is off                 | Check the shared DBHub policy; do not enable writes to test the connection                                    |
 
 For a ZIP, exclude private files, environments, caches, and generated output explicitly; `.gitignore` does not filter ZIP contents.
