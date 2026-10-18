@@ -1,0 +1,92 @@
+{% extends "accounts/portal/base.html" %}
+{% block title %}Borrowing request · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section data-testid="request-create-page"
+             aria-labelledby="request-heading"
+             class="max-w-3xl">
+        <header>
+            <p class="text-xs font-semibold tracking-widest text-accent uppercase">Borrower workspace</p>
+            <h1 id="request-heading"
+                class="mt-2 font-heading text-3xl font-semibold">New borrowing request</h1>
+            <p class="mt-3 text-sm leading-6 text-slate-600">
+                Choose one to three distinct equipment items. Each quantity can be up to
+                {{ limits.max_quantity_per_item }} units, and your requested return date must be within
+                {{ limits.max_loan_days }} calendar days.
+            </p>
+        </header>
+        <form method="post"
+              action="{% url 'portal:request-create' %}"
+              data-testid="request-create-form"
+              class="mt-8 space-y-7"
+              novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="rounded-md border border-rose-100 bg-rose-50 px-3 py-2.5 text-sm leading-5 text-rose-700"
+                     role="alert"
+                     data-testid="request-errors">{{ form.non_field_errors }}</div>
+            {% endif %}
+            {% if form.purpose.errors %}
+                <div id="request-purpose-errors"
+                     class="text-sm text-rose-700"
+                     role="alert">{{ form.purpose.errors }}</div>
+            {% endif %}
+            <div>
+                <label for="{{ form.purpose.id_for_label }}"
+                       class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.purpose.label }}</label>
+                {{ form.purpose }}
+                {% if form.purpose.errors %}
+                    <p class="mt-1.5 text-xs text-rose-700">{{ form.purpose.errors }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="{{ form.desired_due_date.id_for_label }}"
+                       class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.desired_due_date.label }}</label>
+                {{ form.desired_due_date }}
+                {% if form.desired_due_date.errors %}
+                    <p class="mt-1.5 text-xs text-rose-700">{{ form.desired_due_date.errors }}</p>
+                {% endif %}
+            </div>
+            <fieldset class="space-y-4">
+                <legend class="font-heading text-xl font-semibold text-slate-900">Requested equipment</legend>
+                <p class="text-sm leading-6 text-slate-600">Leave unused rows blank. Duplicate items are not allowed.</p>
+                {% if item_formset.non_form_errors %}
+                    <div class="rounded-md border border-rose-100 bg-rose-50 px-3 py-2.5 text-sm leading-5 text-rose-700"
+                         role="alert"
+                         data-testid="request-items-errors">{{ item_formset.non_form_errors }}</div>
+                {% endif %}
+                {{ item_formset.management_form }}
+                {% for item_form in item_formset %}
+                    <div class="grid gap-4 rounded-lg border border-slate-200 p-4 sm:grid-cols-[minmax(0,1fr)_10rem]"
+                         data-testid="request-item-{{ forloop.counter0 }}">
+                        {% if item_form.non_field_errors %}
+                            <div class="text-sm text-rose-700"
+                                 role="alert">{{ item_form.non_field_errors }}</div>
+                        {% endif %}
+                        <div>
+                            <label for="{{ item_form.catalog_item.id_for_label }}"
+                                   class="mb-1.5 block text-xs font-medium text-slate-600">{{ item_form.catalog_item.label }}</label>
+                            {{ item_form.catalog_item }}
+                            {% if item_form.catalog_item.errors %}
+                                <p class="mt-1.5 text-xs text-rose-700">{{ item_form.catalog_item.errors }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label for="{{ item_form.quantity.id_for_label }}"
+                                   class="mb-1.5 block text-xs font-medium text-slate-600">{{ item_form.quantity.label }}</label>
+                            {{ item_form.quantity }}
+                            {% if item_form.quantity.errors %}
+                                <p class="mt-1.5 text-xs text-rose-700">{{ item_form.quantity.errors }}</p>
+                            {% endif %}
+                            <p class="mt-1.5 text-xs text-slate-500">{{ item_form.quantity.help_text }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </fieldset>
+            <button type="submit"
+                    data-testid="request-submit"
+                    class="h-11 rounded-md bg-accent px-5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
+                Submit request
+            </button>
+        </form>
+    </section>
+{% endblock %}

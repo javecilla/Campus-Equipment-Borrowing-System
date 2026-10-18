@@ -1,10 +1,78 @@
-"""Read-only UI placeholders; workflow implementation remains with the named task owners."""
+"""Borrower request submission and read-only administration placeholders."""
 
+from datetime import date
+from typing import cast
+
+from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.forms import BaseFormSet
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
-from django.views.decorators.http import require_safe
+from django.shortcuts import redirect, render
+from django.utils import timezone
+from django.views.decorators.http import require_http_methods, require_safe
 
-from accounts.access import admin_required
+from accounts.access import admin_required, basic_user_required
+from accounts.models import User
+from borrowing.forms import RequestForm, RequestItemFormSetFactory
+from borrowing.models import BorrowRequest
+from borrowing.services import submit_request
+from operations.queries import get_loan_limits
+from operations.validation import LoanLimits, RequestedItem
+
+
+@require_http_methods(["GET", "POST"])
+@basic_user_required
+def request_create(request: HttpRequest) -> HttpResponse:
+    """Validate and submit a new Pending request for the signed-in borrower."""
+    user: User = cast(User, request.user)
+    limits: LoanLimits = get_loan_limits()
+    submitted_on: date = timezone.localdate()
+    is_bound: bool = request.method == "POST"
+    form: RequestForm = RequestForm(
+        request.POST if is_bound else None,
+        limits=limits,
+        submitted_on=submitted_on,
+    )
+    item_formset: BaseFormSet = RequestItemFormSetFactory(
+        request.POST if is_bound else None,
+        prefix="items",
+        form_kwargs={"max_quantity": limits.max_quantity_per_item},
+    )
+
+    if is_bound and form.is_valid() and item_formset.is_valid():
+        requested_items: tuple[RequestedItem, ...] = tuple(
+            RequestedItem(
+                catalog_item_id=item_form.cleaned_data["catalog_item"].pk,
+                quantity=item_form.cleaned_data["quantity"],
+            )
+            for item_form in item_formset.forms
+            if item_form.cleaned_data
+        )
+        try:
+            borrow_request: BorrowRequest = submit_request(
+                owner_id=user.pk,
+                purpose=form.cleaned_data["purpose"],
+                desired_due_date=form.cleaned_data["desired_due_date"],
+                items=requested_items,
+            )
+        except ValidationError as error:
+            form.add_error(None, error.messages)
+        else:
+            messages.success(
+                request,
+                f"Request #{borrow_request.pk} was submitted for administrator review.",
+            )
+            return redirect("portal:request-list")
+
+    return render(
+        request,
+        "borrowing/portal/request_form.html",
+        {
+            "form": form,
+            "item_formset": item_formset,
+            "limits": limits,
+        },
+    )
 
 
 @require_safe
