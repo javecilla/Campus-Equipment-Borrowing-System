@@ -1,12 +1,18 @@
 """T07 category and catalog item management integration checks."""
 
-from django.test import TestCase
+from html import unescape
+from re import search
+
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import IntegrityError, connection, transaction
+from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
 from accounts.models import Profile, User, UserRole
 from inventory.models import CatalogItem, Category, EquipmentUnit, UnitCondition, UnitStatus
 from inventory.queries import get_item_inventory_counts, has_transactional_history
+from inventory.services import create_category, update_catalog_item
 from operations.models import AuditAction, AuditLog, AuditTarget
 from operations.tests.records import create_catalog_records, create_request
 
@@ -483,9 +489,177 @@ class CatalogManagementTests(TestCase):
         unit_url: str = reverse("inventory_manage:unit-list")
         unit_res = self.client.get(unit_url)
         self.assertEqual(unit_res.status_code, 200)
-        self.assertContains(unit_res, "T08 · Kenneth")
+        self.assertContains(unit_res, "Physical units")
 
         maint_url: str = reverse("inventory_manage:maintenance-list")
         maint_res = self.client.get(maint_url)
         self.assertEqual(maint_res.status_code, 200)
         self.assertContains(maint_res, "T16 · Kenneth")
+
+    def test_category_choices_use_names_and_archived_category_metadata_remains_editable(
+        self,
+    ) -> None:
+        for route in ("inventory_manage:item-list", "inventory_manage:item-create"):
+            with self.subTest(route=route):
+                response = self.client.get(reverse(route))
+                self.assertContains(
+                    response, f'<option value="{self.category_cameras.pk}">DSLR Cameras</option>'
+                )
+
+        self.category_laptops.is_archived = True
+        self.category_laptops.save(update_fields=["is_archived"])
+        response = self.client.post(
+            reverse("inventory_manage:item-update", args=[self.item_laptop.pk]),
+            {
+                "category": self.category_laptops.pk,
+                "name": "ThinkPad updated",
+                "description": "Metadata can still be corrected after category archival.",
+            },
+        )
+        self.assertRedirects(
+            response, reverse("inventory_manage:item-detail", args=[self.item_laptop.pk])
+        )
+        self.item_laptop.refresh_from_db()
+        self.assertEqual(self.item_laptop.name, "ThinkPad updated")
+        self.assertEqual(self.item_laptop.category_id, self.category_laptops.pk)
+
+    def test_pagination_preserves_special_character_searches_and_filters(self) -> None:
+        for index in range(26):
+            category: Category = Category.objects.create(name=f"Audio & Video + Gear {index:02d}")
+            CatalogItem.objects.create(
+                category=self.category_cameras,
+                name=category.name,
+                description="Fictional pagination equipment.",
+            )
+        for route, page_size in (
+            ("inventory_manage:category-list", 25),
+            ("inventory_manage:item-list", 10),
+        ):
+            with self.subTest(route=route):
+                params: dict[str, str] = {"q": "Audio & Video + Gear", "archived": "false"}
+                if route == "inventory_manage:item-list":
+                    params["category"] = str(self.category_cameras.pk)
+                response = self.client.get(reverse(route), params)
+                self.assertEqual(len(response.context["page"]), page_size)
+                match = search(
+                    r'href="([^"]+)"\s+data-testid="pagination-next"', response.content.decode()
+                )
+                self.assertIsNotNone(match)
+                assert match is not None
+                next_page = self.client.get(reverse(route) + unescape(match[1]))
+                self.assertEqual(next_page.status_code, 200)
+                self.assertEqual(next_page.context["form"].cleaned_data["q"], params["q"])
+                self.assertEqual(next_page.context["page"].number, 2)
+                self.assertEqual(len(next_page.context["page"]), min(page_size, 26 - page_size))
+
+    def test_archival_preserves_units_and_request_references(self) -> None:
+        records = create_catalog_records()
+        request_item = create_request(records.borrower.pk, records.item.pk, timezone.now())
+        for route, identifier in (
+            ("inventory_manage:category-archive", records.category.pk),
+            ("inventory_manage:item-archive", records.item.pk),
+        ):
+            response = self.client.post(reverse(route, args=[identifier]))
+            self.assertEqual(response.status_code, 302)
+        records.unit.refresh_from_db()
+        request_item.refresh_from_db()
+        self.assertEqual(records.unit.catalog_item_id, records.item.pk)
+        self.assertEqual(request_item.catalog_item_id, records.item.pk)
+
+    def test_services_recheck_actor_history_and_field_lengths(self) -> None:
+        for actor in (self.borrower, self.inactive_admin):
+            with self.subTest(actor=actor.pk), self.assertRaises(PermissionDenied):
+                create_category(actor.pk, "Forbidden category", "")
+        with self.assertRaises(ValidationError):
+            create_category(self.admin.pk, "x" * 101, "")
+        records = create_catalog_records()
+        with self.assertRaisesMessage(ValidationError, "category cannot change"):
+            update_catalog_item(
+                self.admin.pk, records.item.pk, "Changed", "Description", self.category_laptops.pk
+            )
+        records.item.refresh_from_db()
+        self.assertNotEqual(records.item.name, "Changed")
+        self.assertFalse(Category.objects.filter(name="Forbidden category").exists())
+
+    def test_category_case_insensitive_uniqueness_is_enforced_by_postgresql(self) -> None:
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Category.objects.create(name="dslr cameras")
+
+    def test_invalid_search_filters_and_pages_return_useful_errors(self) -> None:
+        for route in ("inventory_manage:category-list", "inventory_manage:item-list"):
+            url: str = reverse(route)
+            for params, field in (({"archived": "invalid"}, "archived"), ({"q": "x" * 201}, "q")):
+                with self.subTest(route=route, params=params):
+                    response = self.client.get(url, params)
+                    self.assertEqual(response.status_code, 200)
+                    self.assertIn(field, response.context["form"].errors)
+                    self.assertEqual(response.context["page"].paginator.count, 0)
+            self.assertEqual(self.client.get(url, {"q": "x" * 200}).status_code, 200)
+            for page in ("bad", "0", "-1", "999"):
+                with self.subTest(route=route, page=page):
+                    self.assertEqual(self.client.get(url, {"page": page}).status_code, 404)
+        response = self.client.get(reverse("inventory_manage:item-list"), {"category": "bad"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("category", response.context["form"].errors)
+
+    def test_failed_audit_rolls_back_catalog_changes(self) -> None:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "ALTER TABLE operations_auditlog ADD CONSTRAINT test_reject_catalog_audit "
+                "CHECK (action NOT IN ('CATEGORY_CREATED', 'ITEM_UPDATED'))"
+            )
+        with self.assertRaises(IntegrityError):
+            create_category(self.admin.pk, "Must roll back", "")
+        with self.assertRaises(IntegrityError):
+            update_catalog_item(
+                self.admin.pk,
+                self.item_laptop.pk,
+                "Must roll back",
+                "Changed",
+                self.category_cameras.pk,
+            )
+        self.assertFalse(Category.objects.filter(name="Must roll back").exists())
+        self.item_laptop.refresh_from_db()
+        self.assertEqual(self.item_laptop.name, "ThinkPad T14")
+        self.assertEqual(self.item_laptop.category_id, self.category_laptops.pk)
+
+    def test_post_boundaries_and_protected_fields(self) -> None:
+        before: int = AuditLog.objects.count()
+        for route, identifier in (
+            ("inventory_manage:category-create", None),
+            ("inventory_manage:category-update", self.category_cameras.pk),
+            ("inventory_manage:category-archive", self.category_cameras.pk),
+            ("inventory_manage:item-create", None),
+            ("inventory_manage:item-update", self.item_camera.pk),
+            ("inventory_manage:item-archive", self.item_camera.pk),
+        ):
+            url: str = reverse(route, args=[identifier] if identifier is not None else [])
+            with self.subTest(route=route):
+                csrf_client: Client = Client(enforce_csrf_checks=True)
+                csrf_client.force_login(self.admin)
+                self.assertEqual(csrf_client.post(url).status_code, 403)
+                self.assertEqual(self.client.put(url).status_code, 405)
+                self.client.force_login(self.borrower)
+                self.assertEqual(self.client.post(url).status_code, 403)
+                self.client.force_login(self.admin)
+        self.assertEqual(AuditLog.objects.count(), before)
+        response = self.client.post(
+            reverse("inventory_manage:item-create"),
+            {
+                "category": self.category_cameras.pk,
+                "name": "Protected fields equipment",
+                "description": "Fictional equipment.",
+                "is_archived": "true",
+                "actor_id": self.borrower.pk,
+                "status": "ISSUED",
+                "quantity": "999",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        item: CatalogItem = CatalogItem.objects.get(name="Protected fields equipment")
+        self.assertFalse(item.is_archived)
+        self.assertFalse(item.units.exists())
+        self.assertEqual(
+            AuditLog.objects.get(action=AuditAction.ITEM_CREATED, target_id=item.pk).actor_id,
+            self.admin.pk,
+        )

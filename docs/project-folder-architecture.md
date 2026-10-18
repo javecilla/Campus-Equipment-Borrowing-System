@@ -13,8 +13,8 @@ Campus-Equipment-Borrowing-System/
 ├── config/                                      [existing]
 │   ├── environment.py                           [existing] private configuration reader
 │   ├── settings.py                              [existing] installed apps, DB, templates, assets
-│   ├── urls.py                                  [existing] development index / and preview /test
-│   ├── views.py                                 [existing] debug-only index and frontend preview
+│   ├── urls.py                                  [existing] app route mounting and debug preview /test
+│   ├── views.py                                 [existing] debug-only frontend preview
 │   ├── tests.py                                 [existing] configuration/bootstrap checks
 │   ├── asgi.py                                  [existing]
 │   └── wsgi.py                                  [existing]
@@ -22,33 +22,37 @@ Campus-Equipment-Borrowing-System/
 ├── accounts/                                    [existing]
 │   ├── models.py                                [existing] User and Profile
 │   ├── migrations/                              [existing]
-│   ├── views.py                                 [existing] login/logout/home and T05 account handlers
-│   ├── portal_views.py                          [existing] pending portal module presentation
-│   ├── forms.py                                 [existing] login, account search and status confirmation
+│   ├── views.py                                 [existing] login/logout/home, registration and T05 account handlers
+│   ├── portal_views.py                          [existing] borrower profile editing and pending portal modules
+│   ├── forms.py                                 [existing] login, registration/profile, account search and status confirmation
 │   ├── urls.py, portal_urls.py                  [existing] account/portal auth routes
 │   ├── access.py, middleware.py                 [existing] active/role/owner checks
-│   ├── services.py                              [existing] admin bootstrap and audited account status writes
+│   ├── services.py                              [existing] admin bootstrap, registration and audited profile/status writes
 │   ├── seeding.py                               [existing] atomic two-account auth test setup
 │   ├── queries.py                               [existing] account/history reads
-│   ├── tests/                                   [existing] authentication/access checks
+│   ├── tests/                                   [existing] authentication, registration/profile and access checks
 │   └── management/commands/                     [existing] admin setup and auth test seed commands
 │
 ├── inventory/                                   [existing]
 │   ├── models.py                                [existing] catalog, units, maintenance
 │   ├── migrations/                              [existing]
-│   ├── views.py                                 [existing] read-only module placeholders; workflows planned
-│   ├── forms.py                                 [planned] inventory/maintenance inputs
-│   ├── manage_urls.py                           [existing] protected management placeholder routes
-│   ├── services.py                              [planned] catalog/unit/maintenance writes
-│   ├── queries.py                               [planned] inventory and availability reads
-│   └── tests/                                   [planned] inventory feature checks
+│   ├── views.py                                 [existing] category/catalog/unit handlers; maintenance remains a placeholder
+│   ├── portal_views.py                          [existing] borrower catalog list/detail and protected photos
+│   ├── forms.py                                 [existing] category/catalog/unit forms and portal search; maintenance inputs planned
+│   ├── manage_urls.py                           [existing] catalog/unit actions and protected maintenance placeholder
+│   ├── services.py                              [existing] audited catalog/unit writes and initial damaged-unit maintenance; lifecycle planned
+│   ├── queries.py                               [existing] catalog/unit selection, history and derived inventory counts
+│   ├── photo_views.py / restore_views.py            [existing] protected photo and restoration handlers
+│   ├── photo_services.py / photos.py                [existing] audited storage and image validation
+│   ├── photo_forms.py                              [existing] upload field validation
+│   └── tests/                                   [existing] catalog/restore/photo/unit/portal integration checks
 │
 ├── borrowing/                                   [existing]
 │   ├── models.py                                [existing] requests, allocations, loans, returns
 │   ├── migrations/                              [existing]
 │   ├── views.py                                 [existing] read-only module placeholders; workflows planned
 │   ├── forms.py                                 [planned] request and return formsets
-│   ├── manage_urls.py                           [existing] protected management placeholder routes
+│   ├── manage_urls.py                           [existing] catalog actions and protected unit/maintenance placeholders
 │   ├── services.py                              [planned] submission/approval/issue/return actions
 │   ├── queries.py                               [planned] request/loan/history reads
 │   ├── tests/                                   [planned] borrowing workflow checks
@@ -61,12 +65,13 @@ Campus-Equipment-Borrowing-System/
 │   ├── locking.py                               [existing] shared lock helpers and order
 │   ├── validation.py                            [existing] pure item/limit/date validation
 │   ├── services.py                              [existing] audited settings update
-│   ├── queries.py                               [existing] loan-limit read; reporting comes later
+│   ├── queries.py                               [existing] loan-limit and audit reads; reporting comes later
 │   ├── tests/                                   [existing] foundation integration checks
-│   ├── views.py                                 [existing] protected dashboard placeholder; live data planned
-│   ├── workspace_views.py                       [existing] pending settings/audit/report presentation
-│   ├── forms.py                                 [planned] settings and filter inputs
-│   └── urls.py                                  [existing] dashboard and protected placeholder routes
+│   ├── views.py                                 [existing] settings/audit/profile handlers and dashboard placeholder
+│   ├── workspace_views.py                       [existing] pending report presentation
+│   ├── forms.py                                 [existing] settings and audit filter inputs
+│   ├── templatetags/assets.py                      [existing] content-versioned compiled asset URLs
+│   └── urls.py                                  [existing] settings/audit/profile and protected dashboard/report routes
 │
 ├── templates/                                   [existing] shared root template directory
 │   ├── base.html                                [existing] document shell and compiled CSS
@@ -75,25 +80,27 @@ Campus-Equipment-Borrowing-System/
 │   ├── operations/manage/base.html              [existing] custom administrator navigation layout
 │   ├── accounts/portal/base.html                [existing] basic-user navigation layout
 │   ├── components/                              [existing] workspace/navigation/messages/brand/logout
-│   ├── accounts/                                [planned] login and account feature pages
+│   ├── accounts/                                [existing] login and account feature pages
 │   │   ├── login.html                           [existing]
 │   │   ├── manage/                              [existing] T05 account management pages
-│   │   └── portal/                              [existing/planned] protected home; registration/profile planned
-│   ├── inventory/                               [planned] catalog/unit feature pages
-│   │   ├── manage/                              [planned] inventory and maintenance pages
-│   │   └── portal/                              [planned] equipment browsing pages
+│   │   ├── register.html                        [existing] T09 public borrower registration
+│   │   └── portal/                              [existing] protected home, editable profile and pending modules
+│   ├── inventory/                               [existing/planned] catalog/unit/portal pages present; maintenance lifecycle planned
+│   │   ├── manage/                              [existing/planned] catalog/photo/restore/unit pages; maintenance lifecycle planned
+│   │   └── portal/                              [existing] equipment browsing list/detail pages
 │   ├── borrowing/                               [planned] request/loan feature pages
 │   │   ├── manage/                              [planned] review, release, returns, slips
 │   │   └── portal/                              [planned] submission and own history pages
-│   └── operations/manage/                       [existing/planned] protected dashboard destination; live data/settings/audit/reports planned
+│   └── operations/manage/                       [existing/planned] settings/audit pages; live dashboard/reports planned
 │
 ├── static/                                      [existing] shared source static files
 │   ├── css/fonts.css                            [existing] local font declarations and typography
 │   ├── css/app.css                              [existing] Tailwind entry point/theme/source scan
 │   ├── fonts/                                   [existing] DM Sans/Poppins and license notices
-│   ├── images/                                  [existing] includes setup success screenshot
+│   ├── images/                                  [existing] branding, default equipment photo and setup screenshots
 │   ├── js/frontend-test.js                       [existing] preview font-load check
 │   ├── js/account-menu.js                        [existing] account disclosure dismissal behavior
+│   ├── js/equipment-photo.js                     [existing] local image preview and selection removal
 │   └── build/                                   [generated] ignored CSS/browser modules/chunks
 ├── package.json                                 [existing] npm dependencies/build/watch commands
 ├── package-lock.json                            [existing] exact npm dependency graph
@@ -102,22 +109,23 @@ Campus-Equipment-Borrowing-System/
 └── manage.py                                    [existing] Django management entry point
 ```
 
-The root also contains the setup/review documents, dependency files, and private local environment described in [DEV.md](../DEV.md#first-time-setup). Python package `__init__.py` files are omitted from this map. `staticfiles/` is generated collection output, while `.venv/` and `.env.local` are private local setup; none is a place to add application pages.
+The root also contains the setup/review documents, dependency files, and private local environment described in [DEV.md](../DEV.md#first-time-setup). Python package `__init__.py` files are omitted from this map. Local `media/equipment/` contains optional uploads and is ignored by Git, along with `.idea/` IDE settings. `staticfiles/` is generated collection output, while `.venv/` and `.env.local` are private local setup; none is a place to add application pages.
 
 ## Where views and page HTML go
 
 A **view** is a Python request handler in the relevant app's `views.py`. The page's **HTML** is a template. For example, an inventory management page uses `inventory/views.py` and a template under `templates/inventory/manage/`.
 
-The role prefix selects the audience; the feature app selects the Python module. Real basic-user equipment handlers belong in `inventory/`, and borrowing handlers in `borrowing/`. UI-07 temporarily renders the four pending portal destinations from `accounts/portal_views.py`; owners replace these presentation handlers when implementing their features, keeping the named `portal` URLs. Feature pages extend the existing `operations/manage/base.html` or `accounts/portal/base.html` and fill `workspace_content`; both inherit `components/workspace.html` and the `base.html` document/asset shell. The [coding guide](coding-standards.md#tailwind-styling-pattern) defines the shared layout pattern.
+The role prefix selects the audience; the feature app selects the Python module. Real basic-user equipment handlers belong in `inventory/`, and borrowing handlers in `borrowing/`. T10 equipment handlers are in `inventory/portal_views.py`, mounted through `accounts/portal_urls.py`. The request/loan placeholders remain in `accounts/portal_views.py`; their owners replace those handlers when implementing borrowing features, keeping the named `portal` URLs. Feature pages extend the existing `operations/manage/base.html` or `accounts/portal/base.html` and fill `workspace_content`; both inherit `components/workspace.html` and the `base.html` document/asset shell. The [coding guide](coding-standards.md#tailwind-styling-pattern) defines the shared layout pattern.
 
-These page placements are planned examples; route names already come from the HTTP contract:
+These page placements include existing account/settings/audit pages and planned inventory/borrowing examples; route names come from the HTTP contract:
 
 | Page | Python view location | Template location | Contracted URL name |
 | --- | --- | --- | --- |
 | Sign in | `accounts/views.py` | `templates/accounts/login.html` | `accounts:login` |
-| Edit own profile | `accounts/views.py` | `templates/accounts/portal/profile_form.html` | `portal:profile` |
+| Register a borrower | `accounts/views.py` | `templates/accounts/register.html` | `accounts:register` |
+| Edit own profile | `accounts/portal_views.py` | `templates/accounts/portal/profile.html` | `portal:profile` |
 | Manage physical units | `inventory/views.py` | `templates/inventory/manage/unit_list.html` | `inventory_manage:unit-list` |
-| Browse equipment | `inventory/views.py` | `templates/inventory/portal/equipment_list.html` | `portal:equipment-list` |
+| Browse equipment | `inventory/portal_views.py` | `templates/inventory/portal/equipment_list.html` | `portal:equipment-list` |
 | Submit a request | `borrowing/views.py` | `templates/borrowing/portal/request_form.html` | `portal:request-create` |
 | Approve a request | `borrowing/views.py` | `templates/borrowing/manage/request_approve.html` | `borrowing_manage:request-approve` |
 | Record returns | `borrowing/views.py` | `templates/borrowing/manage/return_form.html` | `borrowing_manage:return-create` |
@@ -129,7 +137,7 @@ When rendering the unit list, the template name passed to Django would be `inven
 
 ## How a page connects
 
-For the planned physical-unit list, the file flow is:
+For the implemented physical-unit list, the file flow is:
 
 ```text
 Browser: GET /manage/units/

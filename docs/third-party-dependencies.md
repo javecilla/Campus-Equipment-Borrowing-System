@@ -19,6 +19,7 @@ Pins: [requirements.txt](../requirements.txt) and [requirements-dev.txt](../requ
 | `jsbeautifier` | 2.0.3 | Development | `cssbeautifier`, `djlint` | MIT |
 | `json5` | 0.17.3 | Development | `djlint` | Apache-2.0 |
 | `pathspec` | 1.1.1 | Development | `djlint` | MPL-2.0 |
+| `pillow` | 13.0.0 | Runtime | `requirements.in`; optional equipment photos | MIT-CMU; retain bundled native-library notices |
 | `psycopg` | 3.3.6 | Runtime | `requirements.txt` | LGPL-3.0-only |
 | `psycopg-binary` | 3.3.6 | Runtime | `requirements.txt` | LGPL-3.0-only |
 | `python-dotenv` | 1.2.4 | Runtime | `requirements.txt` | BSD-3-Clause |
@@ -157,6 +158,7 @@ All declared dependency and optional-dependency references in this application l
 | DM Sans | [Supplied OFL notice](../static/fonts/DM_Sans/OFL.txt) | Local typography; supplied static/variable font files |
 | Poppins | [Supplied OFL notice](../static/fonts/Poppins/OFL.txt) | Local typography; supplied weights/styles |
 | Default role avatars | [Admin image](../static/images/default-profile-admin.png), [basic-user image](../static/images/default-profile-user.png); supplied by the user, original source/license not provided | Local account-menu/profile artwork; no claim of team authorship or MIT coverage of third-party artwork |
+| Default equipment photo | [WebP](../static/images/default-photo-equipment-270x360.webp) and [PNG](../static/images/default-photo-equipment-270x360.png); supplied by the user, original source/license not provided | Catalog placeholder; no claim of team authorship or third-party MIT coverage |
 | @bytebase/dbhub 1.5.0 | MIT; [versioned npm metadata](https://registry.npmjs.org/@bytebase%2Fdbhub/1.5.0) and [upstream repository](https://github.com/bytebase/dbhub) | Optional read-only MCP tool in npm execution cache, outside application locks |
 
 DBHub's published 1.5.0 manifest declares zod ^4.2.0, ssh2 ^1.16.0, dotenv ^16.4.7, express ^4.18.2, ssh-config ^5.0.3, @iarna/toml ^2.2.5, @modelcontextprotocol/node ^2.0.0, and @modelcontextprotocol/server ^2.0.0. Its execution-cache resolution is separate from package-lock.json; this document does not invent resolved versions or a complete lock for that optional tool. Use its linked published dependency/license declarations and DEV.md's pinned launch. It is not bundled with the application.
@@ -165,4 +167,4 @@ Node/npm, Python/pip, Git, PostgreSQL, and the optional uv resolver are workstat
 
 ## Inventory coverage
 
-This snapshot contains 17 pinned Python distributions and 113 npm lock entries. Refresh names, versions, licenses, parent links, optional flags, and counts from actual locks/installed metadata after a dependency change. Check that direct selections have a README rationale and required browser notices remain in the built artifact.
+This snapshot contains 18 pinned Python distributions and 113 npm lock entries. Refresh names, versions, licenses, parent links, optional flags, and counts from actual locks/installed metadata after a dependency change. Check that direct selections have a README rationale and required browser notices remain in the built artifact.

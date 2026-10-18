@@ -1,0 +1,36 @@
+{% extends "operations/manage/base.html" %}
+{% load assets %}
+{% block title %}Equipment photo · {{ item.name }}{% endblock %}
+{% block workspace_content %}
+    {% include "inventory/manage/nav.html" with active_tab="items" %}
+    <section class="max-w-2xl space-y-6" data-testid="equipment-photo-section">
+        <header>
+            <p class="text-xs font-semibold tracking-widest text-accent uppercase">{{ item.name }}</p>
+            <h1 class="font-heading text-3xl font-semibold">Equipment photo</h1>
+        </header>
+        <form method="post"
+              enctype="multipart/form-data"
+              class="space-y-5"
+              data-testid="equipment-photo-form">
+            {% csrf_token %}
+            {% include "inventory/manage/photo_preview.html" %}
+            <div class="flex flex-wrap gap-3">
+                <button type="submit"
+                        data-testid="equipment-photo-submit"
+                        class="min-h-11 rounded-md bg-accent px-5 text-sm font-semibold text-white hover:bg-emerald-800">Save photo</button>
+                <a href="{% url 'inventory_manage:item-detail' item.pk %}"
+                   data-testid="equipment-photo-cancel"
+                   class="inline-flex min-h-11 items-center rounded-md border border-slate-200 px-4 text-sm font-semibold">Cancel</a>
+                {% if item.photo %}
+                    <a href="{% url 'inventory_manage:item-photo-remove' item.pk %}"
+                       data-testid="equipment-photo-remove-link"
+                       class="inline-flex min-h-11 items-center px-4 text-sm font-semibold text-rose-700 hover:underline">Remove photo</a>
+                {% endif %}
+            </div>
+        </form>
+    </section>
+{% endblock %}
+{% block scripts %}
+    {{ block.super }}
+    <script type="module" src="{% compiled_asset 'build/equipment-photo.js' %}"></script>
+{% endblock %}

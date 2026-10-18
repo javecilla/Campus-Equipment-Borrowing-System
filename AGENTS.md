@@ -2,6 +2,8 @@
 
 ## Current authorization and context
 
+The user confirms manual testing of Ellyssa's T10 works and authorizes committing/pushing the documentation review on jerome with Ellyssa and Codex co-author credit. T10 is integrated through PR #25 and the T09 username-validation correction through PR #24. Preserve feature source and contributor credit; this publication does not authorize a new PR, main update or T11/T16 implementation. See the backlog/current handoff for verified evidence and findings.
+
 The user authorized implementation of Jerome Avecilla's assigned work on `jerome`, and explicitly allowed T01–T03 as one local, uncommitted batch before main integration. This exception does not unlock tasks requiring other members' features or authorize commits, pushes, PRs, or merges. The user also requested runnable setup steps in README.md and detailed migrations/team guidance in DEV.md. Follow the backlog and current handoff for verified scope; remaining feature designs are contracts, not delivered software.
 
 The user subsequently authorized committing all completed foundation/documentation/assets changes with `Co-authored-by: Codex <codex@openai.com>`, pushing `jerome`, and opening a PR into `main`. This publication request does not authorize merging that PR or starting another member's features.

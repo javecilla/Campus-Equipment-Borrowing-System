@@ -20,10 +20,13 @@ ADMIN_READ_ONLY: tuple[str, ...] = (
     "operations:profile",
 )
 PORTAL_READ_ONLY: tuple[str, ...] = (
-    "portal:profile",
     "portal:equipment-list",
     "portal:request-list",
     "portal:loan-list",
+)
+PORTAL_MODULE_DESTINATIONS: tuple[str, ...] = (
+    "portal:profile",
+    *PORTAL_READ_ONLY,
 )
 
 
@@ -64,7 +67,7 @@ class WorkspaceNavigationTests(TestCase):
         )
         portal_paths: tuple[str, ...] = (
             reverse("portal:home"),
-            *(reverse(name) for name in PORTAL_READ_ONLY),
+            *(reverse(name) for name in PORTAL_MODULE_DESTINATIONS),
         )
         for user, paths, count in (
             (self.records.admin, admin_paths, 8),
@@ -84,7 +87,7 @@ class WorkspaceNavigationTests(TestCase):
 
     def test_read_only_pages_enforce_role_authentication_and_safe_methods(self) -> None:
         for user, forbidden, permitted in (
-            (self.records.admin, PORTAL_READ_ONLY, ADMIN_READ_ONLY),
+            (self.records.admin, PORTAL_MODULE_DESTINATIONS, ADMIN_READ_ONLY),
             (self.records.borrower, ADMIN_READ_ONLY, PORTAL_READ_ONLY),
         ):
             self.client.force_login(user)
@@ -98,7 +101,7 @@ class WorkspaceNavigationTests(TestCase):
                         self.client.post(reverse(name), {"is_active": False}).status_code, 405
                     )
         anonymous = Client()
-        for name in (*ADMIN_READ_ONLY, *PORTAL_READ_ONLY):
+        for name in (*ADMIN_READ_ONLY, *PORTAL_MODULE_DESTINATIONS):
             with self.subTest(anonymous=name):
                 response = anonymous.get(reverse(name))
                 self.assertRedirects(response, f"{reverse('accounts:login')}?next={reverse(name)}")
@@ -106,7 +109,7 @@ class WorkspaceNavigationTests(TestCase):
     def test_deactivated_sessions_cannot_open_read_only_pages(self) -> None:
         for user, routes in (
             (self.records.admin, ADMIN_READ_ONLY),
-            (self.records.borrower, PORTAL_READ_ONLY),
+            (self.records.borrower, PORTAL_MODULE_DESTINATIONS),
         ):
             for name in routes:
                 with self.subTest(role=user.role, name=name):
@@ -118,19 +121,26 @@ class WorkspaceNavigationTests(TestCase):
                     self.assertNotIn(SESSION_KEY, self.client.session)
 
     def test_my_profile_ignores_supplied_account_ids_and_cannot_update_accounts(self) -> None:
-        for user, other, route in (
-            (self.records.admin, self.records.borrower, "operations:profile"),
-            (self.records.borrower, self.records.admin, "portal:profile"),
-        ):
-            with self.subTest(role=user.role):
-                self.client.force_login(user)
-                response = self.client.get(reverse(route), {"user_id": other.pk})
-                self.assertEqual(response.status_code, 200)
-                self.assertEqual(response.context["profile"].user_id, user.pk)
-                self.assertNotContains(response, other.email)
-                self.assertNotContains(response, other.username)
-                self.assertEqual(
-                    self.client.post(reverse(route), {"first_name": "Changed"}).status_code, 405
-                )
-                user.refresh_from_db()
-                self.assertEqual(user.first_name, "Fictional")
+        self.client.force_login(self.records.admin)
+        response = self.client.get(
+            reverse("operations:profile"), {"user_id": self.records.borrower.pk}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["profile"].user_id, self.records.admin.pk)
+        self.assertNotContains(response, self.records.borrower.email)
+        self.assertNotContains(response, self.records.borrower.username)
+        self.assertEqual(
+            self.client.post(reverse("operations:profile"), {"first_name": "Changed"}).status_code,
+            405,
+        )
+        self.records.admin.refresh_from_db()
+        self.assertEqual(self.records.admin.first_name, "Fictional")
+
+        self.client.force_login(self.records.borrower)
+        portal_response = self.client.get(
+            reverse("portal:profile"), {"user_id": self.records.admin.pk}
+        )
+        self.assertEqual(portal_response.status_code, 200)
+        self.assertEqual(portal_response.context["profile"].user_id, self.records.borrower.pk)
+        self.assertNotContains(portal_response, self.records.admin.email)
+        self.assertNotContains(portal_response, self.records.admin.username)

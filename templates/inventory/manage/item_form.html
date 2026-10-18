@@ -1,9 +1,10 @@
 {% extends "operations/manage/base.html" %}
+{% load assets %}
 {% block title %}{{ title }} · Campus Equipment{% endblock %}
 {% block workspace_content %}
     <section data-testid="item-form-section">
         {% include "inventory/manage/nav.html" with active_tab="items" %}
-        <div class="max-w-2xl space-y-6">
+        <div class="space-y-6 {% if not form.photo %}max-w-2xl{% endif %}">
             <header>
                 <p class="text-xs font-semibold tracking-widest text-accent uppercase">Equipment catalog</p>
                 <h1 class="font-heading text-3xl font-semibold">{{ title }}</h1>
@@ -21,39 +22,50 @@
                 <div class="rounded-md border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700"
                      role="alert">{{ form.non_field_errors }}</div>
             {% endif %}
-            <form method="post" data-testid="item-form" class="space-y-6">
+            <form method="post"
+                  enctype="multipart/form-data"
+                  data-testid="item-form"
+                  class="space-y-6">
                 {% csrf_token %}
-                <div>
-                    <label for="{{ form.category.id_for_label }}"
-                           class="mb-2 block text-sm font-medium text-slate-900">
-                        {{ form.category.label }} <span class="text-rose-600">*</span>
-                    </label>
-                    {{ form.category }}
-                    {% if form.category.help_text %}
-                        <p class="mt-1.5 text-xs text-slate-500">{{ form.category.help_text }}</p>
-                    {% endif %}
-                    {% if form.category.errors %}
-                        <p class="mt-1.5 text-xs text-rose-600">{{ form.category.errors.0 }}</p>
-                    {% endif %}
-                </div>
-                <div>
-                    <label for="{{ form.name.id_for_label }}"
-                           class="mb-2 block text-sm font-medium text-slate-900">
-                        {{ form.name.label }} <span class="text-rose-600">*</span>
-                    </label>
-                    {{ form.name }}
-                    {% if form.name.errors %}
-                        <p class="mt-1.5 text-xs text-rose-600">{{ form.name.errors.0 }}</p>
-                    {% endif %}
-                </div>
-                <div>
-                    <label for="{{ form.description.id_for_label }}"
-                           class="mb-2 block text-sm font-medium text-slate-900">
-                        {{ form.description.label }} <span class="text-rose-600">*</span>
-                    </label>
-                    {{ form.description }}
-                    {% if form.description.errors %}
-                        <p class="mt-1.5 text-xs text-rose-600">{{ form.description.errors.0 }}</p>
+                <div class="grid items-start gap-8 {% if form.photo %}lg:grid-cols-2{% endif %}"
+                     data-testid="item-form-columns">
+                    <div class="min-w-0 space-y-6">
+                        <div>
+                            <label for="{{ form.category.id_for_label }}"
+                                   class="mb-2 block text-sm font-medium text-slate-900">
+                                {{ form.category.label }} <span class="text-rose-600">*</span>
+                            </label>
+                            {{ form.category }}
+                            {% if form.category.help_text %}
+                                <p class="mt-1.5 text-xs text-slate-500">{{ form.category.help_text }}</p>
+                            {% endif %}
+                            {% if form.category.errors %}
+                                <p class="mt-1.5 text-xs text-rose-600">{{ form.category.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label for="{{ form.name.id_for_label }}"
+                                   class="mb-2 block text-sm font-medium text-slate-900">
+                                {{ form.name.label }} <span class="text-rose-600">*</span>
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <p class="mt-1.5 text-xs text-rose-600">{{ form.name.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label for="{{ form.description.id_for_label }}"
+                                   class="mb-2 block text-sm font-medium text-slate-900">
+                                {{ form.description.label }} <span class="text-rose-600">*</span>
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <p class="mt-1.5 text-xs text-rose-600">{{ form.description.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if form.photo %}
+                        {% include "inventory/manage/photo_preview.html" %}
                     {% endif %}
                 </div>
                 <div class="flex flex-wrap items-center gap-3 pt-2">
@@ -79,4 +91,10 @@
             </form>
         </div>
     </section>
+{% endblock %}
+{% block scripts %}
+    {{ block.super }}
+    {% if form.photo %}
+        <script type="module" src="{% compiled_asset 'build/equipment-photo.js' %}"></script>
+    {% endif %}
 {% endblock %}

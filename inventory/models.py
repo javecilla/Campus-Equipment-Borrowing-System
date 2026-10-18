@@ -38,6 +38,7 @@ class Category(models.Model):
 
     class Meta:
         constraints: list[models.BaseConstraint] = [
+            models.UniqueConstraint(Lower("name"), name="category_name_ci_unique"),
             models.CheckConstraint(
                 condition=models.Q(name__regex=r"\S"), name="category_nonblank_name"
             ),
@@ -48,6 +49,7 @@ class CatalogItem(models.Model):
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="items")
     name = models.CharField(max_length=150)
     description = models.TextField()
+    photo = models.ImageField(upload_to="equipment/", blank=True)
     is_archived = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

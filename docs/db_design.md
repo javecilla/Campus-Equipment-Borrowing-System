@@ -68,7 +68,7 @@ Keep names/email on User; do not duplicate them in Profile. Passwords, role, and
 | Field | Type | Constraint/purpose |
 | --- | --- | --- |
 | `id` | bigint | PK |
-| `name` | varchar(100) | Unique, nonblank |
+| `name` | varchar(100) | Case-insensitive unique, nonblank; management inputs are trimmed |
 | `description` | text, blank allowed | Description |
 | `is_archived` | boolean | False for active categories |
 | `created_at`, `updated_at` | timestamptz | Recorded creation/modification times |
@@ -81,6 +81,7 @@ Keep names/email on User; do not duplicate them in Profile. Passwords, role, and
 | `category_id` | bigint | FK to Category |
 | `name` | varchar(150) | Nonblank |
 | `description` | text | Nonblank borrower-facing description |
+| `photo` | varchar(100), blank allowed | Optional ImageField path under local `MEDIA_ROOT/equipment/`; generated WebP filename, no image binary in PostgreSQL |
 | `is_archived` | boolean | False for active items |
 | `created_at`, `updated_at` | timestamptz | Creation/modification times |
 
@@ -239,7 +240,7 @@ One typed singleton row, not an arbitrary key/value store.
 | `target_id` | bigint | Referenced primary key; preserved historical reference |
 | `summary` | text | Sanitized action description, reason, and relevant before/after values |
 
-Action values are the `AuditAction` enum in [operations/models.py](../operations/models.py). SETTINGS_INITIALIZED identifies the migration-only SYSTEM event; the remaining values cover the business actions described above. `AuditTarget` allowlists actual app/model labels, and [the audit writer](../operations/audit.py) checks action/target compatibility and target existence.
+Action values are the `AuditAction` enum in [operations/models.py](../operations/models.py). SETTINGS_INITIALIZED identifies the migration-only SYSTEM event; CATEGORY_RESTORED and ITEM_RESTORED identify the optional catalog restoration actions. The remaining values cover the business actions described above. `AuditTarget` allowlists actual app/model labels, and [the audit writer](../operations/audit.py) checks action/target compatibility and target existence.
 
 `target_model`/`target_id` are a validated historical reference, not a polymorphic database FK; services check the target at creation. Do not store secrets, password hashes, tokens, or unnecessary contact information in summaries. Append only through business services; no ordinary edit/delete routes. SYSTEM is an audit actor kind, not a third user role.
 

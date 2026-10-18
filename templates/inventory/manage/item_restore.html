@@ -1,0 +1,40 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}Restore {{ item.name }} · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section data-testid="item-restore-confirmation">
+        {% include "inventory/manage/nav.html" with active_tab="items" %}
+        <div class="w-full max-w-2xl py-2">
+            <p class="mb-3 text-xs font-semibold tracking-widest text-accent uppercase">Equipment catalog</p>
+            <h1 class="mb-4 font-heading text-3xl font-semibold">Restore {{ item.name }}?</h1>
+            {% if error %}
+                <p class="mb-5 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"
+                   role="alert">{{ error }}</p>
+            {% endif %}
+            <div class="mb-6 space-y-3 text-slate-600">
+                <p>This item's archive status will be cleared. Its photo, physical units, and transaction history are preserved.</p>
+                <p>Physical unit statuses stay unchanged, including retired units.</p>
+                {% if item.category.is_archived %}
+                    <p class="font-semibold text-amber-800"
+                       data-testid="restore-category-warning">
+                        {{ item.category.name }} is still archived. This item will remain unavailable for new requests and approvals until its category is restored.
+                    </p>
+                {% endif %}
+            </div>
+            <form method="post" class="flex flex-wrap gap-3">
+                {% csrf_token %}
+                {% if item.is_archived %}
+                    <button data-testid="item-restore-submit"
+                            type="submit"
+                            class="min-h-11 rounded-md bg-accent px-5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800">
+                        Confirm restore
+                    </button>
+                {% endif %}
+                <a href="{% url 'inventory_manage:item-detail' item.pk %}"
+                   data-testid="item-restore-cancel"
+                   class="inline-flex min-h-11 items-center rounded-md border border-slate-200 px-4 text-sm font-semibold hover:bg-slate-50">
+                    Back to item
+                </a>
+            </form>
+        </div>
+    </section>
+{% endblock %}

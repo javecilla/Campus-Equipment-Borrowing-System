@@ -4,7 +4,7 @@
 
 Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv`, `.env.local`, and local PostgreSQL database. Git shares source and migrations, not credentials or database contents.
 
-The T01–T03 foundation is integrated into `main` through [PR #3](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/3). Alex's T04 authentication/access controls are integrated through PR #9, with its LF-scope correction integrated through PR #10; see [HANDOFF.md](HANDOFF.md) for current follow-up readiness. Registration and workflow feature pages remain pending.
+**Current phase: T10 borrower equipment browsing is Done and integrated** through PR #25 at `016a78b`. T01-T10 and the T09 username-validation correction (PR #24 at `f29bd91`) are integrated into main. All 174 PostgreSQL tests pass. Ralph / T11 and Kenneth / T16 have satisfied prerequisites; borrowing workflows, maintenance lifecycle and live reporting remain pending. See [HANDOFF.md](HANDOFF.md) for evidence, review findings and next-owner actions.
 
 For where to add views, models, forms, URLs, and page templates, use [Project Folder Architecture](docs/project-folder-architecture.md).
 
@@ -293,13 +293,15 @@ When updating a workstation from the earlier Axios setup, remove its obsolete ge
 
 ### Frontend preview
 
+The shared shell and page modules use the `compiled_asset` template tag to append a content fingerprint to built CSS/JavaScript URLs. Rebuilding changes that URL when bundle bytes change, avoiding stale browser styles or scripts. Missing compiled files raise an explicit build instruction; run the asset build before starting the app or tests. Keep these generated bundles with a runnable submission and rebuild before static collection.
+
 After building assets and starting Django, go directly to **<http://127.0.0.1:8000/test>** (no trailing slash) with `DJANGO_DEBUG=True` in your private `.env.local`. The preview links back to the application home. Expect a pale background, rounded typography cards, green/slate/amber swatches, and the message **DM Sans and Poppins loaded successfully from local assets.** The message checks real font loading in the browser; it reports a failure if font declarations/files cannot load. If it stays at “Checking local fonts…”, check that `build/frontend-test.js` loads and rebuild assets.
 
 The page uses the shared base template and compiled assets. Typography cards sit side by side on wider screens; color swatches stack on small screens. It accepts GET/HEAD without sign-in, reads no application data, and returns 404 when debug is disabled. [config/views.py](config/views.py) owns the preview handler, [templates/dev/frontend-test.html](templates/dev/frontend-test.html) its markup, and [static/js/frontend-test.js](static/js/frontend-test.js) the font check. This is a development preview, not a role layout or product page.
 
 ### Styling templates
 
-Feature owners make `manage/base.html` and `portal/base.html` extend `base.html`, then have feature pages extend the appropriate role layout. Role layouts are not created by this setup. Use literal Tailwind class names in templates, app Python files (including form-widget attributes), or `static/js/`; these locations are scanned explicitly. Write complete alternative class names rather than concatenating fragments such as `bg-{{ color }}-500`. Use `font-sans` for DM Sans and `font-heading` for Poppins. The current font CSS also applies Poppins to headings.
+Feature pages extend the existing `operations/manage/base.html` or `accounts/portal/base.html` role layout and fill `workspace_content`; both inherit the shared document shell. Use literal Tailwind class names in templates, app Python files (including form-widget attributes), or `static/js/`; these locations are scanned explicitly. Write complete alternative class names rather than concatenating fragments such as `bg-{{ color }}-500`. Use `font-sans` for DM Sans and `font-heading` for Poppins. The current font CSS also applies Poppins to headings.
 
 The common shell loads the compiled stylesheet, including local fonts; do not load fonts.css again when extending it. Tailwind styling does not enforce roles, active accounts, ownership, or workflow rules. Django views/forms/services remain authoritative.
 
@@ -307,7 +309,7 @@ The common shell loads the compiled stylesheet, including local fonts; do not lo
 
 Use ordinary Django forms and links for the current server-rendered pages. Login and logout use native form submission with CSRF tokens; no JavaScript HTTP library is installed or needed.
 
-Load an actual page module through its template's scripts block with `<script type="module" src="{% static 'build/your-page.js' %}"></script>` and `{% load static %}`. The build compiles/minifies the current `frontend-test.js` font check and `account-menu.js` account-disclosure enhancement. The shared workspace loads the latter for outside-click/Escape dismissal; native links/forms still handle profile navigation and logout. Use the [coding guide](docs/coding-standards.md#browser-interactions) for future explicitly authorized enhancements and the [HTTP contract](docs/api_spec.md#common-protocol) for existing HTML/form/CSV response semantics.
+Load an actual page module through its template's scripts block, preserving `{{ block.super }}`, with `<script type="module" src="{% compiled_asset 'build/your-page.js' %}"></script>` and `{% load assets %}`. The build compiles/minifies `frontend-test.js`, `account-menu.js` and the local `equipment-photo.js` preview. The shared workspace loads the account disclosure for outside-click/Escape dismissal; native links/forms still handle profile navigation and logout. Use the [coding guide](docs/coding-standards.md#browser-interactions) for future explicitly authorized enhancements and the [HTTP contract](docs/api_spec.md#common-protocol) for existing HTML/form/CSV response semantics.
 
 ## Working with migrations
 
@@ -381,6 +383,54 @@ Tests create and remove a separate `test_<DB_NAME>` PostgreSQL database. Your lo
 
 Write the required [dated handoff](.agents/skills/project-handoff/SKILL.md), update affected task evidence/current readiness, and leave AI changes uncommitted unless the user requests a commit.
 
+## Continuing with T08
+
+**T08 is Done and integrated** through PR #22 at `6c91d48`. Its physical-unit list, registration, detail/history and metadata editing are available under `/manage/units/`. Kenneth's next inventory task is **T16**, currently Not started; its T03/T08 prerequisites are integrated. Follow [the member-branch workflow](#assigned-branches-and-main-integration) to sync `kenneth` with main, then prepare the workstation with:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+npm.cmd ci
+npm.cmd run build
+.\.venv\Scripts\python.exe manage.py migrate --noinput
+.\.venv\Scripts\python.exe manage.py check --database default
+.\.venv\Scripts\python.exe manage.py test --noinput
+```
+
+The T07 continuation adds `inventory.0002_category_name_case_insensitive`, `inventory.0003_catalog_item_photo`, and `operations.0003_catalog_restore_audit_actions`. T08, T09 and T10 add no migration or dependency. Do not rewrite existing migrations. Use the existing catalog forms, distinct services, read-only queries, active-admin boundary and parent-before-child lock order; see the [HTTP contract](docs/api_spec.md#custom-administration-accounts-and-inventory), [coding standards](docs/coding-standards.md) and [T08 acceptance](docs/tasks.md#inventory-and-borrower-portal). `/manage/units/` now implements those T08 operations; `/manage/maintenance/` remains a protected placeholder until T16. Registering an initially damaged unit opens maintenance atomically, while subsequent maintenance closure/status transitions remain T16 work. Integration does not start T16 or supply the full demonstration dataset.
+
+### Borrower account verification after T09 integration
+
+Anonymous users can register at `/accounts/register/`, then sign in through the shared login page. Registration fixes the role to BASIC_USER; an active borrower edits only their own name, email and optional contact number at `/portal/profile/`. The administrator profile remains read-only. Registration/profile changes use transactional audit services; see the [HTTP contract](docs/api_spec.md#shared-account-routes) for fields and access rules.
+
+Run `.\.venv\Scripts\python.exe manage.py test accounts.tests.test_borrower_portal operations.tests.test_navigation --noinput` for the focused integration suites. The combined full suite currently contains 174 passing tests. The [username-validation follow-up](handoffs/registration-username-validation-and-t09-status-10-18-2026.md) uses Django normalization and the model validator to return bound field errors before writes; it is integrated through PR #24 at `f29bd91`. T09 remains Done.
+
+### Borrower equipment verification after T10 integration
+
+Active BASIC_USER accounts browse `/portal/equipment/` with name/description search, active-category filtering and 25-item pagination. Detail pages show descriptions, protected photos or the shared default, and database-derived serviceable/available counts. Archived items and items under archived categories are excluded from browsing, detail and photo access. Admins and inactive accounts are denied; internal unit notes and asset codes stay outside these catalog pages. See the [portal contract](docs/api_spec.md#basic-user-portal).
+
+Run `.\.venv\Scripts\python.exe manage.py test inventory.tests.test_portal_equipment --noinput` for the 25 T10 integration tests. The [integration review](handoffs/t10-main-integration-and-documentation-review-10-18-2026.md) records fresh full-suite checks and remaining review items: the photo fixture currently leaves a file in local media, and the detail page refers to request submission before T11 exists. Request/loan destinations remain protected placeholders. The user subsequently reported successful manual T10 testing; detailed mobile/keyboard scenarios were not supplied. See [publication evidence](handoffs/t10-documentation-publication-10-18-2026.md).
+
+`.idea/` is ignored and removed from tracked files through main commit `f08fb04`. Each developer may keep local IDE settings; do not force-add them. Generated builds, uploads, dependencies and private environment files also stay outside Git.
+
+## Equipment photos and local media
+
+The **New equipment item** form uses metadata on the left and an optional image/preview panel on the right at desktop widths; leaving the photo empty uses the default image. Selecting a file previews it locally without an upload. **Remove selected image** clears that pending selection, allowing another file to be chosen. The existing photo is changed only when a form is saved; confirmed removal of a saved photo remains a separate action. Creation with a photo saves the item, file reference and audit together, rolling everything back if the operation fails. For an existing item, open its detail page and choose **Manage photo**. Upload one JPEG, PNG or WebP, up to 5 MiB and 20 million pixels. The server rejects animated/invalid files, removes metadata, and saves a WebP fitting within 1600×1600 without cropping. Replace and confirmed removal are audited administrator actions.
+
+Uploads are created automatically in `media/equipment/` under the project root (Django's `MEDIA_ROOT`). PostgreSQL stores a relative path such as `equipment/<generated-id>.webp`; it does not store image bytes. The default `static/images/default-photo-equipment-270x360.webp` is a shared static asset and is used when no photo is assigned. A missing assigned upload is an error, rather than a silently replaced photo.
+
+`media/` is ignored by Git. Every teammate has separate local uploads; pulling source does not copy equipment photos. Back up and restore this folder together with the database, preserving its relative paths. Review any files left unreferenced after an interrupted process before removing them; there is no automatic purge command.
+
+Photos are delivered through the active-ADMIN-protected `inventory_manage:item-photo` route and the active-BASIC_USER-protected `portal:equipment-photo` route. The portal route additionally requires an active item and category. Both stream stored WebP with private/no-store caching. Do not use `item.photo.url` in templates or add a public `static(settings.MEDIA_URL, ...)` mapping: the media directory intentionally has no direct HTTP route. Protected delivery also works with `DEBUG=False`.
+
+To obtain the image dependency and schema after syncing this change:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.\.venv\Scripts\python.exe manage.py migrate
+```
+
+Restart Django after applying the migration. The bundled Pillow wheel includes its license and native-library notices; keep them if redistributing the installed runtime.
+
 ## Fonts and static assets
 
 The root `static/` directory contains shared source files. [Django's static-files finder](https://docs.djangoproject.com/en/5.2/howto/static-files/) searches it through `STATICFILES_DIRS` in [config/settings.py](config/settings.py). `STATIC_URL` defines the browser prefix `/static/`, so `static/fonts/...` is served at `/static/fonts/...`. Keep `STATIC_ROOT` (`staticfiles/`) separate for generated collection output.
@@ -388,11 +438,11 @@ The root `static/` directory contains shared source files. [Django's static-file
 [static/css/fonts.css](static/css/fonts.css) defines the local DM Sans variable fonts and all Poppins weights/styles. [app.css](static/css/app.css) imports it into Tailwind's base layer, and [base.html](templates/base.html) loads the compiled stylesheet once:
 
 ```django
-{% load static %}
-<link rel="stylesheet" href="{% static 'build/app.css' %}">
+{% load assets %}
+<link rel="stylesheet" href="{% compiled_asset 'build/app.css' %}">
 ```
 
-Keep the existing font files and their `OFL.txt` notices. Use CSS-relative URLs inside the stylesheet and Django's `{% static %}` tag in templates. No fonts are downloaded from a CDN. The DM Sans variable pair covers weights 100–1000, so the included DM Sans static variants need no additional declarations.
+Keep the existing font files and their `OFL.txt` notices. Use CSS-relative URLs inside the stylesheet, `{% compiled_asset %}` for built CSS/JS and Django's `{% static %}` tag for other template assets. No fonts are downloaded from a CDN. The DM Sans variable pair covers weights 100–1000, so the included DM Sans static variants need no additional declarations.
 
 For discovery checks:
 

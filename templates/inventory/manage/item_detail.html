@@ -27,7 +27,13 @@
                        class="inline-flex h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">
                         Edit item
                     </a>
-                    {% if not item.is_archived %}
+                    {% if item.is_archived %}
+                        <a href="{% url 'inventory_manage:item-restore' item.pk %}"
+                           data-testid="restore-item-button"
+                           class="inline-flex h-11 items-center justify-center rounded-md bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-800">
+                            Restore item
+                        </a>
+                    {% else %}
                         <a href="{% url 'inventory_manage:item-archive' item.pk %}"
                            data-testid="archive-item-button"
                            class="inline-flex h-11 items-center justify-center rounded-md border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100">
@@ -36,21 +42,31 @@
                     {% endif %}
                 </div>
             </header>
-            <section class="rounded-lg border border-slate-200 bg-slate-50/50 p-6">
-                <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">Borrower-facing description</h2>
-                <p class="text-slate-800 whitespace-pre-line">{{ item.description }}</p>
-                <div class="mt-4 flex flex-wrap gap-6 text-xs text-slate-500 border-t border-slate-200/60 pt-4">
-                    <div>Category: <span class="font-medium text-slate-700">{{ item.category.name }}</span></div>
-                    <div>Created: <span class="font-medium text-slate-700">{{ item.created_at|date:"M d, Y H:i" }}</span></div>
-                    <div>Last updated: <span class="font-medium text-slate-700">{{ item.updated_at|date:"M d, Y H:i" }}</span></div>
-                    {% if has_history %}
-                        <div class="text-amber-700 font-medium">Category locked (has transactional history)</div>
-                    {% endif %}
-                </div>
-            </section>
+            <div class="grid items-start gap-6 sm:grid-cols-[13.5rem_minmax(0,1fr)]"
+                 data-testid="item-overview">
+                <section class="space-y-3" aria-label="Equipment photo">
+                    {% include "inventory/manage/photo.html" with photo_classes="h-72 w-54 max-w-full" %}
+                    <a href="{% url 'inventory_manage:item-photo-upload' item.pk %}"
+                       data-testid="manage-equipment-photo"
+                       class="inline-flex min-h-11 items-center text-sm font-semibold text-accent hover:underline">Manage photo</a>
+                </section>
+                <section class="rounded-lg border border-slate-200 bg-slate-50/50 p-6">
+                    <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">Borrower-facing description</h2>
+                    <p class="text-slate-800 whitespace-pre-line">{{ item.description }}</p>
+                    <div class="mt-4 flex flex-wrap gap-6 text-xs text-slate-500 border-t border-slate-200/60 pt-4">
+                        <div>Category: <span class="font-medium text-slate-700">{{ item.category.name }}</span></div>
+                        <div>Created: <span class="font-medium text-slate-700">{{ item.created_at|date:"M d, Y H:i" }}</span></div>
+                        <div>Last updated: <span class="font-medium text-slate-700">{{ item.updated_at|date:"M d, Y H:i" }}</span></div>
+                        {% if has_history %}
+                            <div class="text-amber-700 font-medium">Category locked (has transactional history)</div>
+                        {% endif %}
+                    </div>
+                </section>
+            </div>
             <section class="space-y-4">
                 <h2 class="font-heading text-xl font-semibold">Live inventory counts</h2>
-                <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-7">
+                <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-7"
+                     data-testid="inventory-counts-grid">
                     <div class="rounded-md border border-slate-200 bg-white p-4 text-center">
                         <div class="text-xs font-semibold uppercase tracking-wider text-slate-500">Serviceable</div>
                         <div data-testid="count-serviceable"
@@ -91,6 +107,13 @@
             <section class="space-y-4">
                 <div class="flex items-center justify-between">
                     <h2 class="font-heading text-xl font-semibold">Physical units</h2>
+                    {% if not item.is_archived and not item.category.is_archived %}
+                        <a href="{% url 'inventory_manage:unit-create' %}?item={{ item.pk }}"
+                           data-testid="register-unit-for-item-button"
+                           class="inline-flex h-9 items-center justify-center rounded-md bg-accent px-3 text-xs font-semibold text-white transition-colors hover:bg-emerald-800">
+                            Register physical unit
+                        </a>
+                    {% endif %}
                 </div>
                 <div class="overflow-x-auto border-y border-slate-200">
                     <table class="min-w-full divide-y divide-slate-200">
@@ -106,7 +129,13 @@
                         <tbody class="divide-y divide-slate-100">
                             {% for unit in units %}
                                 <tr>
-                                    <td class="px-5 py-4 font-mono font-semibold text-slate-900">{{ unit.asset_code }}</td>
+                                    <td class="px-5 py-4 font-mono font-semibold text-slate-900">
+                                        <a href="{% url 'inventory_manage:unit-detail' unit.pk %}"
+                                           data-testid="item-unit-link-{{ unit.pk }}"
+                                           class="hover:text-accent hover:underline">
+                                            {{ unit.asset_code }}
+                                        </a>
+                                    </td>
                                     <td class="px-5 py-4 text-sm text-slate-700">{{ unit.get_condition_display }}</td>
                                     <td class="px-5 py-4 text-sm font-medium">{{ unit.get_status_display }}</td>
                                     <td class="px-5 py-4 text-sm text-slate-600">{{ unit.acquired_on|date:"Y-m-d" }}</td>
@@ -116,7 +145,7 @@
                                 <tr>
                                     <td colspan="5"
                                         class="px-5 py-8 text-center text-sm text-slate-500">
-                                        No physical units registered for this item yet. (Unit registration is managed under T08 · Kenneth).
+                                        No physical units registered for this item yet.
                                     </td>
                                 </tr>
                             {% endfor %}
