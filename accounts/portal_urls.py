@@ -23,6 +23,17 @@ urlpatterns: list[URLPattern] = [
         name="equipment-photo",
     ),
     path("requests/new/", borrowing_views.request_create, name="request-create"),
-    path("requests/", portal_views.request_list, name="request-list"),
-    path("loans/", portal_views.loan_list, name="loan-list"),
+    path("requests/", borrowing_views.portal_request_list, name="request-list"),
+    path(
+        "requests/<int:request_id>/",
+        borrowing_views.request_detail,
+        name="request-detail",
+    ),
+    path(
+        "requests/<int:request_id>/cancel/",
+        borrowing_views.request_cancel,
+        name="request-cancel",
+    ),
+    path("loans/", borrowing_views.portal_loan_list, name="loan-list"),
+    path("loans/<int:loan_id>/", borrowing_views.loan_detail, name="loan-detail"),
 ]

@@ -5,17 +5,25 @@ from typing import cast
 
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.core.paginator import EmptyPage, Page, PageNotAnInteger, Paginator
+from django.db.models import QuerySet
 from django.forms import BaseFormSet
-from django.http import HttpRequest, HttpResponse
-from django.shortcuts import redirect, render
+from django.http import Http404, HttpRequest, HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_safe
 
 from accounts.access import admin_required, basic_user_required
 from accounts.models import User
-from borrowing.forms import RequestForm, RequestItemFormSetFactory
-from borrowing.models import BorrowRequest
-from borrowing.services import submit_request
+from borrowing.forms import (
+    RequestCancellationForm,
+    RequestForm,
+    RequestHistoryFilterForm,
+    RequestItemFormSetFactory,
+)
+from borrowing.models import BorrowRequest, Loan, RequestStatus
+from borrowing.queries import loan_for_request, loan_history, request_history
+from borrowing.services import RequestCancellationConflict, cancel_request, submit_request
 from operations.queries import get_loan_limits
 from operations.validation import LoanLimits, RequestedItem
 
@@ -71,7 +79,142 @@ def request_create(request: HttpRequest) -> HttpResponse:
             "form": form,
             "item_formset": item_formset,
             "limits": limits,
+            "active_portal_tab": "request-list",
         },
+    )
+
+
+@require_safe
+@basic_user_required
+def portal_request_list(request: HttpRequest) -> HttpResponse:
+    """List the signed-in borrower's requests with a validated optional status filter."""
+    user: User = cast(User, request.user)
+    form: RequestHistoryFilterForm = RequestHistoryFilterForm(request.GET)
+    requests: QuerySet[BorrowRequest] = (
+        request_history(user.pk, form.cleaned_data["status"])
+        if form.is_valid()
+        else BorrowRequest.objects.none()
+    )
+    paginator: Paginator[BorrowRequest] = Paginator(requests, 25)
+    try:
+        page: Page[BorrowRequest] = paginator.page(request.GET.get("page", "1"))
+    except (PageNotAnInteger, EmptyPage) as error:
+        raise Http404("The requested request-history page does not exist.") from error
+    return render(
+        request,
+        "accounts/portal/request_list.html",
+        {"form": form, "page": page, "active_portal_tab": "request-list"},
+    )
+
+
+@require_safe
+@basic_user_required
+def request_detail(request: HttpRequest, request_id: int) -> HttpResponse:
+    """Show one owner's request and any linked issue/return details."""
+    user: User = cast(User, request.user)
+    borrow_request: BorrowRequest = get_object_or_404(
+        request_history(user.pk, ""),
+        pk=request_id,
+    )
+    loan: Loan | None = loan_for_request(user.pk, borrow_request.pk)
+    can_cancel: bool = borrow_request.status in (
+        RequestStatus.PENDING,
+        RequestStatus.APPROVED,
+    )
+    return render(
+        request,
+        "accounts/portal/request_detail.html",
+        {
+            "borrow_request": borrow_request,
+            "loan": loan,
+            "can_cancel": can_cancel,
+            "active_portal_tab": "request-list",
+        },
+    )
+
+
+@require_http_methods(["GET", "POST"])
+@basic_user_required
+def request_cancel(request: HttpRequest, request_id: int) -> HttpResponse:
+    """Confirm and execute only the signed-in borrower's eligible cancellation."""
+    user: User = cast(User, request.user)
+    borrow_request: BorrowRequest = get_object_or_404(
+        BorrowRequest.objects.filter(owner_id=user.pk),
+        pk=request_id,
+    )
+    form: RequestCancellationForm = RequestCancellationForm(
+        request.POST if request.method == "POST" else None
+    )
+    if borrow_request.status not in (RequestStatus.PENDING, RequestStatus.APPROVED):
+        return render(
+            request,
+            "accounts/portal/request_cancel.html",
+            {
+                "borrow_request": borrow_request,
+                "error": "Only Pending or Approved requests can be cancelled.",
+                "active_portal_tab": "request-list",
+            },
+            status=409,
+        )
+
+    if request.method == "POST" and form.is_valid():
+        try:
+            cancel_request(owner_id=user.pk, request_id=borrow_request.pk)
+        except RequestCancellationConflict as error:
+            return render(
+                request,
+                "accounts/portal/request_cancel.html",
+                {
+                    "borrow_request": borrow_request,
+                    "error": str(error),
+                    "active_portal_tab": "request-list",
+                },
+                status=409,
+            )
+        except BorrowRequest.DoesNotExist as error:
+            raise Http404("The requested borrower request does not exist.") from error
+        messages.success(request, f"Request #{borrow_request.pk} was cancelled.")
+        return redirect("portal:request-detail", request_id=borrow_request.pk)
+
+    return render(
+        request,
+        "accounts/portal/request_cancel.html",
+        {
+            "borrow_request": borrow_request,
+            "form": form,
+            "active_portal_tab": "request-list",
+        },
+    )
+
+
+@require_safe
+@basic_user_required
+def portal_loan_list(request: HttpRequest) -> HttpResponse:
+    """List the signed-in borrower's issued loans and outstanding return progress."""
+    user: User = cast(User, request.user)
+    loans: QuerySet[Loan] = loan_history(user.pk)
+    paginator: Paginator[Loan] = Paginator(loans, 25)
+    try:
+        page: Page[Loan] = paginator.page(request.GET.get("page", "1"))
+    except (PageNotAnInteger, EmptyPage) as error:
+        raise Http404("The requested loan-history page does not exist.") from error
+    return render(
+        request,
+        "accounts/portal/loan_list.html",
+        {"page": page, "active_portal_tab": "loan-list"},
+    )
+
+
+@require_safe
+@basic_user_required
+def loan_detail(request: HttpRequest, loan_id: int) -> HttpResponse:
+    """Show one owner's loan with its due date and individual unit return states."""
+    user: User = cast(User, request.user)
+    loan: Loan = get_object_or_404(loan_history(user.pk), pk=loan_id)
+    return render(
+        request,
+        "accounts/portal/loan_detail.html",
+        {"loan": loan, "active_portal_tab": "loan-list"},
     )
 
 

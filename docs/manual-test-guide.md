@@ -2,9 +2,9 @@
 
 ## Purpose and scope
 
-This guide covers **T01-T11 integrated into main at `6c5ea8f`** as of October 18, 2026, including Ralph's request submission through PR #27. Request history/cancellation, approval, release and returns remain pending. Use it to check individual modules and regressions; it does not establish full-system acceptance. The user is currently testing T11; the expected results below are instructions, not recorded passes.
+This guide covers **T01-T11 integrated into main at `6c5ea8f`** and the local, not-yet-integrated T12 implementation on `ralph`, as of October 18, 2026. Request history/cancellation can be explored on that branch; approval, release and returns remain pending. Use it to check individual modules and regressions; it does not establish full-system acceptance. Expected results below are instructions, not recorded passes.
 
-For the current request tests, go directly to [Module 9: borrower request submission](#module-9--borrower-request-submission-t11). Use the [result record](#recording-manual-results) to report what actually happened.
+For the current borrower checks, go directly to [Module 9: request submission](#module-9--borrower-request-submission-t11) or [Module 10: request and loan tracking](#module-10--borrower-request-and-loan-tracking-t12). Use the [result record](#recording-manual-results) to report what actually happened.
 
 For automated tests, see [Running the automated suite](#running-the-automated-test-suite) at the bottom.
 
@@ -643,7 +643,7 @@ Before each scenario:
 2. As admin, find the borrower at `/manage/accounts/` and open `/manage/accounts/<borrower_id>/`. Record the existing request history and relevant inventory counts.
 3. As an active borrower, open `/portal/requests/`, choose **Create a request**, and enter the scenario's table at `/portal/requests/new/`.
 4. Use a new purpose suffix on repeated runs, such as `T11-01-rerun-02`. Leave optional rows entirely blank when instructed. Submit once.
-5. After submission, refresh that borrower's **admin account detail** to verify whether a new request was saved. The borrower request section does not yet list request history; T12 will add it.
+5. Verify the new request in the borrower's request list and **admin account detail**. The request should appear as Pending; no loan is created on submission.
 
 The form shows three equipment rows, a purpose field, a desired return date and the current limits. It has no editable owner, status or approval fields. The outcomes below are **expected results, not records that the tests were run**. A rejected invalid form is a passing validation test.
 
@@ -844,7 +844,7 @@ This checks SRS acceptance scenario 3. Record the existing admin account history
 | Row 3 - Item | Digital Multimeter (Laboratory Tools), ID 13 |
 | Row 3 - Quantity | `5` - invalid; maximum is 3 |
 
-**Expected rejection:** Row 3 quantity error; all entered rows remain available for correction. **No BorrowRequest and no RequestItem rows are saved**, including the first two valid rows. Refresh the borrower's admin account history: its request count is unchanged and this purpose marker is absent. Do not expect an empty list if earlier successful cases already created records. The automated T11 rollback test directly checks both database tables; borrower request history is not available until T12.
+**Expected rejection:** Row 3 quantity error; all entered rows remain available for correction. **No BorrowRequest and no RequestItem rows are saved**, including the first two valid rows. Refresh the borrower's request list and admin account history: neither contains a record with this purpose marker. Do not expect an empty list if earlier successful cases already created records. The automated T11 rollback test directly checks both database tables.
 
 ### 9.5 Additional boundaries and tampered formset counts
 
@@ -923,7 +923,63 @@ Compare Available, Reserved and Issued counts before and after a successful Pend
 
 Tab through purpose, date, each equipment/quantity field and Submit. Check associated labels, visible focus, reachable errors and a usable layout at desktop and narrow mobile widths. Record actual observations; these were not verified by the automated HTTP checks.
 
-Known review follow-up: the new-request page currently does not highlight **My requests** as the active navigation tab. Request/loan history and cancellation are pending T12; admin approval is pending T13. Neither the missing history table nor a lack of reserved units after submission indicates a failed T11 submission.
+T12 supplies the request/loan history pages and highlights the corresponding navigation tab on list, detail and confirmation pages, including request creation. Admin approval remains a separate T13 task. A lack of reserved units after submission is expected and does not indicate a failed T11 submission.
+
+---
+
+## Module 10 — Borrower Request and Loan Tracking (T12)
+
+**Entry:** `/portal/requests/` and `/portal/loans/`\
+**Login required:** active BASIC_USER\
+**Implementation status:** local on `ralph`, not integrated into main\
+**Prerequisite:** T11 is integrated through PR #27; T13 approval, T15 issue and T17 returns are separate pending workflows.
+
+These are expected outcomes, not tests claimed as run. Use a borrower request created through T11. For foreign-record checks, use a second fictional BASIC_USER account and its own request/loan ID. Do not expose or copy another borrower's fields in screenshots.
+
+### 10.1 Request history and status filtering
+
+1. Sign in as an active borrower and open `/portal/requests/`.
+2. Verify the page lists only requests belonging to the signed-in borrower, with purpose, requested items/quantities, status, submission date and desired/agreed due dates.
+3. Select a status from the filter and submit. Only requests with that persisted status should remain; selecting **All statuses** clears the filter.
+4. With a borrower who has no requests, verify the useful empty state and the **Create a request** link.
+5. Open a request. Verify its item/category details, decision status/reason when decided, and current due dates.
+6. Substitute another borrower's request ID in the detail URL. The response should be 404 without revealing record contents. Invalid page numbers should also return 404; invalid status filters should show a validation error and no records.
+
+### 10.2 Cancel a Pending request
+
+1. Open a Pending request you created and choose **Cancel request**.
+2. Load the confirmation page with GET and refresh it. The request must remain Pending and no cancellation audit entry should be created by either GET.
+3. Confirm using the form's POST.
+
+✅ Redirected to the request details with a success message. The request is Cancelled, the borrower and server timestamp are recorded, and one `REQUEST_CANCELLED` audit entry exists. A repeated cancellation attempt should return 409 and must not create another audit entry.
+
+### 10.3 Cancel an Approved request and release its reservations
+
+This scenario requires a request approved by the separate T13 workflow; no browser-based T13 approval action exists yet.
+
+1. After T13 is integrated, record the Approved request ID and the Reserved status of every unit assigned to it.
+2. As that same borrower, open the request details and confirm cancellation.
+
+✅ The request becomes Cancelled, every associated allocation ends with its cancellation timestamp, and all of its reserved units become Available together. The cancellation and audit row commit together. If any reservation is missing, changed, or incomplete, the action returns 409 and none of the request, allocations, units or audit entries change.
+
+### 10.4 Issued request and loan tracking
+
+These browser scenarios require the separate T15 release and T17 return workflows.
+
+1. After T15 is integrated, release an Approved request for a fictional borrower. Sign in as that borrower and open `/portal/requests/`, the request detail, and `/portal/loans/`.
+2. Verify only that borrower's loan is listed, with issue/due dates and a link to its detail. The request detail should also show issued asset codes.
+3. Open the loan detail. Verify each issued unit and its asset code is listed as awaiting return. Substitute another borrower's loan ID; the response should be 404.
+4. After T17 is integrated and one unit is returned, reload the request and loan details.
+
+✅ The returned unit shows its return timestamp and recorded condition while outstanding units remain marked as not returned. Return notes, internal unit notes, other borrowers' data and admin-only maintenance details are not shown. After final return, loan/request status reflects the stored workflow outcome.
+
+### 10.5 Role, method, keyboard and narrow-screen checks
+
+1. Verify anonymous users are redirected to sign-in; an active ADMIN and an inactive BASIC_USER receive 403 on portal history pages.
+2. Send POST to the read-only request and loan list/detail routes; each should return 405. GET of the cancellation confirmation should never mutate state. POST cancellation without a valid CSRF token should return 403.
+3. Use only the keyboard to reach filters, request/loan links, cancel confirmation and controls. Confirm visible focus, associated labels, readable errors and sensible reflow at narrow mobile width.
+
+The automated T12 client tests cover role/method/CSRF, owner isolation, invalid filters/pages, cancellation conflicts, full reservation release, audit rollback, and loan-unit status display. The browser, keyboard and mobile scenarios above have **not** been run for this local T12 implementation.
 
 ---
 
@@ -934,6 +990,7 @@ Use one row per actual test run. Expected outcomes in this guide do not count as
 | Case | Revision / browser / date | Actual result | Pass / Fail / Not run | Evidence / issue |
 | --- | --- | --- | --- | --- |
 | Example: T11-15 | `6c5ea8f`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Screenshot or request marker/ID, without private data |
+| Example: T12-01 | `ralph` revision, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request/loan ID; no private data |
 
 Report the purpose marker/request ID and the smallest reproduction steps for a failure. Retain test records rather than deleting history to make counts match. Save real findings in the current handoff or the team's review record when supplied.
 
@@ -945,7 +1002,6 @@ The following features are **Not started** and have no implementation to test in
 
 | Task | Feature | Owner |
 | --- | --- | --- |
-| T12 | View own requests and cancel pending/approved requests | Ralph |
 | T13 | Admin request review queue, approval, and rejection | Margareth |
 | T14 | Competing-approval concurrency test | Jerome + Margareth |
 | T15 | Equipment release and printable borrowing slip | Margareth |
@@ -959,7 +1015,7 @@ The following features are **Not started** and have no implementation to test in
 
 ## Running the automated test suite
 
-The integrated-source review passed **181 PostgreSQL tests**. To run the current suite yourself:
+The integrated T01-T11 source passed **181 PostgreSQL tests**. The local T12 implementation on `ralph` passed **191 PostgreSQL tests**. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput
@@ -973,6 +1029,9 @@ Run a specific module's tests:
 
 # Request submission (T11)
 .\.venv\Scripts\python.exe manage.py test borrowing.tests.test_request_submission --noinput
+
+# Request history, loans and cancellation (T12)
+.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_request_tracking --noinput
 
 # Borrower registration/profile and username validation (T09)
 .\.venv\Scripts\python.exe manage.py test accounts.tests.test_borrower_portal --noinput
@@ -990,8 +1049,8 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests --noinput
 ```
 
-All tests in the current suite must pass before handing over work; 181 is the verified count at this revision. Record the actual count and timing in your handoff. See [DEV.md — Before handing over work](../DEV.md#before-handing-over-work) for the full required check list.
+All tests in the current suite must pass before handing over work; 191 is the verified count on the current local T12 branch. Record the actual count and timing in your handoff. See [DEV.md — Before handing over work](../DEV.md#before-handing-over-work) for the full required check list.
 
 ---
 
-*Manual testing guide — scope: T01-T11 integrated features. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Update this file when new features are accepted and integrated into main.*
+*Manual testing guide — scope: T01-T11 integrated features plus local, not-yet-integrated T12 on `ralph`. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Reconcile integration labels after a real main merge.*
