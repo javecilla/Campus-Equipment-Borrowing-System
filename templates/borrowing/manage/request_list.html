@@ -1,0 +1,83 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}Requests · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section data-testid="request-queue" class="space-y-8">
+        <header>
+            <p class="text-xs font-semibold tracking-widest text-accent uppercase">Administrator workspace</p>
+            <h1 class="font-heading text-3xl font-semibold">Requests and approvals</h1>
+            <p class="mt-3 text-sm text-slate-600">Search and filter borrowing requests. Dates use Asia/Manila.</p>
+        </header>
+        <form method="get"
+              action="{% url 'borrowing_manage:request-list' %}"
+              data-testid="request-search"
+              class="space-y-4 border-t border-slate-200 pt-6">
+            {% if form.errors %}
+                <div role="alert" data-testid="request-errors" class="text-sm text-rose-700">
+                    <p>Correct the filters to view matching requests.</p>
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {% for field in form %}
+                    {% include "operations/manage/form_field.html" with field=field only %}
+                {% endfor %}
+            </div>
+            <div class="flex items-center gap-4">
+                <button type="submit"
+                        data-testid="request-search-submit"
+                        class="h-11 rounded-md bg-accent px-4 text-sm font-semibold text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Search requests</button>
+                <a href="{% url 'borrowing_manage:request-list' %}"
+                   data-testid="request-reset"
+                   class="text-sm font-semibold text-accent underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Clear filters</a>
+            </div>
+        </form>
+        {% if form.is_valid %}
+            <section class="border-y border-slate-200">
+                <div class="overflow-x-auto" role="region" aria-label="Borrow requests" tabindex="0">
+                    <table data-testid="request-table" class="min-w-full divide-y divide-slate-200 text-sm">
+                        <caption class="sr-only">Borrow requests, newest first</caption>
+                        <thead class="bg-slate-50 text-left text-slate-600">
+                            <tr>
+                                <th scope="col" class="px-4 py-3">Request</th>
+                                <th scope="col" class="px-4 py-3">Borrower</th>
+                                <th scope="col" class="px-4 py-3">Items</th>
+                                <th scope="col" class="px-4 py-3">Submitted</th>
+                                <th scope="col" class="px-4 py-3">Due date</th>
+                                <th scope="col" class="px-4 py-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for r in page %}
+                                <tr data-testid="request-row-{{ r.pk }}">
+                                    <td class="px-4 py-4 align-top whitespace-nowrap">#{{ r.pk }}</td>
+                                    <td class="px-4 py-4 align-top break-words">{{ r.owner.username }}</td>
+                                    <td class="px-4 py-4 align-top">{{ r.item_count }} item{{ r.item_count|pluralize }}</td>
+                                    <td class="px-4 py-4 align-top whitespace-nowrap">{{ r.submitted_at|date:"M j, Y" }}</td>
+                                    <td class="px-4 py-4 align-top whitespace-nowrap">{{ r.agreed_due_date|date:"M j, Y" }}</td>
+                                    <td class="px-4 py-4 align-top font-semibold">{{ r.get_status_display }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" data-testid="request-empty" class="px-4 py-10 text-center text-slate-500">No requests match these filters.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <nav aria-label="Request pages" class="flex items-center justify-between gap-4 border-t border-slate-200 px-4 py-4">
+                    <span class="text-sm text-slate-500">{{ page.paginator.count }} request{{ page.paginator.count|pluralize }} · Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+                    <div class="flex gap-3">
+                        {% if page.has_previous %}
+                            <a href="{% querystring page=page.previous_page_number %}" data-testid="request-previous"
+                               class="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Previous</a>
+                        {% endif %}
+                        {% if page.has_next %}
+                            <a href="{% querystring page=page.next_page_number %}" data-testid="request-next"
+                               class="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Next</a>
+                        {% endif %}
+                    </div>
+                </nav>
+            </section>
+        {% endif %}
+    </section>
+{% endblock %}
