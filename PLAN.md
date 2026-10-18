@@ -23,9 +23,9 @@ Keep task status in the backlog and current readiness in HANDOFF.md. Update this
 
 ## Current starting point
 
-The current stage is **equipment inventory**: T07 category/catalog acceptance is complete, and T08 physical-unit management is next for Kenneth. T01–T06 and Kenneth's initial T07 are integrated into main. The completed T07 continuation on `jerome` must be integrated before T08 consumes its corrected interfaces and migrations. Actual task/publication/integration evidence belongs in the [backlog](docs/tasks.md#verified-task-evidence) and [current handoff](HANDOFF.md); T08 remains Not started.
+Equipment inventory and borrower accounts progress alongside each other: Kenneth's T08 consumes accepted, integrated T07; Ellyssa's T09 consumes integrated T04. The [backlog](docs/tasks.md#verified-task-evidence) and [current handoff](HANDOFF.md) own current task status, merged revisions, review findings and readiness. Verify those records before starting work rather than treating this execution map as a second status board.
 
-The original T01–T03 local-batch exception is completed and does not relax later integration gates. Ellyssa's T09 can proceed independently against integrated T04; T10/T11 still require T08 and T09. Branch and private-repository access instructions remain in DEV.md. Publishing the T07 continuation does not authorize its main merge or implementation of T08.
+The original T01–T03 local-batch exception is completed and does not relax later integration gates. T09 can proceed independently of T08; T10/T11 require both tasks to be accepted and integrated. A merged implementation with an unresolved acceptance failure does not satisfy that gate. Branch and private-repository access instructions remain in DEV.md. Documentation review does not authorize implementation or publication.
 
 ## Delivery stages and handoff gates
 

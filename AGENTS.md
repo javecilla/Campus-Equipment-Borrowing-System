@@ -2,7 +2,7 @@
 
 ## Current authorization and context
 
-The user explicitly authorized Jerome to complete Kenneth's partial T07 on `jerome`, including optional equipment photos, responsive catalog layouts and audited category/item restoration. T07 acceptance is complete. The user now authorizes committing and pushing the whole pending continuation/documentation batch with Kenneth and Codex co-author credit, preserving the `.idea/` ignore/removal. This publication request does not authorize merging into main, opening a PR, or starting T08; integrate T07's continuation before dependent work. See the backlog and current handoff for actual publication evidence.
+The user authorized T07 continuation publication, T09 review publication and Kenneth's T08 main integration through PR #22 at 6c91d48. The current request authorizes updating current documentation, completing the existing main-to-jerome merge, and pushing jerome with Kenneth and Codex co-author credit. Preserve Ellyssa's T09 source and the user's audit/guide changes. No new PR, main update, T16 implementation or T09 code correction is authorized by this publication request. See the backlog/current handoff for verified acceptance and integration state.
 
 The user authorized implementation of Jerome Avecilla's assigned work on `jerome`, and explicitly allowed T01–T03 as one local, uncommitted batch before main integration. This exception does not unlock tasks requiring other members' features or authorize commits, pushes, PRs, or merges. The user also requested runnable setup steps in README.md and detailed migrations/team guidance in DEV.md. Follow the backlog and current handoff for verified scope; remaining feature designs are contracts, not delivered software.
 

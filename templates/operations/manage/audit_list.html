@@ -21,14 +21,14 @@
                 {% for field in form %}
                     {% include "operations/manage/form_field.html" with field=field only %}
                 {% endfor %}
-            </div>
-            <div class="flex items-center gap-4">
-                <button type="submit"
-                        data-testid="audit-search-submit"
-                        class="h-11 rounded-md bg-accent px-4 text-sm font-semibold text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Search history</button>
-                <a href="{% url 'operations:audit-list' %}"
-                   data-testid="audit-reset"
-                   class="text-sm font-semibold text-accent underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Clear filters</a>
+                <div class="flex items-center gap-4 mt-6 sm:mt-0">
+                    <button type="submit"
+                            data-testid="audit-search-submit"
+                            class="h-11 rounded-md bg-accent px-4 text-sm font-semibold text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Search history</button>
+                    <a href="{% url 'operations:audit-list' %}"
+                       data-testid="audit-reset"
+                       class="text-sm font-semibold text-accent underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Clear filters</a>
+                </div>
             </div>
         </form>
         {% if form.is_valid %}
@@ -76,7 +76,7 @@
                 </div>
                 <nav aria-label="Audit pages"
                      class="flex items-center justify-between gap-4 border-t border-slate-200 px-4 py-4">
-                    <span class="text-sm text-slate-500">{{ page.paginator.count }} record{{ page.paginator.count|pluralize }} · Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+                    <span class="text-sm text-slate-500">Page {{ page.number }} of {{ page.paginator.num_pages }} ({{ page.paginator.count }} Total)</span>
                     <div class="flex gap-3">
                         {% if page.has_previous %}
                             <a href="{% querystring page=page.previous_page_number %}"
