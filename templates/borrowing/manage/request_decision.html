@@ -1,0 +1,33 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}{{ heading }} · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section data-testid="request-decision" class="max-w-xl space-y-6">
+        <header>
+            <a href="{% url 'borrowing_manage:request-detail' borrow_request.pk %}"
+               class="text-sm font-semibold text-accent underline underline-offset-4">Back to request #{{ borrow_request.pk }}</a>
+            <p class="mt-4 text-xs font-semibold tracking-widest text-accent uppercase">Administrator workspace</p>
+            <h1 class="font-heading text-3xl font-semibold">{{ heading }} #{{ borrow_request.pk }}</h1>
+            <p class="mt-3 text-sm text-slate-600">Borrower: {{ borrow_request.owner.username }} · Status: {{ borrow_request.get_status_display }}</p>
+        </header>
+        {% if conflict %}
+            <div role="alert" data-testid="request-conflict" class="border-l-4 border-rose-600 bg-rose-50 p-4 text-sm text-rose-800">
+                <strong>Conflict:</strong> {{ conflict }}
+            </div>
+        {% endif %}
+        {% if borrow_request.status == "PENDING" %}
+            <form method="post" class="space-y-4" data-testid="request-decision-form">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div role="alert" class="text-sm text-rose-700">{{ form.non_field_errors }}</div>
+                {% endif %}
+                {% for field in form %}
+                    {% include "operations/manage/form_field.html" with field=field only %}
+                {% endfor %}
+                <button type="submit"
+                        class="h-11 rounded-md bg-accent px-4 text-sm font-semibold text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">{{ button }}</button>
+            </form>
+        {% else %}
+            <p class="text-sm text-slate-600" data-testid="request-not-pending">This request is {{ borrow_request.get_status_display|lower }}, so it can no longer be decided.</p>
+        {% endif %}
+    </section>
+{% endblock %}

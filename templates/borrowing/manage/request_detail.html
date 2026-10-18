@@ -16,6 +16,14 @@
             <div><dt class="text-slate-500">Agreed due date</dt><dd class="font-semibold">{{ borrow_request.agreed_due_date|date:"M j, Y" }}</dd></div>
             <div class="sm:col-span-2"><dt class="text-slate-500">Purpose</dt><dd class="font-semibold [overflow-wrap:anywhere]">{{ borrow_request.purpose }}</dd></div>
         </dl>
+                {% if borrow_request.status == "PENDING" %}
+            <div class="flex gap-4" data-testid="request-actions">
+                <a href="{% url 'borrowing_manage:request-approve' borrow_request.pk %}"
+                   class="h-11 rounded-md bg-accent px-4 text-sm font-semibold leading-[2.75rem] text-white hover:bg-emerald-800">Approve</a>
+                <a href="{% url 'borrowing_manage:request-reject' borrow_request.pk %}"
+                   class="h-11 rounded-md border border-slate-300 px-4 text-sm font-semibold leading-[2.75rem] hover:bg-slate-50">Reject</a>
+            </div>
+        {% endif %}
         <section class="border-t border-slate-200 pt-6">
             <h2 class="font-heading text-xl font-semibold">Requested items</h2>
             <div class="mt-4 overflow-x-auto" role="region" aria-label="Requested items" tabindex="0">

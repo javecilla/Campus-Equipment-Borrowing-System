@@ -55,3 +55,13 @@ class RequestQueueForm(forms.Form):
         if date_from is not None and date_to is not None and date_from > date_to:
             raise ValidationError("The start date must be on or before the end date.")
         return cleaned_data
+
+class DecisionForm(forms.Form):
+    """The written reason that every approval or rejection must carry."""
+
+    reason = forms.CharField(
+        label="Reason",
+        max_length=500,
+        strip=True,
+        widget=forms.TextInput(attrs={"id": "decision-reason", "class": CONTROL_CLASSES}),
+    )
