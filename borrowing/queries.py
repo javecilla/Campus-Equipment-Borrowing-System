@@ -1,10 +1,11 @@
-"""Read-only searches for the administrator request queue."""
+"""Read-only searches for the administrator request queue and detail page."""
 
 from datetime import date
 
 from django.db.models import Count, Q, QuerySet
 
-from borrowing.models import BorrowRequest
+from borrowing.models import BorrowRequest, UnitAllocation
+from inventory.models import EquipmentUnit, UnitStatus
 
 
 def request_queue(
@@ -31,3 +32,29 @@ def request_queue(
     if date_to is not None:
         requests = requests.filter(submitted_on__lte=date_to)
     return requests
+
+
+def request_lines(borrow_request: BorrowRequest) -> list[dict]:
+    """Each requested item with its current availability and any reserved units."""
+    items = list(borrow_request.items.select_related("catalog_item__category").order_by("pk"))
+    available = dict(
+        EquipmentUnit.objects.filter(
+            catalog_item_id__in=[item.catalog_item_id for item in items],
+            status=UnitStatus.AVAILABLE,
+        )
+        .order_by()
+        .values_list("catalog_item_id")
+        .annotate(total=Count("pk"))
+    )
+    allocations = UnitAllocation.objects.filter(request_item__request=borrow_request).select_related("unit").order_by("unit__asset_code")
+    units_by_line: dict[int, list[UnitAllocation]] = {}
+    for allocation in allocations:
+        units_by_line.setdefault(allocation.request_item_id, []).append(allocation)
+    return [
+        {
+            "line": item,
+            "available": available.get(item.catalog_item_id, 0),
+            "units": units_by_line.get(item.pk, []),
+        }
+        for item in items
+    ]

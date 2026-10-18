@@ -49,7 +49,7 @@
                         <tbody class="divide-y divide-slate-100">
                             {% for r in page %}
                                 <tr data-testid="request-row-{{ r.pk }}">
-                                    <td class="px-4 py-4 align-top whitespace-nowrap">#{{ r.pk }}</td>
+                                    <td class="px-4 py-4 align-top whitespace-nowrap"><a href="{% url 'borrowing_manage:request-detail' r.pk %}" class="font-semibold text-accent underline underline-offset-4">#{{ r.pk }}</a></td>
                                     <td class="px-4 py-4 align-top break-words">{{ r.owner.username }}</td>
                                     <td class="px-4 py-4 align-top">{{ r.item_count }} item{{ r.item_count|pluralize }}</td>
                                     <td class="px-4 py-4 align-top whitespace-nowrap">{{ r.submitted_at|date:"M j, Y" }}</td>

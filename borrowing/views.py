@@ -1,14 +1,14 @@
-"""Administrator request queue; the loans page remains a placeholder."""
+"""Administrator request queue and detail; the loans page remains a placeholder."""
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import Http404, HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_safe
 
 from accounts.access import admin_required
 from borrowing.forms import RequestQueueForm
 from borrowing.models import BorrowRequest
-from borrowing.queries import request_queue
+from borrowing.queries import request_lines, request_queue
 
 
 @require_safe
@@ -31,6 +31,20 @@ def request_list(request: HttpRequest) -> HttpResponse:
     except (PageNotAnInteger, EmptyPage) as error:
         raise Http404("The requested queue page does not exist.") from error
     return render(request, "borrowing/manage/request_list.html", {"form": form, "page": page})
+
+
+@require_safe
+@admin_required
+def request_detail(request: HttpRequest, request_id: int) -> HttpResponse:
+    """Read-only review of one request: items, current availability, and decision history."""
+    borrow_request = get_object_or_404(
+        BorrowRequest.objects.select_related("owner", "decided_by", "cancelled_by"), pk=request_id
+    )
+    return render(
+        request,
+        "borrowing/manage/request_detail.html",
+        {"borrow_request": borrow_request, "lines": request_lines(borrow_request)},
+    )
 
 
 @require_safe

@@ -8,5 +8,6 @@ app_name = "borrowing_manage"
 
 urlpatterns: list[URLPattern] = [
     path("requests/", views.request_list, name="request-list"),
+    path("requests/<int:request_id>/", views.request_detail, name="request-detail"),
     path("loans/", views.loan_list, name="loan-list"),
 ]
