@@ -242,3 +242,70 @@ def get_unit_maintenance_records(unit_id: int) -> QuerySet[MaintenanceRecord]:
         .select_related("opened_by", "closed_by", "source_return__received_by")
         .order_by("-opened_at", "-pk")
     )
+
+
+def list_active_catalog_items(
+    search_query: str,
+    category_id: int | None,
+) -> QuerySet[CatalogItem]:
+    """Return active catalog items under active categories with serviceable and available counts."""
+    items: QuerySet[CatalogItem] = (
+        CatalogItem.objects.filter(
+            is_archived=False,
+            category__is_archived=False,
+        )
+        .select_related("category")
+        .annotate(
+            serviceable_units=Count(
+                "units",
+                filter=Q(
+                    units__status__in=[
+                        UnitStatus.AVAILABLE,
+                        UnitStatus.RESERVED,
+                        UnitStatus.ISSUED,
+                    ]
+                ),
+            ),
+            available_units=Count(
+                "units",
+                filter=Q(units__status=UnitStatus.AVAILABLE),
+            ),
+        )
+    )
+    if search_query:
+        query_text: str = search_query.strip()
+        items = items.filter(Q(name__icontains=query_text) | Q(description__icontains=query_text))
+    if category_id is not None:
+        items = items.filter(category_id=category_id)
+    return items.order_by("name", "pk")
+
+
+def get_active_catalog_item_or_404(item_id: int) -> CatalogItem:
+    """Resolve an active CatalogItem under an active Category with counts, or raise Http404."""
+    try:
+        return (
+            CatalogItem.objects.filter(
+                is_archived=False,
+                category__is_archived=False,
+            )
+            .select_related("category")
+            .annotate(
+                serviceable_units=Count(
+                    "units",
+                    filter=Q(
+                        units__status__in=[
+                            UnitStatus.AVAILABLE,
+                            UnitStatus.RESERVED,
+                            UnitStatus.ISSUED,
+                        ]
+                    ),
+                ),
+                available_units=Count(
+                    "units",
+                    filter=Q(units__status=UnitStatus.AVAILABLE),
+                ),
+            )
+            .get(pk=item_id)
+        )
+    except CatalogItem.DoesNotExist as error:
+        raise Http404("The requested equipment item is not available.") from error

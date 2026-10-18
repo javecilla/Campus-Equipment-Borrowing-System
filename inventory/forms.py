@@ -149,6 +149,37 @@ class ItemSearchForm(forms.Form):
     )
 
 
+class PortalItemSearchForm(forms.Form):
+    """Validate optional filters for active equipment catalog items in the borrower portal."""
+
+    q = forms.CharField(
+        label="Search equipment",
+        required=False,
+        max_length=200,
+        strip=True,
+        widget=forms.SearchInput(
+            attrs={
+                "id": "portal-item-search-query",
+                "class": CONTROL_CLASSES,
+                "placeholder": "Search by item name or description...",
+            }
+        ),
+    )
+    category = CategoryChoiceField(
+        label="Category",
+        required=False,
+        queryset=Category.objects.none(),
+        empty_label="All categories",
+        widget=forms.Select(attrs={"id": "portal-item-search-category", "class": CONTROL_CLASSES}),
+    )
+
+    def __init__(self, data: QueryDict | None) -> None:
+        super().__init__(data=data)
+        self.fields["category"].queryset = Category.objects.filter(is_archived=False).order_by(
+            "name"
+        )
+
+
 class CatalogItemCreateForm(EquipmentPhotoForm):
     """Validate new catalog item inputs, requiring an active category."""
 
