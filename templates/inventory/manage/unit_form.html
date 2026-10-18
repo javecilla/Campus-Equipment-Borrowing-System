@@ -1,0 +1,184 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}{{ title }} · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section data-testid="unit-form-section">
+        {% include "inventory/manage/nav.html" with active_tab="units" %}
+        <div class="max-w-2xl space-y-6">
+            <header>
+                {% if unit %}
+                    <a href="{% url 'inventory_manage:unit-detail' unit.pk %}"
+                       class="text-xs font-semibold tracking-wider text-accent uppercase hover:underline">
+                        ← Back to unit {{ unit.asset_code }}
+                    </a>
+                {% else %}
+                    <a href="{% url 'inventory_manage:unit-list' %}"
+                       class="text-xs font-semibold tracking-wider text-accent uppercase hover:underline">
+                        ← Back to physical units
+                    </a>
+                {% endif %}
+                <h1 class="mt-2 font-heading text-3xl font-semibold">{{ title }}</h1>
+            </header>
+            {% if has_history %}
+                <div class="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800"
+                     role="alert">
+                    <p class="font-medium">Transaction history preserved</p>
+                    <p class="mt-1 text-xs text-amber-700">
+                        This physical unit has borrowing or maintenance records. Its asset code, equipment item, and acquisition date are locked to protect transactional history and audit integrity. Only internal notes can be edited.
+                    </p>
+                </div>
+            {% endif %}
+            {% if mode == "update" and unit %}
+                <div class="rounded-md border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                    <div class="flex flex-wrap items-center gap-6 text-xs font-medium">
+                        <div>
+                            <span class="text-slate-500 uppercase">Current status:</span>
+                            <span class="ml-1 font-semibold text-slate-900">{{ unit.get_status_display }}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-500 uppercase">Condition:</span>
+                            <span class="ml-1 font-semibold text-slate-900">{{ unit.get_condition_display }}</span>
+                        </div>
+                    </div>
+                    <p class="mt-2 text-xs text-slate-500">
+                        Physical condition and inventory status are updated authoritatively through return records and maintenance services.
+                    </p>
+                </div>
+            {% endif %}
+            {% if form.non_field_errors %}
+                <div class="rounded-md border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700"
+                     role="alert">{{ form.non_field_errors }}</div>
+            {% endif %}
+            <form method="post" data-testid="unit-form" class="space-y-6">
+                {% csrf_token %}
+                <div>
+                    <label for="{{ form.catalog_item.id_for_label }}"
+                           class="mb-2 block text-sm font-medium text-slate-900">
+                        {{ form.catalog_item.label }}
+                        {% if not has_history %}<span class="text-rose-600">*</span>{% endif %}
+                    </label>
+                    {{ form.catalog_item }}
+                    {% if form.catalog_item.help_text %}
+                        <p class="mt-1.5 text-xs text-slate-500">{{ form.catalog_item.help_text }}</p>
+                    {% endif %}
+                    {% if form.catalog_item.errors %}
+                        <p class="mt-1.5 text-xs text-rose-600">{{ form.catalog_item.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.asset_code.id_for_label }}"
+                           class="mb-2 block text-sm font-medium text-slate-900">
+                        {{ form.asset_code.label }}
+                        {% if not has_history %}<span class="text-rose-600">*</span>{% endif %}
+                    </label>
+                    {{ form.asset_code }}
+                    {% if form.asset_code.help_text %}
+                        <p class="mt-1.5 text-xs text-slate-500">{{ form.asset_code.help_text }}</p>
+                    {% endif %}
+                    {% if form.asset_code.errors %}
+                        <p class="mt-1.5 text-xs text-rose-600">{{ form.asset_code.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                {% if form.condition %}
+                    <div>
+                        <label for="{{ form.condition.id_for_label }}"
+                               class="mb-2 block text-sm font-medium text-slate-900">
+                            {{ form.condition.label }} <span class="text-rose-600">*</span>
+                        </label>
+                        {{ form.condition }}
+                        {% if form.condition.help_text %}
+                            <p class="mt-1.5 text-xs text-slate-500">{{ form.condition.help_text }}</p>
+                        {% endif %}
+                        {% if form.condition.errors %}
+                            <p class="mt-1.5 text-xs text-rose-600">{{ form.condition.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                {% if form.maintenance_problem %}
+                    <div id="maintenance-problem-container">
+                        <label for="{{ form.maintenance_problem.id_for_label }}"
+                               class="mb-2 block text-sm font-medium text-slate-900">
+                            {{ form.maintenance_problem.label }}
+                            <span id="maintenance-problem-required"
+                                  class="text-xs font-normal text-slate-500">(required if Damaged)</span>
+                        </label>
+                        {{ form.maintenance_problem }}
+                        <p class="mt-1.5 text-xs text-slate-500">
+                            If the unit is registered as Damaged, an initial open maintenance record will be created atomically.
+                        </p>
+                        {% if form.maintenance_problem.errors %}
+                            <p class="mt-1.5 text-xs text-rose-600">{{ form.maintenance_problem.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                <div>
+                    <label for="{{ form.acquired_on.id_for_label }}"
+                           class="mb-2 block text-sm font-medium text-slate-900">
+                        {{ form.acquired_on.label }}
+                        {% if not has_history %}<span class="text-rose-600">*</span>{% endif %}
+                    </label>
+                    {{ form.acquired_on }}
+                    {% if form.acquired_on.help_text %}
+                        <p class="mt-1.5 text-xs text-slate-500">{{ form.acquired_on.help_text }}</p>
+                    {% endif %}
+                    {% if form.acquired_on.errors %}
+                        <p class="mt-1.5 text-xs text-rose-600">{{ form.acquired_on.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.internal_notes.id_for_label }}"
+                           class="mb-2 block text-sm font-medium text-slate-900">{{ form.internal_notes.label }}</label>
+                    {{ form.internal_notes }}
+                    {% if form.internal_notes.help_text %}
+                        <p class="mt-1.5 text-xs text-slate-500">{{ form.internal_notes.help_text }}</p>
+                    {% endif %}
+                    {% if form.internal_notes.errors %}
+                        <p class="mt-1.5 text-xs text-rose-600">{{ form.internal_notes.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div class="flex flex-wrap items-center gap-3 pt-2">
+                    <button type="submit"
+                            data-testid="unit-submit"
+                            class="inline-flex h-11 items-center justify-center rounded-md bg-accent px-6 text-sm font-semibold text-white transition-colors hover:bg-emerald-800">
+                        {{ action_label }}
+                    </button>
+                    {% if unit %}
+                        <a href="{% url 'inventory_manage:unit-detail' unit.pk %}"
+                           data-testid="unit-cancel"
+                           class="inline-flex h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">
+                            Cancel
+                        </a>
+                    {% else %}
+                        <a href="{% url 'inventory_manage:unit-list' %}"
+                           data-testid="unit-cancel"
+                           class="inline-flex h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">
+                            Cancel
+                        </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </section>
+{% endblock %}
+{% block scripts %}
+    {{ block.super }}
+    {% if mode == "create" %}
+        <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const conditionSelect = document.getElementById("unit-condition");
+            const problemContainer = document.getElementById("maintenance-problem-container");
+            const problemRequired = document.getElementById("maintenance-problem-required");
+            if (!conditionSelect || !problemContainer) return;
+
+            function syncProblemRequirement() {
+                const isDamaged = conditionSelect.value === "DAMAGED";
+                if (problemRequired) {
+                    problemRequired.textContent = isDamaged ? "(required)" : "(optional unless Damaged)";
+                    problemRequired.className = isDamaged ? "text-xs font-semibold text-rose-600" : "text-xs font-normal text-slate-500";
+                }
+            }
+            conditionSelect.addEventListener("change", syncProblemRequirement);
+            syncProblemRequirement();
+        });
+        </script>
+    {% endif %}
+{% endblock %}

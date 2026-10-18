@@ -20,17 +20,26 @@ from inventory.forms import (
     CategoryForm,
     CategorySearchForm,
     ItemSearchForm,
+    UnitCreateForm,
+    UnitSearchForm,
+    UnitUpdateForm,
 )
-from inventory.models import CatalogItem, Category
+from inventory.models import CatalogItem, Category, EquipmentUnit
 from inventory.photo_services import create_catalog_item_with_photo
 from inventory.queries import (
     category_items,
     get_catalog_item_or_404,
     get_category_or_404,
     get_item_inventory_counts,
+    get_overall_inventory_counts,
+    get_unit_allocations,
+    get_unit_maintenance_records,
+    get_unit_or_404,
     has_transactional_history,
+    has_unit_transactional_history,
     list_catalog_items,
     list_categories,
+    list_equipment_units,
 )
 from inventory.services import (
     CategoryArchiveConflict,
@@ -39,8 +48,10 @@ from inventory.services import (
     archive_category,
     create_catalog_item,
     create_category,
+    create_equipment_unit,
     update_catalog_item,
     update_category,
+    update_equipment_unit,
 )
 
 
@@ -328,15 +339,143 @@ def item_archive(request: HttpRequest, item_id: int) -> HttpResponse:
 @require_safe
 @admin_required
 def unit_list(request: HttpRequest) -> HttpResponse:
-    """Display the pending T08 · Kenneth module without reading or changing domain records."""
+    """Display paginated physical units matching search, category, item, and status filters."""
+    form: UnitSearchForm = UnitSearchForm(request.GET)
+    category_id: int | None = None
+    if request.GET.get("category"):
+        try:
+            category_id = int(request.GET["category"])
+        except ValueError:
+            category_id = None
+    item_id: int | None = None
+    if request.GET.get("item"):
+        try:
+            item_id = int(request.GET["item"])
+        except ValueError:
+            item_id = None
+    units: QuerySet[EquipmentUnit] = list_equipment_units(
+        search_query=request.GET.get("q", "").strip(),
+        category_id=category_id,
+        item_id=item_id,
+        status=request.GET.get("status") or None,
+    )
+    counts = get_overall_inventory_counts()
+    paginator: Paginator[EquipmentUnit] = Paginator(units, 25)
+    try:
+        page: Page[EquipmentUnit] = paginator.page(request.GET.get("page", "1"))
+    except (PageNotAnInteger, EmptyPage) as error:
+        raise Http404("The requested physical unit page does not exist.") from error
     return render(
         request,
-        "operations/manage/pending.html",
+        "inventory/manage/unit_list.html",
         {
-            "heading": "Physical units",
-            "module": "T08 · Kenneth",
-            "description": "Individual campus assets and their availability will appear here.",
-            "next_work": "Add asset registration, filters, derived counts, and protected unit history after T07 is integrated.",
+            "form": form,
+            "page": page,
+            "counts": counts,
+        },
+    )
+
+
+@require_safe
+@admin_required
+def unit_detail(request: HttpRequest, unit_id: int) -> HttpResponse:
+    """Display physical unit details, status, and allocation/loan/maintenance history."""
+    unit: EquipmentUnit = get_unit_or_404(unit_id)
+    allocations = get_unit_allocations(unit_id)
+    maintenance_records = get_unit_maintenance_records(unit_id)
+    has_history: bool = has_unit_transactional_history(unit_id)
+    return render(
+        request,
+        "inventory/manage/unit_detail.html",
+        {
+            "unit": unit,
+            "allocations": allocations,
+            "maintenance_records": maintenance_records,
+            "has_history": has_history,
+        },
+    )
+
+
+@require_http_methods(["GET", "POST"])
+@admin_required
+def unit_create(request: HttpRequest) -> HttpResponse:
+    """Validate and register a new physical unit; opens initial maintenance if DAMAGED."""
+    initial_item: str | None = request.GET.get("item") or request.GET.get("catalog_item")
+    form: UnitCreateForm = UnitCreateForm(
+        data=request.POST if request.method == "POST" else None,
+        initial_item_id=initial_item,
+    )
+    if request.method == "POST" and form.is_valid():
+        try:
+            unit: EquipmentUnit = create_equipment_unit(
+                actor_id=cast(User, request.user).pk,
+                catalog_item_id=form.cleaned_data["catalog_item"].pk,
+                asset_code=form.cleaned_data["asset_code"],
+                condition=form.cleaned_data["condition"],
+                acquired_on=form.cleaned_data["acquired_on"],
+                internal_notes=form.cleaned_data["internal_notes"],
+                maintenance_problem=form.cleaned_data.get("maintenance_problem"),
+            )
+            messages.success(request, f'Physical unit "{unit.asset_code}" registered successfully.')
+            return redirect("inventory_manage:unit-detail", unit_id=unit.pk)
+        except ValidationError as error:
+            form.add_error(None, error)
+    return render(
+        request,
+        "inventory/manage/unit_form.html",
+        {
+            "form": form,
+            "title": "Register physical unit",
+            "action_label": "Register physical unit",
+            "mode": "create",
+        },
+    )
+
+
+@require_http_methods(["GET", "POST"])
+@admin_required
+def unit_update(request: HttpRequest, unit_id: int) -> HttpResponse:
+    """Update physical unit metadata; locking fields once transactional history exists."""
+    unit: EquipmentUnit = get_unit_or_404(unit_id)
+    has_history: bool = has_unit_transactional_history(unit_id)
+    form: UnitUpdateForm = UnitUpdateForm(
+        data=request.POST if request.method == "POST" else None,
+        unit=unit,
+        has_history=has_history,
+    )
+    if request.method == "POST" and form.is_valid():
+        try:
+            asset_code: str | None = None
+            catalog_item_id: int | None = None
+            acquired_on = None
+            if not has_history:
+                asset_code = form.cleaned_data.get("asset_code")
+                if "catalog_item" in form.cleaned_data and form.cleaned_data["catalog_item"]:
+                    catalog_item_id = form.cleaned_data["catalog_item"].pk
+                acquired_on = form.cleaned_data.get("acquired_on")
+
+            updated_unit: EquipmentUnit = update_equipment_unit(
+                actor_id=cast(User, request.user).pk,
+                unit_id=unit.pk,
+                internal_notes=form.cleaned_data["internal_notes"],
+                asset_code=asset_code,
+                catalog_item_id=catalog_item_id,
+                acquired_on=acquired_on,
+            )
+            messages.success(request, f'Physical unit "{updated_unit.asset_code}" was updated.')
+            return redirect("inventory_manage:unit-detail", unit_id=updated_unit.pk)
+        except ValidationError as error:
+            form.add_error(None, error)
+    return render(
+        request,
+        "inventory/manage/unit_form.html",
+        {
+            "form": form,
+            "title": f"Edit physical unit {unit.asset_code}",
+            "action_label": "Save changes",
+            "unit": unit,
+            "has_history": has_history,
+            "mode": "update",
         },
     )
 

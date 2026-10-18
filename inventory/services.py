@@ -1,15 +1,29 @@
 """Category and catalog item business transitions with audit completeness."""
 
+from datetime import date
+
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
+from django.utils import timezone
 from psycopg.errors import UniqueViolation
 
 from accounts.access import require_active_admin
 from accounts.models import User
-from inventory.models import CatalogItem, Category
-from inventory.queries import has_transactional_history
+from inventory.models import (
+    CatalogItem,
+    Category,
+    EquipmentUnit,
+    MaintenanceRecord,
+    MaintenanceStatus,
+    UnitCondition,
+    UnitStatus,
+)
+from inventory.queries import (
+    has_transactional_history,
+    has_unit_transactional_history,
+)
 from operations.audit import write_audit
-from operations.locking import lock_catalog
+from operations.locking import lock_catalog, lock_units
 from operations.models import AuditAction, AuditTarget
 
 
@@ -276,3 +290,200 @@ def restore_catalog_item(actor_id: int, item_id: int) -> CatalogItem:
             summary=f"Restored equipment item {item.name}; category and unit statuses preserved.",
         )
         return item
+
+
+def _save_equipment_unit(unit: EquipmentUnit) -> None:
+    """Translate unique asset code conflicts after rolling back its savepoint."""
+    try:
+        with transaction.atomic():
+            unit.full_clean(validate_unique=False, validate_constraints=False)
+            unit.save()
+    except IntegrityError as error:
+        cause: BaseException | None = error.__cause__
+        if isinstance(cause, UniqueViolation) and cause.diag.constraint_name in {
+            "unit_asset_code_ci_unique",
+            "inventory_equipmentunit_asset_code_key",
+        }:
+            raise ValidationError("A physical unit with this asset code already exists.") from error
+        raise
+
+
+def create_equipment_unit(
+    actor_id: int,
+    catalog_item_id: int,
+    asset_code: str,
+    condition: str,
+    acquired_on: date,
+    internal_notes: str,
+    maintenance_problem: str | None,
+) -> EquipmentUnit:
+    """Register a new physical unit and audit the creation.
+
+    If condition is DAMAGED, requires nonblank maintenance_problem and
+    creates initial open maintenance atomically.
+    """
+    with transaction.atomic():
+        _require_active_admin(actor_id)
+        locked = lock_catalog((catalog_item_id,))
+        item: CatalogItem = locked.items[0]
+        if item.is_archived:
+            raise ValidationError("Cannot register a physical unit for an archived equipment item.")
+        if item.category.is_archived:
+            raise ValidationError("Cannot register a physical unit under an archived category.")
+
+        clean_code: str = asset_code.strip()
+        if not clean_code:
+            raise ValidationError("Asset code cannot be blank.")
+        if EquipmentUnit.objects.filter(asset_code__iexact=clean_code).exists():
+            raise ValidationError("A physical unit with this asset code already exists.")
+
+        if condition not in UnitCondition.values:
+            raise ValidationError(f"Invalid condition '{condition}'.")
+
+        if acquired_on > timezone.localdate():
+            raise ValidationError("Acquisition date cannot be in the future.")
+
+        clean_notes: str = internal_notes.strip()
+        clean_problem: str = (maintenance_problem or "").strip()
+
+        if condition == UnitCondition.DAMAGED:
+            if not clean_problem:
+                raise ValidationError(
+                    "A maintenance problem description is required when registering a damaged unit."
+                )
+            status: str = UnitStatus.MAINTENANCE
+        else:
+            status = UnitStatus.AVAILABLE
+
+        unit: EquipmentUnit = EquipmentUnit(
+            catalog_item=item,
+            asset_code=clean_code,
+            condition=condition,
+            acquired_on=acquired_on,
+            status=status,
+            internal_notes=clean_notes,
+        )
+        unit.full_clean()
+        _save_equipment_unit(unit)
+
+        write_audit(
+            actor_id=actor_id,
+            action=AuditAction.UNIT_CREATED,
+            target_model=AuditTarget.EQUIPMENT_UNIT,
+            target_id=unit.pk,
+            summary=f"Registered physical unit {unit.asset_code} ({unit.get_condition_display()}) for {item.name}.",
+        )
+
+        if condition == UnitCondition.DAMAGED:
+            maintenance: MaintenanceRecord = MaintenanceRecord(
+                unit=unit,
+                source_return=None,
+                problem=clean_problem,
+                action="",
+                opened_at=timezone.now(),
+                opened_by_id=actor_id,
+                status=MaintenanceStatus.OPEN,
+                closed_at=None,
+                closed_by=None,
+                outcome=None,
+            )
+            maintenance.full_clean()
+            maintenance.save()
+            write_audit(
+                actor_id=actor_id,
+                action=AuditAction.MAINTENANCE_OPENED,
+                target_model=AuditTarget.MAINTENANCE_RECORD,
+                target_id=maintenance.pk,
+                summary=f"Opened initial maintenance for unit {unit.asset_code}: {clean_problem}.",
+            )
+
+        return unit
+
+
+def update_equipment_unit(
+    actor_id: int,
+    unit_id: int,
+    internal_notes: str,
+    asset_code: str | None,
+    catalog_item_id: int | None,
+    acquired_on: date | None,
+) -> EquipmentUnit:
+    """Update physical unit metadata under row locks and audit the change.
+
+    If the unit has transactional history (allocations or maintenance),
+    asset_code, catalog_item, and acquired_on cannot be altered.
+    Condition and status can never be modified through generic editing.
+    """
+    with transaction.atomic():
+        _require_active_admin(actor_id)
+        unit: EquipmentUnit = lock_units((unit_id,))[0]
+        has_history: bool = has_unit_transactional_history(unit_id)
+        clean_notes: str = internal_notes.strip()
+
+        if has_history:
+            if asset_code is not None and asset_code.strip() != unit.asset_code:
+                raise ValidationError(
+                    "Asset code cannot be changed after transactional history exists."
+                )
+            if catalog_item_id is not None and catalog_item_id != unit.catalog_item_id:
+                raise ValidationError(
+                    "Catalog item cannot be changed after transactional history exists."
+                )
+            if acquired_on is not None and acquired_on != unit.acquired_on:
+                raise ValidationError(
+                    "Acquisition date cannot be changed after transactional history exists."
+                )
+
+            unit.internal_notes = clean_notes
+            unit.full_clean()
+            unit.save(update_fields=["internal_notes", "updated_at"])
+            summary: str = f"Updated internal notes for physical unit {unit.asset_code}."
+        else:
+            if asset_code is None:
+                raise ValidationError("Asset code is required.")
+            clean_code: str = asset_code.strip()
+            if not clean_code:
+                raise ValidationError("Asset code cannot be blank.")
+            if (
+                EquipmentUnit.objects.filter(asset_code__iexact=clean_code)
+                .exclude(pk=unit_id)
+                .exists()
+            ):
+                raise ValidationError("A physical unit with this asset code already exists.")
+
+            if acquired_on is None:
+                raise ValidationError("Acquisition date is required.")
+            if acquired_on > timezone.localdate():
+                raise ValidationError("Acquisition date cannot be in the future.")
+
+            if catalog_item_id is None:
+                raise ValidationError("Catalog item is required.")
+
+            if catalog_item_id != unit.catalog_item_id:
+                locked = lock_catalog((catalog_item_id,))
+                new_item: CatalogItem = locked.items[0]
+                if new_item.is_archived:
+                    raise ValidationError(
+                        "Cannot assign a physical unit to an archived equipment item."
+                    )
+                if new_item.category.is_archived:
+                    raise ValidationError(
+                        "Cannot assign a physical unit under an archived category."
+                    )
+                unit.catalog_item = new_item
+
+            unit.asset_code = clean_code
+            unit.acquired_on = acquired_on
+            unit.internal_notes = clean_notes
+            unit.full_clean()
+            _save_equipment_unit(unit)
+            summary = f"Updated physical unit {unit.asset_code}."
+
+        write_audit(
+            actor_id=actor_id,
+            action=AuditAction.UNIT_UPDATED,
+            target_model=AuditTarget.EQUIPMENT_UNIT,
+            target_id=unit.pk,
+            summary=summary,
+        )
+        return unit

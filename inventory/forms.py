@@ -1,13 +1,21 @@
-"""Allowlisted form inputs and search filters for categories and catalog items."""
+from datetime import date
+from typing import Any
 
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
 from django.db.models import Q
 from django.http import QueryDict
+from django.utils import timezone
 from django.utils.datastructures import MultiValueDict
 
-from inventory.models import CatalogItem, Category
+from inventory.models import (
+    CatalogItem,
+    Category,
+    EquipmentUnit,
+    UnitCondition,
+    UnitStatus,
+)
 from inventory.photo_forms import EquipmentPhotoForm
 
 CONTROL_CLASSES: str = (
@@ -291,3 +299,266 @@ class CategoryRestoreForm(forms.Form):
 
 class CatalogItemRestoreForm(forms.Form):
     """Confirmation form accepting no catalog fields for restoration."""
+
+
+class CatalogItemChoiceField(forms.ModelChoiceField):
+    """Identify equipment choices by their name and category."""
+
+    def label_from_instance(self, obj: CatalogItem) -> str:
+        return f"{obj.name} ({obj.category.name})"
+
+
+class UnitSearchForm(forms.Form):
+    """Validate optional filters before querying physical units."""
+
+    q = forms.CharField(
+        label="Search units",
+        required=False,
+        max_length=100,
+        strip=True,
+        widget=forms.SearchInput(
+            attrs={
+                "id": "unit-search-query",
+                "class": CONTROL_CLASSES,
+                "placeholder": "Search by asset code, item, or notes...",
+            }
+        ),
+    )
+    category = CategoryChoiceField(
+        label="Category",
+        required=False,
+        queryset=Category.objects.all().order_by("name"),
+        empty_label="All categories",
+        widget=forms.Select(attrs={"id": "unit-search-category", "class": CONTROL_CLASSES}),
+    )
+    item = CatalogItemChoiceField(
+        label="Equipment item",
+        required=False,
+        queryset=CatalogItem.objects.select_related("category").order_by("name"),
+        empty_label="All items",
+        widget=forms.Select(attrs={"id": "unit-search-item", "class": CONTROL_CLASSES}),
+    )
+    status = forms.ChoiceField(
+        label="Status",
+        required=False,
+        choices=(("", "All statuses"),) + tuple(UnitStatus.choices),
+        widget=forms.Select(attrs={"id": "unit-search-status", "class": CONTROL_CLASSES}),
+    )
+
+
+class UnitCreateForm(forms.Form):
+    """Validate new physical unit inputs, requiring active item and valid acquisition date."""
+
+    catalog_item = CatalogItemChoiceField(
+        label="Equipment item",
+        required=True,
+        queryset=CatalogItem.objects.filter(is_archived=False, category__is_archived=False)
+        .select_related("category")
+        .order_by("name"),
+        empty_label="Select an equipment item",
+        error_messages={"required": "Equipment item is required."},
+        widget=forms.Select(attrs={"id": "unit-catalog-item", "class": CONTROL_CLASSES}),
+    )
+    asset_code = forms.CharField(
+        label="Asset code",
+        max_length=64,
+        required=True,
+        strip=True,
+        error_messages={"required": "Asset code cannot be blank."},
+        widget=forms.TextInput(
+            attrs={
+                "id": "unit-asset-code",
+                "class": CONTROL_CLASSES,
+                "placeholder": "e.g. CAM-EOS90D-001",
+            }
+        ),
+    )
+    condition = forms.ChoiceField(
+        label="Initial condition",
+        required=True,
+        choices=UnitCondition.choices,
+        initial=UnitCondition.GOOD,
+        widget=forms.Select(attrs={"id": "unit-condition", "class": CONTROL_CLASSES}),
+    )
+    acquired_on = forms.DateField(
+        label="Acquisition date",
+        required=True,
+        error_messages={"required": "Acquisition date is required."},
+        widget=forms.DateInput(
+            attrs={
+                "id": "unit-acquired-on",
+                "type": "date",
+                "class": CONTROL_CLASSES,
+            }
+        ),
+    )
+    internal_notes = forms.CharField(
+        label="Internal notes (optional)",
+        required=False,
+        strip=True,
+        widget=forms.Textarea(
+            attrs={
+                "id": "unit-internal-notes",
+                "rows": 3,
+                "class": TEXTAREA_CLASSES,
+                "placeholder": "Administrative notes, serial numbers, supplier details...",
+            }
+        ),
+    )
+    maintenance_problem = forms.CharField(
+        label="Initial maintenance problem description",
+        required=False,
+        strip=True,
+        widget=forms.Textarea(
+            attrs={
+                "id": "unit-maintenance-problem",
+                "rows": 3,
+                "class": TEXTAREA_CLASSES,
+                "placeholder": "Required if condition is Damaged. Describe the defect or repair needed...",
+            }
+        ),
+    )
+
+    def __init__(self, data: QueryDict | None, initial_item_id: str | None) -> None:
+        initial: dict[str, Any] = {"acquired_on": timezone.localdate()}
+        if initial_item_id is not None:
+            initial["catalog_item"] = initial_item_id
+        super().__init__(data=data, initial=initial)
+
+    def clean_asset_code(self) -> str:
+        code: str = self.cleaned_data.get("asset_code", "").strip()
+        if not code:
+            raise ValidationError("Asset code cannot be blank.")
+        if EquipmentUnit.objects.filter(asset_code__iexact=code).exists():
+            raise ValidationError("A physical unit with this asset code already exists.")
+        return code
+
+    def clean_acquired_on(self) -> date:
+        acquired: date | None = self.cleaned_data.get("acquired_on")
+        if acquired is None:
+            raise ValidationError("Acquisition date is required.")
+        if acquired > timezone.localdate():
+            raise ValidationError("Acquisition date cannot be in the future.")
+        return acquired
+
+    def clean(self) -> dict[str, Any]:
+        cleaned_data: dict[str, Any] = super().clean()
+        condition: str | None = cleaned_data.get("condition")
+        maintenance_problem: str = (cleaned_data.get("maintenance_problem") or "").strip()
+        if condition == UnitCondition.DAMAGED and not maintenance_problem:
+            self.add_error(
+                "maintenance_problem",
+                "A maintenance problem description is required when registering a damaged unit.",
+            )
+        return cleaned_data
+
+
+class UnitUpdateForm(forms.Form):
+    """Validate unit edits; locking fields once transactional history exists."""
+
+    catalog_item = CatalogItemChoiceField(
+        label="Equipment item",
+        required=True,
+        queryset=CatalogItem.objects.all().select_related("category").order_by("name"),
+        error_messages={"required": "Equipment item is required."},
+        widget=forms.Select(attrs={"id": "unit-catalog-item", "class": CONTROL_CLASSES}),
+    )
+    asset_code = forms.CharField(
+        label="Asset code",
+        max_length=64,
+        required=True,
+        strip=True,
+        error_messages={"required": "Asset code cannot be blank."},
+        widget=forms.TextInput(attrs={"id": "unit-asset-code", "class": CONTROL_CLASSES}),
+    )
+    acquired_on = forms.DateField(
+        label="Acquisition date",
+        required=True,
+        error_messages={"required": "Acquisition date is required."},
+        widget=forms.DateInput(
+            attrs={"id": "unit-acquired-on", "type": "date", "class": CONTROL_CLASSES}
+        ),
+    )
+    internal_notes = forms.CharField(
+        label="Internal notes (optional)",
+        required=False,
+        strip=True,
+        widget=forms.Textarea(
+            attrs={"id": "unit-internal-notes", "rows": 3, "class": TEXTAREA_CLASSES}
+        ),
+    )
+
+    def __init__(
+        self,
+        data: QueryDict | None,
+        unit: EquipmentUnit,
+        has_history: bool,
+    ) -> None:
+        super().__init__(
+            data=data,
+            initial={
+                "catalog_item": unit.catalog_item_id,
+                "asset_code": unit.asset_code,
+                "acquired_on": unit.acquired_on,
+                "internal_notes": unit.internal_notes,
+            },
+        )
+        self.unit: EquipmentUnit = unit
+        self.has_history: bool = has_history
+
+        self.fields["catalog_item"].queryset = (
+            CatalogItem.objects.filter(
+                Q(is_archived=False, category__is_archived=False) | Q(pk=unit.catalog_item_id)
+            )
+            .select_related("category")
+            .order_by("name")
+        )
+
+        if self.has_history:
+            self.fields["catalog_item"].disabled = True
+            self.fields[
+                "catalog_item"
+            ].help_text = "Catalog item cannot be changed because this unit has borrowing or maintenance history."
+            self.fields["catalog_item"].queryset = CatalogItem.objects.filter(
+                pk=unit.catalog_item_id
+            ).select_related("category")
+            self.fields["asset_code"].disabled = True
+            self.fields[
+                "asset_code"
+            ].help_text = "Asset code cannot be changed because this unit has borrowing or maintenance history."
+            self.fields["acquired_on"].disabled = True
+            self.fields[
+                "acquired_on"
+            ].help_text = "Acquisition date cannot be changed because this unit has borrowing or maintenance history."
+
+    def clean_asset_code(self) -> str:
+        if self.has_history:
+            return self.unit.asset_code
+        code: str = self.cleaned_data.get("asset_code", "").strip()
+        if not code:
+            raise ValidationError("Asset code cannot be blank.")
+        if EquipmentUnit.objects.filter(asset_code__iexact=code).exclude(pk=self.unit.pk).exists():
+            raise ValidationError("A physical unit with this asset code already exists.")
+        return code
+
+    def clean_acquired_on(self) -> date:
+        if self.has_history:
+            return self.unit.acquired_on
+        acquired: date | None = self.cleaned_data.get("acquired_on")
+        if acquired is None:
+            raise ValidationError("Acquisition date is required.")
+        if acquired > timezone.localdate():
+            raise ValidationError("Acquisition date cannot be in the future.")
+        return acquired
+
+    def clean_catalog_item(self) -> CatalogItem:
+        if self.has_history:
+            return self.unit.catalog_item
+        item: CatalogItem | None = self.cleaned_data.get("catalog_item")
+        if item is None:
+            raise ValidationError("Equipment item is required.")
+        if (item.is_archived or item.category.is_archived) and item.pk != self.unit.catalog_item_id:
+            raise ValidationError(
+                "Cannot assign a physical unit to an archived equipment item or category."
+            )
+        return item
