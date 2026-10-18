@@ -8,6 +8,8 @@
 __pycache__/
 *.py[cod]
 staticfiles/
+media/
+.idea/
 .ruff_cache/
 node_modules/
 static/build/

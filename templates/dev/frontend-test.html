@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static assets %}
 {% block title %}Frontend test · Campus Equipment{% endblock %}
 {% block content %}
     <main class="min-h-screen bg-slate-50 px-6 py-12 text-slate-900 sm:px-10 sm:py-16"
@@ -68,5 +68,5 @@
     </main>
 {% endblock %}
 {% block scripts %}
-    <script type="module" src="{% static 'build/frontend-test.js' %}"></script>
+    <script type="module" src="{% compiled_asset 'build/frontend-test.js' %}"></script>
 {% endblock %}

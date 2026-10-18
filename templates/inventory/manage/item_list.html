@@ -19,7 +19,7 @@
                 <form data-testid="item-search"
                       method="get"
                       action="{% url 'inventory_manage:item-list' %}"
-                      class="grid gap-4 md:grid-cols-[1fr_14rem_12rem_auto] md:items-end">
+                      class="grid gap-4 md:grid-cols-[minmax(0,1fr)_12rem_10rem_auto] md:items-end">
                     <div>
                         <label for="{{ form.q.id_for_label }}"
                                class="mb-2 block text-sm font-medium">{{ form.q.label }}</label>
@@ -56,15 +56,14 @@
                                 <th scope="col" class="px-5 py-3 text-center">Total units</th>
                                 <th scope="col" class="px-5 py-3">Status</th>
                                 <th scope="col"
-                                    class="px-5 py-3 text-right"><span class="sr-only">Actions</span></th>
+                                    class="relative px-5 py-3 text-right"><span class="sr-only">Actions</span></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             {% for item in page %}
                                 <tr>
                                     <td class="px-5 py-4 font-semibold text-slate-900">
-                                        <a href="{% url 'inventory_manage:item-detail' item.pk %}"
-                                           class="text-accent hover:underline">{{ item.name }}</a>
+                                        {% include "inventory/manage/item_identity.html" %}
                                     </td>
                                     <td class="px-5 py-4 text-sm text-slate-600">
                                         <a href="{% url 'inventory_manage:category-detail' item.category.pk %}"
@@ -113,14 +112,14 @@
                     </div>
                     <div class="flex gap-2">
                         {% if page.has_previous %}
-                            <a href="?page={{ page.previous_page_number }}{% if form.q.value %}&q={{ form.q.value }}{% endif %}{% if form.category.value %}&category={{ form.category.value }}{% endif %}{% if form.archived.value %}&archived={{ form.archived.value }}{% endif %}"
+                            <a href="{% querystring page=page.previous_page_number %}"
                                data-testid="pagination-prev"
                                class="inline-flex h-9 items-center rounded border border-slate-200 px-3 text-sm font-medium hover:bg-slate-50">
                                 Previous
                             </a>
                         {% endif %}
                         {% if page.has_next %}
-                            <a href="?page={{ page.next_page_number }}{% if form.q.value %}&q={{ form.q.value }}{% endif %}{% if form.category.value %}&category={{ form.category.value }}{% endif %}{% if form.archived.value %}&archived={{ form.archived.value }}{% endif %}"
+                            <a href="{% querystring page=page.next_page_number %}"
                                data-testid="pagination-next"
                                class="inline-flex h-9 items-center rounded border border-slate-200 px-3 text-sm font-medium hover:bg-slate-50">
                                 Next

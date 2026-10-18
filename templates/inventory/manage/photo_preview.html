@@ -1,0 +1,16 @@
+<section class="min-w-0 space-y-4"
+         data-photo-preview
+         data-testid="photo-preview">
+    {% include "inventory/manage/photo.html" with photo_classes="h-72 w-full" %}
+    {% include "inventory/manage/photo_field.html" with field=form.photo %}
+    <button type="button"
+            hidden
+            data-photo-clear
+            data-testid="photo-preview-clear"
+            class="min-h-11 rounded-md border border-slate-300 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50">Remove selected image</button>
+    <p class="text-sm text-slate-500"
+       role="status"
+       data-photo-preview-status>
+        {% if item.photo %}Choose a file to preview its replacement.{% else %}No photo selected. The default equipment image will be used.{% endif %}
+    </p>
+</section>

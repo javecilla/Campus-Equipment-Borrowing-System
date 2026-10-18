@@ -1,0 +1,9 @@
+{% load static %}
+<img src="{% if item.photo %}{% url 'inventory_manage:item-photo' item.pk %}{% else %}{% static 'images/default-photo-equipment-270x360.webp' %}{% endif %}"
+     alt="{{ item.name|default:'Equipment photo preview' }}"
+     width="270"
+     height="360"
+     loading="lazy"
+     data-testid="equipment-photo-{{ item.pk|default:'new' }}"
+     data-photo-preview-image
+     class="{{ photo_classes }} rounded-md bg-slate-50 object-contain">

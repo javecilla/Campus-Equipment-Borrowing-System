@@ -1,11 +1,14 @@
 """Allowlisted form inputs and search filters for categories and catalog items."""
 
-from typing import Any
-
 from django import forms
 from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import UploadedFile
+from django.db.models import Q
+from django.http import QueryDict
+from django.utils.datastructures import MultiValueDict
 
 from inventory.models import CatalogItem, Category
+from inventory.photo_forms import EquipmentPhotoForm
 
 CONTROL_CLASSES: str = (
     "h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 "
@@ -20,13 +23,20 @@ TEXTAREA_CLASSES: str = (
 )
 
 
+class CategoryChoiceField(forms.ModelChoiceField):
+    """Identify category choices by their human-readable names."""
+
+    def label_from_instance(self, obj: Category) -> str:
+        return obj.name
+
+
 class CategorySearchForm(forms.Form):
     """Validate optional filters before querying categories."""
 
     q = forms.CharField(
         label="Search categories",
         required=False,
-        max_length=100,
+        max_length=200,
         strip=True,
         widget=forms.SearchInput(
             attrs={
@@ -75,9 +85,14 @@ class CategoryForm(forms.Form):
         ),
     )
 
-    def __init__(self, *args: Any, instance_id: int | None = None, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self.instance_id: int | None = instance_id
+    def __init__(self, data: QueryDict | None, category: Category | None) -> None:
+        super().__init__(
+            data=data,
+            initial={"name": category.name, "description": category.description}
+            if category is not None
+            else None,
+        )
+        self.instance_id: int | None = category.pk if category is not None else None
 
     def clean_name(self) -> str:
         name: str = self.cleaned_data.get("name", "").strip()
@@ -101,7 +116,7 @@ class ItemSearchForm(forms.Form):
     q = forms.CharField(
         label="Search equipment",
         required=False,
-        max_length=150,
+        max_length=200,
         strip=True,
         widget=forms.SearchInput(
             attrs={
@@ -111,7 +126,7 @@ class ItemSearchForm(forms.Form):
             }
         ),
     )
-    category = forms.ModelChoiceField(
+    category = CategoryChoiceField(
         label="Category",
         required=False,
         queryset=Category.objects.all().order_by("name"),
@@ -126,10 +141,10 @@ class ItemSearchForm(forms.Form):
     )
 
 
-class CatalogItemCreateForm(forms.Form):
+class CatalogItemCreateForm(EquipmentPhotoForm):
     """Validate new catalog item inputs, requiring an active category."""
 
-    category = forms.ModelChoiceField(
+    category = CategoryChoiceField(
         label="Category",
         required=True,
         queryset=Category.objects.filter(is_archived=False).order_by("name"),
@@ -166,6 +181,16 @@ class CatalogItemCreateForm(forms.Form):
         ),
     )
 
+    def __init__(
+        self,
+        data: QueryDict | None,
+        files: MultiValueDict[str, UploadedFile] | None,
+        category_id: str | None,
+    ) -> None:
+        super().__init__(data=data, files=files, initial={"category": category_id})
+        self.fields["photo"].required = False
+        self.fields["photo"].label = "Equipment photo (optional)"
+
     def clean_name(self) -> str:
         name: str = self.cleaned_data.get("name", "").strip()
         if not name:
@@ -182,7 +207,7 @@ class CatalogItemCreateForm(forms.Form):
 class CatalogItemUpdateForm(forms.Form):
     """Validate item edits; category cannot be altered once transactional history exists."""
 
-    category = forms.ModelChoiceField(
+    category = CategoryChoiceField(
         label="Category",
         required=True,
         queryset=Category.objects.filter(is_archived=False).order_by("name"),
@@ -209,14 +234,23 @@ class CatalogItemUpdateForm(forms.Form):
 
     def __init__(
         self,
-        *args: Any,
+        data: QueryDict | None,
         item: CatalogItem,
         has_history: bool,
-        **kwargs: Any,
     ) -> None:
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            data=data,
+            initial={
+                "category": item.category_id,
+                "name": item.name,
+                "description": item.description,
+            },
+        )
         self.item: CatalogItem = item
         self.has_history: bool = has_history
+        self.fields["category"].queryset = Category.objects.filter(
+            Q(is_archived=False) | Q(pk=item.category_id)
+        ).order_by("name")
         if self.has_history:
             self.fields["category"].disabled = True
             self.fields[
@@ -242,10 +276,18 @@ class CatalogItemUpdateForm(forms.Form):
         category: Category | None = self.cleaned_data.get("category")
         if category is None:
             raise ValidationError("Category is required.")
-        if category.is_archived:
+        if category.is_archived and category.pk != self.item.category_id:
             raise ValidationError("Cannot assign an equipment item to an archived category.")
         return category
 
 
 class CatalogItemArchiveForm(forms.Form):
     """Confirmation form with CSRF protection for archiving a catalog item."""
+
+
+class CategoryRestoreForm(forms.Form):
+    """Confirmation form accepting no category fields for restoration."""
+
+
+class CatalogItemRestoreForm(forms.Form):
+    """Confirmation form accepting no catalog fields for restoration."""

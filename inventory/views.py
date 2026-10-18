@@ -22,6 +22,7 @@ from inventory.forms import (
     ItemSearchForm,
 )
 from inventory.models import CatalogItem, Category
+from inventory.photo_services import create_catalog_item_with_photo
 from inventory.queries import (
     category_items,
     get_catalog_item_or_404,
@@ -87,6 +88,7 @@ def category_create(request: HttpRequest) -> HttpResponse:
     """Validate and persist a new equipment category with transactional audit."""
     form: CategoryForm = CategoryForm(
         request.POST if request.method == "POST" else None,
+        category=None,
     )
     if request.method == "POST" and form.is_valid():
         try:
@@ -114,8 +116,7 @@ def category_update(request: HttpRequest, category_id: int) -> HttpResponse:
     category: Category = get_category_or_404(category_id)
     form: CategoryForm = CategoryForm(
         data=request.POST if request.method == "POST" else None,
-        initial={"name": category.name, "description": category.description},
-        instance_id=category.pk,
+        category=category,
     )
     if request.method == "POST" and form.is_valid():
         try:
@@ -184,7 +185,7 @@ def item_list(request: HttpRequest) -> HttpResponse:
         )
     else:
         items = CatalogItem.objects.none()
-    paginator: Paginator[CatalogItem] = Paginator(items, 25)
+    paginator: Paginator[CatalogItem] = Paginator(items, 10)
     try:
         page: Page[CatalogItem] = paginator.page(request.GET.get("page", "1"))
     except (PageNotAnInteger, EmptyPage) as error:
@@ -222,17 +223,29 @@ def item_create(request: HttpRequest) -> HttpResponse:
     """Validate and persist a new catalog item under an active category."""
     initial_category_id = request.GET.get("category")
     form: CatalogItemCreateForm = CatalogItemCreateForm(
-        request.POST if request.method == "POST" else None,
-        initial={"category": initial_category_id} if initial_category_id else None,
+        data=request.POST if request.method == "POST" else None,
+        files=request.FILES if request.method == "POST" else None,
+        category_id=initial_category_id,
     )
     if request.method == "POST" and form.is_valid():
         try:
-            item: CatalogItem = create_catalog_item(
-                actor_id=cast(User, request.user).pk,
-                category_id=form.cleaned_data["category"].pk,
-                name=form.cleaned_data["name"],
-                description=form.cleaned_data["description"],
-            )
+            photo: bytes | None = form.cleaned_data["photo"]
+            item: CatalogItem
+            if photo is None:
+                item = create_catalog_item(
+                    actor_id=cast(User, request.user).pk,
+                    category_id=form.cleaned_data["category"].pk,
+                    name=form.cleaned_data["name"],
+                    description=form.cleaned_data["description"],
+                )
+            else:
+                item = create_catalog_item_with_photo(
+                    actor_id=cast(User, request.user).pk,
+                    category_id=form.cleaned_data["category"].pk,
+                    name=form.cleaned_data["name"],
+                    description=form.cleaned_data["description"],
+                    content=photo,
+                )
         except ValidationError as error:
             form.add_error(None, error)
         else:
@@ -253,11 +266,6 @@ def item_update(request: HttpRequest, item_id: int) -> HttpResponse:
     has_history: bool = has_transactional_history(item.pk)
     form: CatalogItemUpdateForm = CatalogItemUpdateForm(
         data=request.POST if request.method == "POST" else None,
-        initial={
-            "category": item.category_id,
-            "name": item.name,
-            "description": item.description,
-        },
         item=item,
         has_history=has_history,
     )

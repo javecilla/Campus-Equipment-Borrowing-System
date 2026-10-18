@@ -1,4 +1,4 @@
-{% load static %}
+{% load static assets %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -25,7 +25,7 @@
               sizes="180x180"
               href="{% static 'images/favicon/apple-touch-icon.png' %}">
         <link rel="manifest" href="{% static 'images/favicon/site.webmanifest' %}">
-        <link rel="stylesheet" href="{% static 'build/app.css' %}">
+        <link rel="stylesheet" href="{% compiled_asset 'build/app.css' %}">
         {% block extra_head %}{% endblock %}
     </head>
     <body class="font-sans antialiased">
