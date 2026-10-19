@@ -1,6 +1,6 @@
 """Custom category and catalog item views; unit and maintenance workflows remain with their task owners."""
 
-from typing import cast
+from typing import Any, cast
 
 from django.contrib import messages
 from django.core.exceptions import ValidationError
@@ -20,17 +20,29 @@ from inventory.forms import (
     CategoryForm,
     CategorySearchForm,
     ItemSearchForm,
+    MaintenanceCloseForm,
+    MaintenanceCreateForm,
+    MaintenanceSearchForm,
     UnitCreateForm,
     UnitSearchForm,
     UnitUpdateForm,
 )
-from inventory.models import CatalogItem, Category, EquipmentUnit
+from inventory.models import (
+    CatalogItem,
+    Category,
+    EquipmentUnit,
+    MaintenanceOutcome,
+    MaintenanceRecord,
+    MaintenanceStatus,
+    UnitCondition,
+)
 from inventory.photo_services import create_catalog_item_with_photo
 from inventory.queries import (
     category_items,
     get_catalog_item_or_404,
     get_category_or_404,
     get_item_inventory_counts,
+    get_maintenance_or_404,
     get_overall_inventory_counts,
     get_unit_allocations,
     get_unit_maintenance_records,
@@ -40,15 +52,18 @@ from inventory.queries import (
     list_catalog_items,
     list_categories,
     list_equipment_units,
+    list_maintenance_records,
 )
 from inventory.services import (
     CategoryArchiveConflict,
     ItemArchiveConflict,
     archive_catalog_item,
     archive_category,
+    close_maintenance,
     create_catalog_item,
     create_category,
     create_equipment_unit,
+    open_maintenance,
     update_catalog_item,
     update_category,
     update_equipment_unit,
@@ -483,14 +498,141 @@ def unit_update(request: HttpRequest, unit_id: int) -> HttpResponse:
 @require_safe
 @admin_required
 def maintenance_list(request: HttpRequest) -> HttpResponse:
-    """Display the pending T16 · Kenneth module without reading or changing domain records."""
+    """List and search equipment maintenance records with strict 25-row pagination."""
+    form: MaintenanceSearchForm = MaintenanceSearchForm(request.GET)
+    records: QuerySet[MaintenanceRecord]
+    if form.is_valid():
+        records = list_maintenance_records(
+            search_query=form.cleaned_data["q"],
+            status=form.cleaned_data["status"] or None,
+        )
+    else:
+        records = MaintenanceRecord.objects.none()
+    paginator: Paginator[MaintenanceRecord] = Paginator(records, 25)
+    try:
+        page: Page[MaintenanceRecord] = paginator.page(request.GET.get("page", "1"))
+    except (PageNotAnInteger, EmptyPage) as error:
+        raise Http404("The requested maintenance page does not exist.") from error
+    counts = get_overall_inventory_counts()
     return render(
         request,
-        "operations/manage/pending.html",
+        "inventory/manage/maintenance_list.html",
         {
-            "heading": "Maintenance",
-            "module": "T16 · Kenneth",
-            "description": "Equipment repairs, maintenance history, and retirement will be managed here.",
-            "next_work": "Add audited maintenance opening and closure after T08. Reserved and issued units must remain protected.",
+            "form": form,
+            "page": page,
+            "counts": counts,
+            "active_tab": "maintenance",
+        },
+    )
+
+
+@require_safe
+@admin_required
+def maintenance_detail(request: HttpRequest, maintenance_id: int) -> HttpResponse:
+    """Display maintenance record details, unit status, action taken, and timeline."""
+    record: MaintenanceRecord = get_maintenance_or_404(maintenance_id)
+    return render(
+        request,
+        "inventory/manage/maintenance_detail.html",
+        {
+            "maintenance": record,
+            "unit": record.unit,
+            "active_tab": "maintenance",
+        },
+    )
+
+
+@require_http_methods(["GET", "POST"])
+@admin_required
+def maintenance_create(request: HttpRequest) -> HttpResponse:
+    """Validate and persist manual maintenance opening under row locks and audit."""
+    if request.method == "POST":
+        form: MaintenanceCreateForm = MaintenanceCreateForm(data=request.POST)
+        if form.is_valid():
+            try:
+                selected_unit: EquipmentUnit = form.cleaned_data["unit"]
+                maintenance: MaintenanceRecord = open_maintenance(
+                    actor_id=cast(User, request.user).pk,
+                    unit_id=selected_unit.pk,
+                    problem=form.cleaned_data["problem"],
+                )
+                messages.success(
+                    request,
+                    f'Maintenance opened for physical unit "{selected_unit.asset_code}".',
+                )
+                return redirect(
+                    "inventory_manage:maintenance-detail", maintenance_id=maintenance.pk
+                )
+            except ValidationError as error:
+                form.add_error(None, error)
+    else:
+        initial: dict[str, Any] = {}
+        unit_param: str | None = request.GET.get("unit")
+        if unit_param and unit_param.isdigit():
+            initial["unit"] = int(unit_param)
+        form = MaintenanceCreateForm(initial=initial)
+
+    return render(
+        request,
+        "inventory/manage/maintenance_form.html",
+        {
+            "form": form,
+            "title": "Open maintenance",
+            "action_label": "Open maintenance",
+            "mode": "create",
+            "active_tab": "maintenance",
+        },
+    )
+
+
+@require_http_methods(["GET", "POST"])
+@admin_required
+def maintenance_close(request: HttpRequest, maintenance_id: int) -> HttpResponse:
+    """Close an open maintenance record, reconcile unit status, and audit."""
+    record: MaintenanceRecord = get_maintenance_or_404(maintenance_id)
+    if record.status != MaintenanceStatus.OPEN:
+        messages.error(request, "This maintenance record is already closed.")
+        return redirect("inventory_manage:maintenance-detail", maintenance_id=record.pk)
+
+    if request.method == "POST":
+        form: MaintenanceCloseForm = MaintenanceCloseForm(data=request.POST)
+        if form.is_valid():
+            try:
+                closed: MaintenanceRecord = close_maintenance(
+                    actor_id=cast(User, request.user).pk,
+                    maintenance_id=record.pk,
+                    action=form.cleaned_data["action"],
+                    outcome=form.cleaned_data["outcome"],
+                    repaired_condition=form.cleaned_data.get("repaired_condition"),
+                )
+                outcome_label: str = closed.get_outcome_display()
+                messages.success(
+                    request,
+                    f'Maintenance for "{closed.unit.asset_code}" closed with outcome: {outcome_label}.',
+                )
+                return redirect("inventory_manage:maintenance-detail", maintenance_id=closed.pk)
+            except ValidationError as error:
+                form.add_error(None, error)
+    else:
+        form = MaintenanceCloseForm(
+            initial={
+                "outcome": MaintenanceOutcome.AVAILABLE,
+                "repaired_condition": (
+                    record.unit.condition
+                    if record.unit.condition in (UnitCondition.GOOD, UnitCondition.FAIR)
+                    else UnitCondition.GOOD
+                ),
+            }
+        )
+
+    return render(
+        request,
+        "inventory/manage/maintenance_close.html",
+        {
+            "form": form,
+            "maintenance": record,
+            "unit": record.unit,
+            "title": f"Close maintenance for {record.unit.asset_code}",
+            "active_tab": "maintenance",
         },
     )

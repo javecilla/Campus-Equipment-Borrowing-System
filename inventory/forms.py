@@ -13,6 +13,9 @@ from inventory.models import (
     CatalogItem,
     Category,
     EquipmentUnit,
+    MaintenanceOutcome,
+    MaintenanceRecord,
+    MaintenanceStatus,
     UnitCondition,
     UnitStatus,
 )
@@ -593,3 +596,144 @@ class UnitUpdateForm(forms.Form):
                 "Cannot assign a physical unit to an archived equipment item or category."
             )
         return item
+
+
+class MaintenanceSearchForm(forms.Form):
+    """Validate optional filters before querying maintenance records."""
+
+    q = forms.CharField(
+        label="Search maintenance",
+        required=False,
+        max_length=200,
+        strip=True,
+        widget=forms.SearchInput(
+            attrs={
+                "id": "maintenance-search-query",
+                "class": CONTROL_CLASSES,
+                "placeholder": "Search by asset code, problem, action, or equipment...",
+            }
+        ),
+    )
+    status = forms.ChoiceField(
+        label="Status",
+        required=False,
+        choices=(
+            ("", "All statuses"),
+            (MaintenanceStatus.OPEN, "Open"),
+            (MaintenanceStatus.CLOSED, "Closed"),
+        ),
+        widget=forms.Select(attrs={"id": "maintenance-search-status", "class": CONTROL_CLASSES}),
+    )
+
+
+class MaintenanceCreateForm(forms.Form):
+    """Validate physical unit selection and problem description for opening maintenance."""
+
+    unit = forms.ModelChoiceField(
+        label="Physical unit",
+        queryset=EquipmentUnit.objects.none(),
+        required=True,
+        empty_label="Select an available unit...",
+        widget=forms.Select(attrs={"id": "maintenance-unit", "class": CONTROL_CLASSES}),
+    )
+    problem = forms.CharField(
+        label="Problem description",
+        required=True,
+        strip=True,
+        error_messages={"required": "Problem description cannot be blank."},
+        widget=forms.Textarea(
+            attrs={
+                "id": "maintenance-problem",
+                "rows": 4,
+                "class": TEXTAREA_CLASSES,
+                "placeholder": "Describe the issue, defect, or maintenance required in detail...",
+            }
+        ),
+    )
+
+    def __init__(
+        self,
+        data: QueryDict | None = None,
+        initial: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(data=data, initial=initial)
+        self.fields["unit"].queryset = (
+            EquipmentUnit.objects.filter(status=UnitStatus.AVAILABLE)
+            .exclude(maintenance_records__status=MaintenanceStatus.OPEN)
+            .select_related("catalog_item", "catalog_item__category")
+            .order_by("asset_code")
+        )
+        self.fields["unit"].label_from_instance = lambda obj: (
+            f"{obj.asset_code} — {obj.catalog_item.name} ({obj.get_condition_display()})"
+        )
+
+    def clean_unit(self) -> EquipmentUnit:
+        unit: EquipmentUnit | None = self.cleaned_data.get("unit")
+        if unit is None:
+            raise ValidationError("Please select a physical unit.")
+        if unit.status != UnitStatus.AVAILABLE:
+            raise ValidationError(
+                f"Unit {unit.asset_code} is not available (current status: {unit.get_status_display()})."
+            )
+        if MaintenanceRecord.objects.filter(unit=unit, status=MaintenanceStatus.OPEN).exists():
+            raise ValidationError(
+                f"Unit {unit.asset_code} already has an active open maintenance record."
+            )
+        return unit
+
+    def clean_problem(self) -> str:
+        problem: str = self.cleaned_data.get("problem", "").strip()
+        if not problem:
+            raise ValidationError("Problem description cannot be blank.")
+        return problem
+
+
+class MaintenanceCloseForm(forms.Form):
+    """Validate action taken and outcome for closing maintenance."""
+
+    action = forms.CharField(
+        label="Action taken / Resolution",
+        required=True,
+        strip=True,
+        error_messages={"required": "Action taken cannot be blank."},
+        widget=forms.Textarea(
+            attrs={
+                "id": "maintenance-action",
+                "rows": 4,
+                "class": TEXTAREA_CLASSES,
+                "placeholder": "Describe the repair, servicing performed, or reason for retirement in detail...",
+            }
+        ),
+    )
+    outcome = forms.ChoiceField(
+        label="Maintenance outcome",
+        required=True,
+        choices=MaintenanceOutcome.choices,
+        widget=forms.Select(attrs={"id": "maintenance-outcome", "class": CONTROL_CLASSES}),
+    )
+    repaired_condition = forms.ChoiceField(
+        label="Repaired condition",
+        required=False,
+        choices=(
+            (UnitCondition.GOOD, "Good condition"),
+            (UnitCondition.FAIR, "Fair condition"),
+        ),
+        widget=forms.Select(
+            attrs={"id": "maintenance-repaired-condition", "class": CONTROL_CLASSES}
+        ),
+        help_text="Applies when the outcome is Available. Defaults to Good if not specified.",
+    )
+
+    def clean_action(self) -> str:
+        action: str = self.cleaned_data.get("action", "").strip()
+        if not action:
+            raise ValidationError("Action taken cannot be blank.")
+        return action
+
+    def clean(self) -> dict[str, Any]:
+        cleaned_data: dict[str, Any] = super().clean()
+        outcome: str | None = cleaned_data.get("outcome")
+        repaired_condition: str | None = cleaned_data.get("repaired_condition")
+        if outcome == MaintenanceOutcome.AVAILABLE and not repaired_condition:
+            cleaned_data["repaired_condition"] = UnitCondition.GOOD
+        return cleaned_data

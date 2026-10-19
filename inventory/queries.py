@@ -11,6 +11,7 @@ from inventory.models import (
     Category,
     EquipmentUnit,
     MaintenanceRecord,
+    MaintenanceStatus,
     UnitStatus,
 )
 
@@ -309,3 +310,44 @@ def get_active_catalog_item_or_404(item_id: int) -> CatalogItem:
         )
     except CatalogItem.DoesNotExist as error:
         raise Http404("The requested equipment item is not available.") from error
+
+
+def list_maintenance_records(
+    search_query: str = "",
+    status: str | None = None,
+) -> QuerySet[MaintenanceRecord]:
+    """Return maintenance records matching optional search query and status filter."""
+    records: QuerySet[MaintenanceRecord] = MaintenanceRecord.objects.select_related(
+        "unit",
+        "unit__catalog_item",
+        "unit__catalog_item__category",
+        "opened_by",
+        "closed_by",
+        "source_return__received_by",
+    )
+    if search_query:
+        query_text: str = search_query.strip()
+        records = records.filter(
+            Q(unit__asset_code__icontains=query_text)
+            | Q(problem__icontains=query_text)
+            | Q(action__icontains=query_text)
+            | Q(unit__catalog_item__name__icontains=query_text)
+        )
+    if status and status in MaintenanceStatus.values:
+        records = records.filter(status=status)
+    return records.order_by("-opened_at", "-pk")
+
+
+def get_maintenance_or_404(maintenance_id: int) -> MaintenanceRecord:
+    """Resolve a MaintenanceRecord with related unit, item, and actors, or raise Http404."""
+    try:
+        return MaintenanceRecord.objects.select_related(
+            "unit",
+            "unit__catalog_item",
+            "unit__catalog_item__category",
+            "opened_by",
+            "closed_by",
+            "source_return__received_by",
+        ).get(pk=maintenance_id)
+    except MaintenanceRecord.DoesNotExist as error:
+        raise Http404("The requested maintenance record does not exist.") from error

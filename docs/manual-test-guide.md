@@ -4,7 +4,7 @@
 
 This guide covers **T01-T12 integrated into main at `170cc38` through PR #29**, as of October 19, 2026. Request history/cancellation is available after syncing main; approval, release and returns remain pending. Use it to check individual modules and regressions; it does not establish full-system acceptance. Expected results below are instructions, not recorded passes. The user is manually testing T12; no results have been supplied yet.
 
-For the current borrower checks, go directly to [Module 9: request submission](#module-9--borrower-request-submission-t11) or [Module 10: request and loan tracking](#module-10--borrower-request-and-loan-tracking-t12). Use the [result record](#recording-manual-results) to report what actually happened.
+For the current borrower checks, go directly to [Module 9: request submission](#module-9--borrower-request-submission-t11) or [Module 10: request and loan tracking](#module-10--borrower-request-and-loan-tracking-t12). For equipment maintenance and reconciliation, see [Module 11: equipment maintenance](#module-11--equipment-maintenance-and-inventory-reconciliation-t16). Use the [result record](#recording-manual-results) to report what actually happened.
 
 For automated tests, see [Running the automated suite](#running-the-automated-test-suite) at the bottom.
 
@@ -1026,6 +1026,184 @@ The automated T12 client tests cover role/method/CSRF, owner isolation, invalid 
 
 ---
 
+## Module 11 — Equipment Maintenance and Inventory Reconciliation (T16)
+
+> **Feature under member review (T16 · Kenneth Cortez, branch `kenneth`, uncommitted local implementation).**
+> **Prerequisites integrated into main:** T08 physical units ([PR #22](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/22) at `6c91d48`) and T03 shared locking/audit ([PR #3](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/3) at `d122518`).
+> **Required role:** `ADMIN`.
+> **Entry URL:** `/manage/maintenance/` (`inventory_manage:maintenance-list`).
+
+### Verified local database snapshot (October 19, 2026, Asia/Manila)
+
+Before running these manual scenarios, inspect the local database using read-only queries (`manage.py shell`):
+
+```python
+from inventory.models import EquipmentUnit, MaintenanceRecord
+from inventory.queries import get_overall_inventory_counts
+
+counts = get_overall_inventory_counts()
+print(
+    f"Overall inventory: Available={counts.available}, Reserved={counts.reserved}, Issued={counts.issued}, Maintenance={counts.maintenance}, Retired={counts.retired}, Serviceable={counts.serviceable}, Total={counts.total}"
+)
+print(
+    [
+        (u.pk, u.asset_code, u.status, u.condition, u.catalog_item.name)
+        for u in EquipmentUnit.objects.filter(status="AVAILABLE")
+    ]
+)
+```
+
+- **Current local units:** At least one `AVAILABLE` unit exists (e.g., `cam-qwert`, ID 1, `GOOD` condition, item `sony`).
+- **Initial maintenance records:** 0 existing records.
+- **Initial inventory counts:** Available = 1, Maintenance = 0, Retired = 0, Total = 1.
+- If your local database has different asset codes or IDs, substitute those values accordingly.
+
+---
+
+### Test Case T16-01: Open Maintenance for an Available Unit (Successful Flow)
+
+- **Role:** Sign in as an active `ADMIN`.
+- **Navigation:** Navigate to `/manage/maintenance/` and click the **Open maintenance** button, or go directly to `/manage/maintenance/new/`. (Alternatively, click **Open maintenance** from `/manage/units/<id>/`.)
+- **Form inputs:**
+
+| Field | Value | Notes |
+| --- | --- | --- |
+| Physical unit (`unit`) | `cam-qwert — sony (Good)` | Dropdown populated with eligible `AVAILABLE` units only |
+| Problem description (`problem`) | `Focus ring stiff and lens aperture blade sticking intermittently.` | Detailed issue description |
+
+- **Submit:** Click **Open maintenance**.
+- **Expected results:**
+  - ✅ Redirects to `/manage/maintenance/<id>/` (`inventory_manage:maintenance-detail`).
+  - ✅ Green flash banner: `Maintenance opened for physical unit "cam-qwert".`
+  - ✅ Status badge displays `Open` in amber.
+  - ✅ Physical unit card reflects unit status `Maintenance` and condition `Good`.
+  - ✅ Audit timeline shows `Opened at` timestamp and `by <admin-username>`.
+  - ✅ Visiting `/manage/maintenance/` displays the record in the table and updates the summary card to `Maintenance: 1`, `Available: 0`.
+  - ✅ Unit detail page (`/manage/units/1/`) reflects status `Maintenance`, hides the "Open maintenance" button, and lists this maintenance in the unit's maintenance history table with an active **Close** link.
+  - ✅ Read-only database check: `MaintenanceRecord.objects.get(pk=...).status == 'OPEN'`, unit status is `'MAINTENANCE'`. `AuditLog` entry exists with `action='MAINTENANCE_OPENED'` and `target_model='inventory.MaintenanceRecord'`.
+
+---
+
+### Test Case T16-02: Open Maintenance Validation and Ineligible Unit Rejection
+
+- **Role:** Active `ADMIN`.
+- **Scenario A: Blank problem description**
+  - **URL:** `/manage/maintenance/new/`
+  - **Inputs:**
+    - Physical unit: Select any available unit.
+    - Problem description: Leave blank or enter whitespace only (`   `).
+  - **Submit:** Click **Open maintenance**.
+  - **Expected results:**
+    - ✅ Page remains on `/manage/maintenance/new/` with status 200 OK.
+    - ✅ Field-level error displayed: `Problem description cannot be blank.`
+    - ✅ No record created and no unit status changed.
+
+- **Scenario B: Ineligible unit rejection (already in maintenance)**
+  - Note: Unit `cam-qwert` is currently in maintenance from Case T16-01.
+  - Navigate to `/manage/maintenance/new/`.
+  - **Expected results:**
+    - ✅ The unit dropdown `unit` excludes `cam-qwert` entirely (only units in `AVAILABLE` status without active open maintenance appear).
+    - ✅ If a direct forged POST is sent with `unit=1`, the form returns an error: `Select a valid choice. That choice is not one of the available choices.` or `Unit cam-qwert already has an active open maintenance record.` No second open record is created (enforcing `maintenance_one_open_unit` constraint).
+
+---
+
+### Test Case T16-03: Close Maintenance with Repaired/Available Outcome
+
+- **Role:** Active `ADMIN`.
+- **Navigation:** Open `/manage/maintenance/<id>/` for the open record created in T16-01. Click **Close maintenance**, or navigate directly to `/manage/maintenance/<id>/close/`.
+- **Form inputs:**
+
+| Field | Value | Notes |
+| --- | --- | --- |
+| Action taken / Resolution (`action`) | `Cleaned and lubricated lens barrel assembly, replaced aperture return spring, tested optical calibration.` | Required resolution text |
+| Maintenance outcome (`outcome`) | `Available` | Selected from dropdown (`AVAILABLE` / `RETIRED`) |
+| Repaired condition (`repaired_condition`) | `Good condition` | Select `Good condition` or `Fair condition` |
+
+- **Submit:** Click **Complete & close maintenance**.
+- **Expected results:**
+  - ✅ Redirects to `/manage/maintenance/<id>/` (`inventory_manage:maintenance-detail`).
+  - ✅ Green flash banner: `Maintenance for "cam-qwert" closed with outcome: Available.`
+  - ✅ Status badge displays `Closed` in slate.
+  - ✅ Outcome badge displays `Repaired / Available` in emerald.
+  - ✅ Resolution section displays the action taken, outcome, and closure timestamp/admin.
+  - ✅ The "Close maintenance" button is no longer present.
+  - ✅ Physical unit details show unit status restored to `Available`.
+  - ✅ Visiting `/manage/maintenance/` displays the record as `Closed`, and count cards reconcile: `Available: 1`, `Maintenance: 0`.
+  - ✅ Visiting unit detail (`/manage/units/1/`) shows status `Available`, the "Open maintenance" button is restored, and the maintenance table shows `Closed` with outcome `Repaired / Available`.
+  - ✅ Read-only database check: `MaintenanceRecord` status is `'CLOSED'`, outcome is `'AVAILABLE'`, `closed_at` and `closed_by` are set. `AuditLog` entry exists with `action='MAINTENANCE_CLOSED'`.
+
+---
+
+### Test Case T16-04: Close Maintenance with Retired Outcome
+
+- **Role:** Active `ADMIN`.
+- **Preparation:** Open maintenance on an available unit (e.g. `cam-qwert` or test unit) with problem `Catastrophic internal sensor failure; circuit board cracked.`
+- **Navigation:** Go to `/manage/maintenance/<id>/close/`.
+- **Form inputs:**
+
+| Field | Value | Notes |
+| --- | --- | --- |
+| Action taken / Resolution (`action`) | `Unit evaluated by technician; replacement sensor discontinued by manufacturer. Decommissioning and retiring unit.` | Required resolution |
+| Maintenance outcome (`outcome`) | `Retired` | Selected from dropdown |
+
+- **Submit:** Click **Complete & close maintenance**.
+- **Expected results:**
+  - ✅ Redirects to `/manage/maintenance/<id>/`.
+  - ✅ Green flash banner: `Maintenance for "<asset-code>" closed with outcome: Retired.`
+  - ✅ Status badge: `Closed`; Outcome badge: `Retired` in slate.
+  - ✅ Physical unit status is permanently set to `Retired`.
+  - ✅ Summary count cards reconcile: `Retired: 1`, `Maintenance: 0`, `Available: 0`.
+  - ✅ Retired unit cannot be selected for new maintenance, borrowing requests, or allocations.
+
+---
+
+### Test Case T16-05: Repeat Closure and Invalid Form Submissions Rejected
+
+- **Role:** Active `ADMIN`.
+- **Scenario A: Repeat closure attempt**
+  - Attempt to access `/manage/maintenance/<id>/close/` for an already-closed maintenance record.
+  - **Expected results:**
+    - ✅ Redirects to `/manage/maintenance/<id>/` with flash error: `This maintenance record is already closed.`
+    - ✅ No state modification occurs.
+- **Scenario B: Blank action taken on close**
+  - On an open record's close form, enter outcome `Available` but leave `action` blank (`   `).
+  - **Expected results:**
+    - ✅ Page returns with 200 OK.
+    - ✅ Field-level error displayed: `Action taken cannot be blank.`
+    - ✅ Maintenance record remains `Open` and unit remains in `Maintenance`.
+
+---
+
+### Test Case T16-06: Maintenance List Search, Status Filtering, and Pagination
+
+- **Role:** Active `ADMIN`.
+- **Navigation:** `/manage/maintenance/`
+- **Scenarios:**
+  - **Search by asset code:** Enter `cam-qwert` in `q` field and click **Filter**.
+    - ✅ Result shows only maintenance records matching `cam-qwert`.
+  - **Status filter:** Select `Open` in Status dropdown and click **Filter**.
+    - ✅ Displays only open maintenance records.
+  - **Status filter:** Select `Closed` in Status dropdown and click **Filter**.
+    - ✅ Displays only closed maintenance records.
+  - **Clear filters:** Click **Clear**.
+    - ✅ Restores unfiltered list.
+  - **Pagination:** List paginates at 25 rows per page; pagination links preserve active `q` and `status` query parameters using `{% querystring %}`. Invalid page returns 404.
+
+---
+
+### Test Case T16-07: Authorization, Role Enforcement, and CSRF Protection
+
+- **Role / Method Checks:**
+  1. **Anonymous visitor:** Accessing `/manage/maintenance/`, `/manage/maintenance/new/`, `/manage/maintenance/<id>/`, or `/manage/maintenance/<id>/close/` redirects to `/accounts/login/?next=...`.
+  2. **Borrower account (`BASIC_USER`):** Accessing any `/manage/maintenance/*` route returns **403 Forbidden**.
+  3. **Method protection:** Sending `POST` to `/manage/maintenance/` or `/manage/maintenance/<id>/` returns **405 Method Not Allowed**.
+  4. **CSRF protection:** Submitting POST to `/manage/maintenance/new/` or `/manage/maintenance/<id>/close/` without a valid CSRF token returns **403 Forbidden**.
+  5. **Keyboard & Responsive navigation:** Use `Tab` / `Shift+Tab` to verify visible focus order across all filter inputs, action buttons, form controls, and table links. Verify clean grid stacking and no horizontal overflow on mobile viewports (375px).
+
+The automated T16 client tests cover all service transitions, validation errors, row locks, audit completeness, role/method/CSRF restrictions, filters, pagination, and inventory count reconciliation using records created in the separate test database. Browser, keyboard, and mobile outcomes for the uncommitted implementation remain **Not run / awaiting user execution**.
+
+---
+
 ## Recording manual results
 
 Use one row per actual test run. Expected outcomes in this guide do not count as passes. Keep evidence fictional and do not include passwords, session/CSRF tokens or private environment values.
@@ -1034,6 +1212,7 @@ Use one row per actual test run. Expected outcomes in this guide do not count as
 | --- | --- | --- | --- | --- |
 | Example: T11-15 | `6c5ea8f`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Screenshot or request marker/ID, without private data |
 | Example: T12-01 | `170cc38`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request/loan ID; no private data |
+| Example: T16-01 | `kenneth` HEAD, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional asset code/maintenance ID; no private data |
 
 Report the purpose marker/request ID and the smallest reproduction steps for a failure. Retain test records rather than deleting history to make counts match. Save real findings in the current handoff or the team's review record when supplied.
 
@@ -1048,7 +1227,6 @@ The following features are **Not started** and have no implementation to test in
 | T13 | Admin request review queue, approval, and rejection | Margareth |
 | T14 | Competing-approval concurrency test | Jerome + Margareth |
 | T15 | Equipment release and printable borrowing slip | Margareth |
-| T16 | Maintenance open/close, repair, retirement | Kenneth |
 | T17 | Per-unit returns, partial returns, damaged-return maintenance | Margareth + Kenneth |
 | T18 | Live dashboard cards and charts | Alex |
 | T19 | Loan/overdue reports and CSV export | Alex |
@@ -1058,7 +1236,7 @@ The following features are **Not started** and have no implementation to test in
 
 ## Running the automated test suite
 
-The integrated T01-T12 source at `170cc38` passed **191 PostgreSQL tests in 32.738s** during the October 19 integration review. To run the current suite yourself:
+The integrated T01-T12 source at `170cc38` passed **191 PostgreSQL tests in 32.738s** during the October 19 integration review. With T16 equipment maintenance implemented on branch `kenneth`, **217 PostgreSQL tests pass**. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput
@@ -1067,6 +1245,9 @@ The integrated T01-T12 source at `170cc38` passed **191 PostgreSQL tests in 32.7
 Run a specific module's tests:
 
 ```powershell
+# Equipment maintenance and reconciliation (T16)
+.\.venv\Scripts\python.exe manage.py test inventory.tests.test_maintenance --noinput
+
 # Physical unit management (T08)
 .\.venv\Scripts\python.exe manage.py test inventory.tests.test_unit_management --noinput
 
@@ -1092,8 +1273,8 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests --noinput
 ```
 
-All tests in the current suite must pass before handing over work; 191 is the verified count on the integrated T12 revision. Record the actual count and timing in your handoff. See [DEV.md — Before handing over work](../DEV.md#before-handing-over-work) for the full required check list.
+All tests in the current suite must pass before handing over work; 217 is the verified count on the `kenneth` working tree. Record the actual count and timing in your handoff. See [DEV.md — Before handing over work](../DEV.md#before-handing-over-work) for the full required check list.
 
 ---
 
-*Manual testing guide — scope: T01-T12 integrated features. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
+*Manual testing guide — scope: T01-T12 integrated features; T16 implemented locally on kenneth. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*

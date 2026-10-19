@@ -35,4 +35,11 @@ urlpatterns: list[URLPattern] = [
     path("units/<int:unit_id>/", views.unit_detail, name="unit-detail"),
     path("units/<int:unit_id>/edit/", views.unit_update, name="unit-update"),
     path("maintenance/", views.maintenance_list, name="maintenance-list"),
+    path("maintenance/new/", views.maintenance_create, name="maintenance-create"),
+    path("maintenance/<int:maintenance_id>/", views.maintenance_detail, name="maintenance-detail"),
+    path(
+        "maintenance/<int:maintenance_id>/close/",
+        views.maintenance_close,
+        name="maintenance-close",
+    ),
 ]

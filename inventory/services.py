@@ -13,6 +13,7 @@ from inventory.models import (
     CatalogItem,
     Category,
     EquipmentUnit,
+    MaintenanceOutcome,
     MaintenanceRecord,
     MaintenanceStatus,
     UnitCondition,
@@ -487,3 +488,145 @@ def update_equipment_unit(
             summary=summary,
         )
         return unit
+
+
+def open_maintenance(
+    actor_id: int,
+    unit_id: int,
+    problem: str,
+    source_return_id: int | None = None,
+) -> MaintenanceRecord:
+    """Open a maintenance record for a physical unit under row locks and audit the change.
+
+    Manual maintenance opening requires an AVAILABLE unit and rejects RESERVED, ISSUED,
+    MAINTENANCE, or RETIRED units per BR-09 and A6.
+    """
+    with transaction.atomic():
+        _require_active_admin(actor_id)
+        clean_problem: str = problem.strip()
+        if not clean_problem:
+            raise ValidationError("Problem description is required to open maintenance.")
+
+        unit: EquipmentUnit = lock_units((unit_id,))[0]
+
+        if source_return_id is None:
+            if unit.status == UnitStatus.RESERVED:
+                raise ValidationError("Cannot open maintenance on a reserved physical unit.")
+            if unit.status == UnitStatus.ISSUED:
+                raise ValidationError("Cannot open maintenance on an issued physical unit.")
+            if unit.status == UnitStatus.MAINTENANCE:
+                raise ValidationError(
+                    "Cannot open maintenance on a physical unit that is already in maintenance."
+                )
+            if unit.status == UnitStatus.RETIRED:
+                raise ValidationError("Cannot open maintenance on a retired physical unit.")
+            if unit.status != UnitStatus.AVAILABLE:
+                raise ValidationError(
+                    f"Cannot open maintenance on a physical unit with status {unit.get_status_display()}."
+                )
+
+        if MaintenanceRecord.objects.filter(unit=unit, status=MaintenanceStatus.OPEN).exists():
+            raise ValidationError(
+                f"Physical unit {unit.asset_code} already has an active open maintenance record."
+            )
+
+        unit.status = UnitStatus.MAINTENANCE
+        unit.full_clean()
+        unit.save(update_fields=["status", "updated_at"])
+
+        maintenance: MaintenanceRecord = MaintenanceRecord(
+            unit=unit,
+            source_return_id=source_return_id,
+            problem=clean_problem,
+            action="",
+            opened_at=timezone.now(),
+            opened_by_id=actor_id,
+            status=MaintenanceStatus.OPEN,
+            closed_at=None,
+            closed_by=None,
+            outcome=None,
+        )
+        maintenance.full_clean()
+        maintenance.save()
+
+        write_audit(
+            actor_id=actor_id,
+            action=AuditAction.MAINTENANCE_OPENED,
+            target_model=AuditTarget.MAINTENANCE_RECORD,
+            target_id=maintenance.pk,
+            summary=f"Opened maintenance for physical unit {unit.asset_code}: {clean_problem}.",
+        )
+        return maintenance
+
+
+def close_maintenance(
+    actor_id: int,
+    maintenance_id: int,
+    action: str,
+    outcome: str,
+    repaired_condition: str | None = None,
+) -> MaintenanceRecord:
+    """Close an open maintenance record under row locks, reconcile unit status, and audit.
+
+    AVAILABLE outcome returns the repaired unit to serviceable inventory;
+    RETIRED outcome retains the unit as unavailable per BR-10.
+    """
+    with transaction.atomic():
+        _require_active_admin(actor_id)
+        try:
+            maintenance: MaintenanceRecord = MaintenanceRecord.objects.select_for_update().get(
+                pk=maintenance_id
+            )
+        except MaintenanceRecord.DoesNotExist as error:
+            raise ValidationError(
+                f"Maintenance record with ID {maintenance_id} does not exist."
+            ) from error
+
+        unit: EquipmentUnit = lock_units((maintenance.unit_id,))[0]
+
+        if maintenance.status != MaintenanceStatus.OPEN:
+            raise ValidationError("This maintenance record is already closed.")
+        if unit.status != UnitStatus.MAINTENANCE:
+            raise ValidationError(
+                f"Physical unit {unit.asset_code} is not currently in maintenance."
+            )
+
+        clean_action: str = action.strip()
+        if not clean_action:
+            raise ValidationError("Action taken is required when closing maintenance.")
+
+        if outcome not in MaintenanceOutcome.values:
+            raise ValidationError("Invalid maintenance outcome. Must be Available or Retired.")
+
+        if outcome == MaintenanceOutcome.AVAILABLE:
+            unit.status = UnitStatus.AVAILABLE
+            if repaired_condition:
+                if repaired_condition not in (UnitCondition.GOOD, UnitCondition.FAIR):
+                    raise ValidationError("Repaired physical unit condition must be Good or Fair.")
+                unit.condition = repaired_condition
+            elif unit.condition == UnitCondition.DAMAGED:
+                unit.condition = UnitCondition.GOOD
+            unit.full_clean()
+            unit.save(update_fields=["status", "condition", "updated_at"])
+        elif outcome == MaintenanceOutcome.RETIRED:
+            unit.status = UnitStatus.RETIRED
+            unit.full_clean()
+            unit.save(update_fields=["status", "updated_at"])
+
+        maintenance.action = clean_action
+        maintenance.status = MaintenanceStatus.CLOSED
+        maintenance.outcome = outcome
+        maintenance.closed_at = timezone.now()
+        maintenance.closed_by_id = actor_id
+        maintenance.full_clean()
+        maintenance.save()
+
+        outcome_label: str = maintenance.get_outcome_display()
+        write_audit(
+            actor_id=actor_id,
+            action=AuditAction.MAINTENANCE_CLOSED,
+            target_model=AuditTarget.MAINTENANCE_RECORD,
+            target_id=maintenance.pk,
+            summary=f"Closed maintenance for physical unit {unit.asset_code} with outcome {outcome_label}: {clean_action}.",
+        )
+        return maintenance
