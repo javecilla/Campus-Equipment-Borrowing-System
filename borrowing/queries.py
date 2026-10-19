@@ -22,7 +22,7 @@ def request_queue(
     )
     if search_query:
         condition = Q(owner__username__icontains=search_query)
-        if search_query.isdigit() and len(search_query) <= 18:
+        if search_query.isdecimal() and len(search_query) <= 18:
             condition |= Q(pk=int(search_query))
         requests = requests.filter(condition)
     if status:
@@ -47,7 +47,11 @@ def request_lines(borrow_request: BorrowRequest) -> list[dict]:
         .annotate(total=Count("pk"))
     )
     allocations = (
-        UnitAllocation.objects.filter(request_item__request=borrow_request)
+        UnitAllocation.objects.filter(
+            request_item__request=borrow_request,
+            ended_at__isnull=True,
+            released_at__isnull=True,
+        )
         .select_related("unit")
         .order_by("unit__asset_code")
     )

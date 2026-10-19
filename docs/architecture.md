@@ -2,7 +2,7 @@
 
 ## Status and proposed stack
 
-This architecture guides implementation. T01-T12 are integrated. PR #31 at `2615829` integrates the T16 baseline. Its [local corrections](../handoffs/t16-maintenance-integrity-and-conflict-fixes-10-19-2026.md) remove the manual-opening return-link bypass, restore unit-before-maintenance locking and enforce 409 workflow conflicts; they are Done locally on `jerome`, awaiting main integration. Approval, issue, returns and reporting remain planned. [The backlog](tasks.md#verified-task-evidence) owns acceptance/integration evidence. Behavioral authority is [SRS.md](SRS.md); persistence is in [db_design.md](db_design.md) and actual models/migrations. [Coding standards](coding-standards.md) define MTV boundaries and review rules.
+This architecture guides implementation. T01-T12 and T16 are Done and integrated; PR #33 at `aa36c86` preserves T16 fixes `d68d7f7`. PR #34 at `23c1ad9` adds T13 administrator queue/detail and atomic approval/rejection through the shared locking helpers. The two [T13 query corrections](../handoffs/t13-query-fixes-and-publication-10-19-2026.md) are Done on `jerome`, awaiting main integration; T14 competing-approval proof, issue, returns and reporting remain pending. [The backlog](tasks.md#verified-task-evidence) owns acceptance/integration evidence. Behavioral authority is [SRS.md](SRS.md); persistence is in [db_design.md](db_design.md) and actual models/migrations. [Coding standards](coding-standards.md) define MTV boundaries and review rules.
 
 Use a single server-rendered Django application with Python 3.13, Django 5.2 LTS, PostgreSQL 17, and Psycopg 3. Pin tested patch versions during implementation. Django 5.2 supports the proposed Python series and database; consult the [release notes](https://docs.djangoproject.com/en/5.2/releases/5.2/) and [database documentation](https://docs.djangoproject.com/en/5.2/ref/databases/).
 
@@ -32,7 +32,7 @@ The canonical [coding guide](coding-standards.md#http-endpoint-design) owns endp
 | Option | Benefits | Limitations | Recommendation |
 | --- | --- | --- | --- |
 | Django monolith with SQLite | Simple local demonstration and few infrastructure dependencies | Django's `select_for_update()` does not lock SQLite rows; this design's concurrency proof cannot be assumed to work there | Allowed by the brief, but not the baseline for this locking design |
-| Django monolith with PostgreSQL | Row locking and conditional uniqueness support fit per-unit reservations; shared transactional storage | Requires a database service and documented database configuration | Proposed baseline; verify competing approvals using the actual database |
+| Django monolith with PostgreSQL | Row locking and conditional uniqueness support fit per-unit reservations; shared transactional storage | Requires a database service and documented database configuration | Implemented baseline; T14 must verify competing approvals using the actual database |
 
 A separate SPA/backend would add endpoint and client-state work without meeting an additional required capability. Keep Django templates and forms. Django documents row locking, SQLite limitations, and the need for `TransactionTestCase` in its [QuerySet reference](https://docs.djangoproject.com/en/5.2/ref/models/querysets/#select-for-update).
 
@@ -72,7 +72,7 @@ The five Python app/config directories, shared `static/`, and common template sh
 | `inventory/` | Categories, items, units, maintenance, availability queries | Kenneth |
 | `borrowing/` | Requests/items, allocations, loans/loan units, returns, workflow services | Jerome defines shared models; Ralph owns submission/tracking; Margareth owns approval/release/return |
 | `operations/` | Audit logs, settings, dashboard/report queries, exports | Jerome for audit/settings; Alex for dashboard/reports |
-| `templates/` | Shared document/role layouts, navigation/messages, T05 pages, and pending module presentation; remaining workflow templates planned | Feature owners; Ellyssa and Ralph coordinate integration |
+| `templates/` | Shared document/role layouts, navigation/messages and implemented T05–T13/T16 pages; release/return/report templates remain planned | Feature owners; Ellyssa and Ralph coordinate integration |
 | `static/` | Source fonts/images/CSS/JavaScript and ignored generated `build/` assets; discovered through STATICFILES_DIRS | Feature owners |
 
 Each Django app keeps models, forms, function-based views, URLs, service/query functions, migrations, and tests close to its feature. Split further only when actual file size or responsibility warrants it. Avoid a generic CRUD framework or unnecessary repository abstraction over Django ORM.
@@ -133,4 +133,4 @@ Optional catalog photos use local Django file storage in `MEDIA_ROOT/equipment/`
 
 Use timezone-aware timestamps and Asia/Manila calendar dates for due dates. Quantity/duration limits are persisted SystemSetting values, not duplicated environment variables. A single local database-backed demonstration is sufficient; high availability and hosting are outside this design.
 
-PostgreSQL is required to validate the selected locking strategy. SQLite-only tests cannot establish row-lock correctness. Shared locks are implemented in [operations/locking.py](../operations/locking.py), audit writes in [operations/audit.py](../operations/audit.py), settings reads/changes in [operations/queries.py](../operations/queries.py) and [operations/services.py](../operations/services.py), and pure limit/date rules in [operations/validation.py](../operations/validation.py). Foundation integration evidence is in [the backlog](tasks.md#verified-task-evidence). Competing approvals still require T13/T14; workflows, performance, and backup/restore remain unverified.
+PostgreSQL is required to validate the selected locking strategy. SQLite-only tests cannot establish row-lock correctness. Shared locks are implemented in [operations/locking.py](../operations/locking.py), audit writes in [operations/audit.py](../operations/audit.py), settings reads/changes in [operations/queries.py](../operations/queries.py) and [operations/services.py](../operations/services.py), and pure limit/date rules in [operations/validation.py](../operations/validation.py). Foundation integration evidence is in [the backlog](tasks.md#verified-task-evidence). T13 uses these helpers, but competing approvals still require T14 after T13 corrections/acceptance; later workflows, performance, and backup/restore remain unverified.

@@ -308,6 +308,25 @@ class RequestQueueAndDetailTests(RequestTestBase):
         self.assertEqual([r.pk for r in by_id.context["page"]], [pending.pk])
         self.assertEqual(len(by_name.context["page"]), 2)
 
+    def test_unicode_numeric_search_matches_username_and_decimal_request_id(self) -> None:
+        borrow_request: BorrowRequest = make_request(
+            self.records.borrower, self.item, 1, RequestStatus.PENDING
+        )
+        User.objects.filter(pk=self.records.borrower.pk).update(username="borrower²")
+        self.client.force_login(self.records.admin)
+        url: str = reverse("borrowing_manage:request-list")
+
+        by_username = self.client.get(url, {"q": "²"})
+        decimal_id: str = str(borrow_request.pk).translate(
+            str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
+        )
+        by_id = self.client.get(url, {"q": decimal_id})
+
+        self.assertEqual(by_username.status_code, 200)
+        self.assertEqual([row.pk for row in by_username.context["page"]], [borrow_request.pk])
+        self.assertEqual(by_id.status_code, 200)
+        self.assertEqual([row.pk for row in by_id.context["page"]], [borrow_request.pk])
+
     def test_reversed_date_range_shows_error(self) -> None:
         make_request(self.records.borrower, self.item)
         self.client.force_login(self.records.admin)
@@ -349,6 +368,45 @@ class RequestQueueAndDetailTests(RequestTestBase):
         self.assertEqual(before["units"], [])
         self.assertEqual(after["available"], 2)
         self.assertEqual(len(after["units"]), 1)
+
+    def test_cancelled_reservation_is_hidden_without_deleting_allocation_history(self) -> None:
+        unit: EquipmentUnit = make_units(self.item, 1)[0]
+        borrow_request: BorrowRequest = make_request(
+            self.records.borrower, self.item, 1, RequestStatus.PENDING
+        )
+        self.client.force_login(self.records.admin)
+        approval = self.client.post(
+            reverse("borrowing_manage:request-approve", args=[borrow_request.pk]),
+            {"reason": "Approve before borrower cancellation"},
+        )
+        self.assertEqual(approval.status_code, 302)
+
+        self.client.force_login(self.records.borrower)
+        cancellation = self.client.post(reverse("portal:request-cancel", args=[borrow_request.pk]))
+        self.assertEqual(cancellation.status_code, 302)
+
+        self.client.force_login(self.records.admin)
+        response = self.client.get(
+            reverse("borrowing_manage:request-detail", args=[borrow_request.pk])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["lines"][0]["units"], [])
+        self.assertEqual(response.context["lines"][0]["available"], 1)
+        self.assertNotContains(response, unit.asset_code)
+        unit.refresh_from_db()
+        borrow_request.refresh_from_db()
+        allocation: UnitAllocation = UnitAllocation.objects.get(
+            request_item__request=borrow_request, unit=unit
+        )
+        self.assertEqual(unit.status, UnitStatus.AVAILABLE)
+        self.assertEqual(borrow_request.status, RequestStatus.CANCELLED)
+        self.assertIsNotNone(allocation.cancelled_at)
+        self.assertEqual(allocation.ended_at, allocation.cancelled_at)
+        self.assertTrue(
+            AuditLog.objects.filter(
+                action=AuditAction.REQUEST_CANCELLED, target_id=borrow_request.pk
+            ).exists()
+        )
 
     def test_unknown_detail_is_404(self) -> None:
         self.client.force_login(self.records.admin)
