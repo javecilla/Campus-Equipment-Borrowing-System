@@ -4,7 +4,7 @@
 
 Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv`, `.env.local`, and local PostgreSQL database. Git shares source and migrations, not credentials or database contents.
 
-**Current phase: T01-T12 are Done and integrated into main** through PR #29 at `170cc38`. Ralph's request/loan history and cancellation are available on the synced `jerome` checkout. The integrated source passes 191 PostgreSQL tests; T12 manual results remain pending. Margareth / T13 and Kenneth / T16 have satisfied integrated prerequisites. See the [current handoff](HANDOFF.md) for verification and remaining checks.
+**Current phase: T01-T12 are Done and integrated; T16 is integrated with fixes outstanding** through PR #31 at `2615829`. The synced `jerome` checkout passes 217 PostgreSQL tests. Maintenance is available at `/manage/maintenance/`, but return-link validation, conflict responses and lock order require Kenneth's follow-up before T17 integration. T13 / Margareth remains ready; T12/T16 browser results are pending. See the [current handoff](HANDOFF.md) and [T16 review](handoffs/t16-main-integration-and-documentation-review-10-19-2026.md).
 
 For where to add views, models, forms, URLs, and page templates, use [Project Folder Architecture](docs/project-folder-architecture.md).
 
@@ -387,7 +387,7 @@ For each new feature or changed documented flow, update the relevant [manual tes
 
 ## Continuing with T08
 
-**T08 is Done and integrated** through PR #22 at `6c91d48`. Its physical-unit list, registration, detail/history and metadata editing are available under `/manage/units/`. Kenneth's next inventory task is **T16**, currently Not started; its T03/T08 prerequisites are integrated. Follow [the member-branch workflow](#assigned-branches-and-main-integration) to sync `kenneth` with main, then prepare the workstation with:
+**T08 is Done and integrated** through PR #22 at `6c91d48`. Its physical-unit list, registration, detail/history and metadata editing are available under `/manage/units/`. **T16 maintenance is integrated** through PR #31 at `2615829`; review fixes remain In progress for Kenneth. Follow [the member-branch workflow](#assigned-branches-and-main-integration) to sync the assigned branch before follow-up work. Prepare or refresh the workstation with:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
@@ -398,7 +398,7 @@ npm.cmd run build
 .\.venv\Scripts\python.exe manage.py test --noinput
 ```
 
-The T07 continuation adds `inventory.0002_category_name_case_insensitive`, `inventory.0003_catalog_item_photo`, and `operations.0003_catalog_restore_audit_actions`. T08, T09 and T10 add no migration or dependency. Do not rewrite existing migrations. Use the existing catalog forms, distinct services, read-only queries, active-admin boundary and parent-before-child lock order; see the [HTTP contract](docs/api_spec.md#custom-administration-accounts-and-inventory), [coding standards](docs/coding-standards.md) and [T08 acceptance](docs/tasks.md#inventory-and-borrower-portal). `/manage/units/` now implements those T08 operations; `/manage/maintenance/` remains a protected placeholder until T16. Registering an initially damaged unit opens maintenance atomically, while subsequent maintenance closure/status transitions remain T16 work. Integration does not start T16 or supply the full demonstration dataset.
+The T07 continuation adds `inventory.0002_category_name_case_insensitive`, `inventory.0003_catalog_item_photo`, and `operations.0003_catalog_restore_audit_actions`. T08-T12 and T16 add no migration or dependency. Do not rewrite existing migrations. Use the existing catalog forms, distinct services, read-only queries, active-admin boundary and documented lock order; see the [HTTP contract](docs/api_spec.md#custom-administration-accounts-and-inventory), [coding standards](docs/coding-standards.md) and [T16 review](handoffs/t16-main-integration-and-documentation-review-10-19-2026.md). `/manage/maintenance/` now implements list/detail/open/close. Registering an initially damaged unit opens maintenance atomically; T16 adds repair/retirement closure. Return-linked maintenance is not yet safe for T17 consumption; T15 is also pending. Integration does not supply the full demonstration dataset.
 
 ### Borrower account verification after T09 integration
 
