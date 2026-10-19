@@ -2,7 +2,7 @@
 
 ## Current authorization and context
 
-The repository owner explicitly authorizes committing and pushing the verified PR #27 conflict resolution to ralph, then merging that PR into main using a merge commit. Preserve Ralph's T11, Ellyssa's T10, the T09 username correction and current contributor credit. The combined candidate passed 181 PostgreSQL tests. Verify actual main integration before declaring T12/T13 ready; do not start dependent features or force-push. The primary jerome checkout remains for the user's later pull.
+PR #31 integrated Kenneth's T16 baseline into main at `2615829`, preserving source `5582868`. The reviewed documentation was committed/pushed as `42f8b21` with Kenneth and Codex credit, then integrated through PR #32 at `614cd1f`; that merge changes documentation only. The user subsequently authorized local T16 fixes on `jerome`: remove the unused return-link bypass from manual opening, correct closure lock order and HTTP conflicts, verify PostgreSQL behavior and refresh documentation. The user subsequently authorized committing and pushing these completed corrections on `jerome` with `Co-authored-by: Codex <codex@openai.com>`. They await main integration; see the [publication snapshot](handoffs/t16-fixes-publication-10-19-2026.md). See [HANDOFF.md](HANDOFF.md) and the [fix handoff](handoffs/t16-maintenance-integrity-and-conflict-fixes-10-19-2026.md). This publication does not authorize a new PR, main merge or T17 implementation. Browser outcomes remain pending until supplied.
 
 The user authorized implementation of Jerome Avecilla's assigned work on `jerome`, and explicitly allowed T01–T03 as one local, uncommitted batch before main integration. This exception does not unlock tasks requiring other members' features or authorize commits, pushes, PRs, or merges. The user also requested runnable setup steps in README.md and detailed migrations/team guidance in DEV.md. Follow the backlog and current handoff for verified scope; remaining feature designs are contracts, not delivered software.
 
@@ -35,6 +35,8 @@ Follow the existing architecture, SRS, database, and HTTP contracts for the affe
 Follow the coding guide's verification table and actual commands recorded in DEV.md/project configuration. Run applicable required checks after code changes and report unrun checks honestly. Django integration tests and Ruff checks are configured for the foundation.
 
 For documentation-only work, check links, internal consistency, source coverage, and skill metadata where relevant. Do not install a test suite or add code just to validate prose. Report exactly what was checked and what was not run.
+
+Every newly implemented feature must create or update its section in [docs/manual-test-guide.md](docs/manual-test-guide.md) before handoff. Follow the [coding guide's manual-testing requirements](docs/coding-standards.md#manual-testing-guide-for-feature-delivery); the Django and handoff skills route this required step. Preserve current flow/data alignment and separate expected outcomes from executed checks.
 
 Keep function-level explanations in code/docstrings once implementation exists. Separate documents cover concepts such as requirements, architecture, and workflow, with one canonical file per topic. Link instead of duplicating full rules. Maintain current-state documentation; dated work handoffs under `handoffs/` are the explicitly requested historical snapshots. Do not add a duplicate changelog of routine edits. No `AI.md` or `.cursorrules` duplicates are required.
 

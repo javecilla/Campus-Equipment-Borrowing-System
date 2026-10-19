@@ -12,6 +12,6 @@
     {% endcomment %}
     {% include "components/navigation_link.html" with route="portal:home" label="Home" testid="nav-portal-home" current=request.resolver_match.url_name section="home" only %}
     {% include "components/navigation_link.html" with route="portal:equipment-list" label="Equipment" testid="nav-portal-equipment" current=active_portal_tab|default:request.resolver_match.url_name section="equipment-list" only %}
-    {% include "components/navigation_link.html" with route="portal:request-list" label="My requests" testid="nav-portal-requests" current=request.resolver_match.url_name section="request-list" only %}
-    {% include "components/navigation_link.html" with route="portal:loan-list" label="My loans" testid="nav-portal-loans" current=request.resolver_match.url_name section="loan-list" only %}
+    {% include "components/navigation_link.html" with route="portal:request-list" label="My requests" testid="nav-portal-requests" current=active_portal_tab|default:request.resolver_match.url_name section="request-list" only %}
+    {% include "components/navigation_link.html" with route="portal:loan-list" label="My loans" testid="nav-portal-loans" current=active_portal_tab|default:request.resolver_match.url_name section="loan-list" only %}
 {% endblock %}

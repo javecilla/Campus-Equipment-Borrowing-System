@@ -79,6 +79,26 @@ class RequestForm(forms.Form):
             raise forms.ValidationError(error.messages) from error
 
 
+class RequestHistoryFilterForm(forms.Form):
+    """Validate the optional request-status filter for borrower history."""
+
+    status = forms.ChoiceField(
+        label="Status",
+        required=False,
+        choices=(("", "All statuses"), *RequestStatus.choices),
+        widget=forms.Select(
+            attrs={
+                "id": "request-history-status",
+                "class": CONTROL_CLASSES,
+            }
+        ),
+    )
+
+
+class RequestCancellationForm(forms.Form):
+    """Require a CSRF-protected POST confirmation without client-controlled fields."""
+
+
 class RequestItemForm(forms.Form):
     """Validate one active catalog item and its positive per-item quantity."""
 

@@ -1,0 +1,73 @@
+{% extends "accounts/portal/base.html" %}
+{% block title %}My loans · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section data-testid="loan-list-page"
+             aria-labelledby="loan-list-heading"
+             class="max-w-5xl">
+        <p class="text-xs font-semibold tracking-widest text-accent uppercase">Borrower workspace</p>
+        <h1 id="loan-list-heading"
+            class="mt-2 font-heading text-3xl font-semibold">My loans</h1>
+        <p class="mt-2 text-sm leading-6 text-slate-600">See due dates and the return progress for equipment issued to you.</p>
+        {% if page.object_list %}
+            <div class="mt-6 space-y-3">
+                {% for loan in page.object_list %}
+                    <article data-testid="loan-row"
+                             class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <h2 class="font-heading text-lg font-semibold text-slate-900">
+                                    <a href="{% url 'portal:loan-detail' loan_id=loan.pk %}"
+                                       class="rounded-sm hover:text-accent focus-visible:outline-2 focus-visible:outline-accent">Loan #{{ loan.pk }}</a>
+                                </h2>
+                                <p class="mt-1 text-sm text-slate-600">Request #{{ loan.request_id }} · {{ loan.request.get_status_display }}</p>
+                            </div>
+                            {% if loan.closed_at %}
+                                <span class="inline-flex w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">Closed</span>
+                            {% else %}
+                                <span class="inline-flex w-fit rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">Active</span>
+                            {% endif %}
+                        </div>
+                        <dl class="mt-4 grid gap-3 border-t border-slate-100 pt-3 text-xs sm:grid-cols-3">
+                            <div>
+                                <dt class="text-slate-500">Issued</dt>
+                                <dd class="mt-1 font-medium text-slate-800">
+                                    {{ loan.issued_on|date:"M j, Y" }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-slate-500">Due</dt>
+                                <dd class="mt-1 font-medium text-slate-800">
+                                    {{ loan.due_date|date:"M j, Y" }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-slate-500">Units</dt>
+                                <dd class="mt-1 font-medium text-slate-800">
+                                    {{ loan.units.count }}
+                                </dd>
+                            </div>
+                        </dl>
+                        <a href="{% url 'portal:loan-detail' loan_id=loan.pk %}"
+                           class="mt-4 inline-flex min-h-10 items-center text-sm font-semibold text-accent underline focus-visible:outline-2 focus-visible:outline-accent">View unit return status</a>
+                    </article>
+                {% endfor %}
+            </div>
+            {% if page.paginator.num_pages > 1 %}
+                <nav aria-label="Loan history pages"
+                     class="mt-6 flex items-center justify-between text-sm">
+                    {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}"
+   class="rounded px-2 py-2 text-accent underline focus-visible:outline-2 focus-visible:outline-accent">Previous</a>{% else %}<span class="px-2 py-2 text-slate-400">Previous</span>{% endif %}
+                    <span class="text-slate-600">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+                    {% if page.has_next %}<a href="?page={{ page.next_page_number }}"
+   class="rounded px-2 py-2 text-accent underline focus-visible:outline-2 focus-visible:outline-accent">Next</a>{% else %}<span class="px-2 py-2 text-slate-400">Next</span>{% endif %}
+                </nav>
+            {% endif %}
+        {% else %}
+            <div data-testid="loan-empty-state"
+                 class="mt-7 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+                <h2 class="font-heading text-lg font-semibold text-slate-900">No loans yet</h2>
+                <p class="mt-2 text-sm leading-6 text-slate-600">Loans will appear here after an approved request is issued.</p>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}

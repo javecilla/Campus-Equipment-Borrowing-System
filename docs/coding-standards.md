@@ -148,6 +148,19 @@ Prefer smoke, integration, and end-to-end checks over tests that mirror implemen
 
 Reviewers check responsibility placement, explicit trust boundaries, typed inputs, atomic changes/audit, constraint coverage, appropriate query loading, reusable templates, and the relevant SRS acceptance behavior. Avoid unrelated refactoring. Record actual commands/results and unresolved limits; code review and agent instructions are not automatic enforcement.
 
+## Manual testing guide for feature delivery
+
+Every newly implemented feature must have manual testing instructions before its implementation handoff is complete. Update its section in [docs/manual-test-guide.md](manual-test-guide.md), creating that shared guide if it does not exist. Update existing cases whenever a change alters their documented behavior. Keep one consolidated guide rather than a separate manual per feature; documentation-only changes and read-only questions do not require unrelated new test cases.
+
+Base the instructions on actual code, routes, forms, permissions and observable stored results. Identify the task/revision, entry URL, required role and setup. Distinguish a verified member-branch feature from an integrated main feature, and mark later workflow steps as pending until implemented.
+
+- Provide concrete **Field / Value** tables for successful examples, relevant invalid inputs and boundaries, and applicable role/ownership, state-transition or rollback checks. State the expected redirect, error and database effect, with a verification path that exists now. Include a read-only inspection step when the current UI cannot show a required result; do not direct users to a planned page.
+- Check permitted local test records and current settings using read-only queries. Select examples whose record relationships, archive/status flags and configured limits match the implemented rules; available stock alone does not determine every action's eligibility. Publish only fictional or non-sensitive values, with exact labels/IDs where useful. Do not create or change database rows merely to author the guide.
+- Date verified examples in Asia/Manila and record the relevant revision/settings. Explain how to recalculate date/quantity boundaries and recheck record eligibility when those values change. If the database or required records cannot be inspected, document the missing prerequisite and unverified inputs; never invent records or present stale examples as a current database check.
+- Separate **expected results** from actual execution evidence. Supply a place to record real outcomes, known limitations and Not run cases. Writing the guide does not prove that browser, keyboard, mobile or database checks passed, and a correctly rejected invalid submission is a passing validation case.
+
+Check the affected guide links, example inputs and command paths before handoff, then link its feature section and record any missing data or unrun checks in the dated handoff. Reconcile its integration labels after a real main merge. These are required steps for contributors and agents following the project instructions; no background generator or automatic execution hook is installed.
+
 ## Applying the AI skill
 
 [The django-mtv skill](../.agents/skills/django-mtv/SKILL.md) routes Django design, implementation, and review work through this guide. Agents follow AGENTS.md first, use the skill for relevant Django work, and finish file-changing work with the existing handoff workflow. Other AI tools that do not discover project instructions must be given the files explicitly. The skill contains no application scaffold, executable hook, or permission to begin implementation.

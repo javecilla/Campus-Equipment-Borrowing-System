@@ -485,7 +485,7 @@ class CatalogManagementTests(TestCase):
         self.assertContains(response, "CAM-UNIT-01")
         self.assertContains(response, "CAM-UNIT-05")
 
-    def test_pending_unit_and_maintenance_placeholders_preserved(self) -> None:
+    def test_unit_and_maintenance_navigation_preserved(self) -> None:
         unit_url: str = reverse("inventory_manage:unit-list")
         unit_res = self.client.get(unit_url)
         self.assertEqual(unit_res.status_code, 200)
@@ -494,7 +494,7 @@ class CatalogManagementTests(TestCase):
         maint_url: str = reverse("inventory_manage:maintenance-list")
         maint_res = self.client.get(maint_url)
         self.assertEqual(maint_res.status_code, 200)
-        self.assertContains(maint_res, "T16 · Kenneth")
+        self.assertContains(maint_res, "Maintenance")
 
     def test_category_choices_use_names_and_archived_category_metadata_remains_editable(
         self,
