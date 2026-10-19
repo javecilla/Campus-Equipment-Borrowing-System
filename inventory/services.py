@@ -44,6 +44,10 @@ class ItemRestoreConflict(Exception):
     """Raised when an administrator attempts to restore an active item."""
 
 
+class MaintenanceConflict(Exception):
+    """The unit or maintenance record no longer permits the requested action."""
+
+
 def _require_active_admin(actor_id: int) -> User:
     try:
         actor: User = User.objects.select_for_update().get(pk=actor_id)
@@ -494,12 +498,11 @@ def open_maintenance(
     actor_id: int,
     unit_id: int,
     problem: str,
-    source_return_id: int | None = None,
 ) -> MaintenanceRecord:
-    """Open a maintenance record for a physical unit under row locks and audit the change.
+    """Open manual maintenance on an Available unit and audit it atomically.
 
-    Manual maintenance opening requires an AVAILABLE unit and rejects RESERVED, ISSUED,
-    MAINTENANCE, or RETIRED units per BR-09 and A6.
+    Damaged-return maintenance belongs to the complete return transaction, not this
+    manual action; a return identifier must never bypass unit eligibility.
     """
     with transaction.atomic():
         _require_active_admin(actor_id)
@@ -509,24 +512,23 @@ def open_maintenance(
 
         unit: EquipmentUnit = lock_units((unit_id,))[0]
 
-        if source_return_id is None:
-            if unit.status == UnitStatus.RESERVED:
-                raise ValidationError("Cannot open maintenance on a reserved physical unit.")
-            if unit.status == UnitStatus.ISSUED:
-                raise ValidationError("Cannot open maintenance on an issued physical unit.")
-            if unit.status == UnitStatus.MAINTENANCE:
-                raise ValidationError(
-                    "Cannot open maintenance on a physical unit that is already in maintenance."
-                )
-            if unit.status == UnitStatus.RETIRED:
-                raise ValidationError("Cannot open maintenance on a retired physical unit.")
-            if unit.status != UnitStatus.AVAILABLE:
-                raise ValidationError(
-                    f"Cannot open maintenance on a physical unit with status {unit.get_status_display()}."
-                )
+        if unit.status == UnitStatus.RESERVED:
+            raise MaintenanceConflict("Cannot open maintenance on a reserved physical unit.")
+        if unit.status == UnitStatus.ISSUED:
+            raise MaintenanceConflict("Cannot open maintenance on an issued physical unit.")
+        if unit.status == UnitStatus.MAINTENANCE:
+            raise MaintenanceConflict(
+                "Cannot open maintenance on a physical unit that is already in maintenance."
+            )
+        if unit.status == UnitStatus.RETIRED:
+            raise MaintenanceConflict("Cannot open maintenance on a retired physical unit.")
+        if unit.status != UnitStatus.AVAILABLE:
+            raise MaintenanceConflict(
+                f"Cannot open maintenance on a physical unit with status {unit.get_status_display()}."
+            )
 
         if MaintenanceRecord.objects.filter(unit=unit, status=MaintenanceStatus.OPEN).exists():
-            raise ValidationError(
+            raise MaintenanceConflict(
                 f"Physical unit {unit.asset_code} already has an active open maintenance record."
             )
 
@@ -536,7 +538,7 @@ def open_maintenance(
 
         maintenance: MaintenanceRecord = MaintenanceRecord(
             unit=unit,
-            source_return_id=source_return_id,
+            source_return=None,
             problem=clean_problem,
             action="",
             opened_at=timezone.now(),
@@ -564,7 +566,7 @@ def close_maintenance(
     maintenance_id: int,
     action: str,
     outcome: str,
-    repaired_condition: str | None = None,
+    repaired_condition: str | None,
 ) -> MaintenanceRecord:
     """Close an open maintenance record under row locks, reconcile unit status, and audit.
 
@@ -574,20 +576,28 @@ def close_maintenance(
     with transaction.atomic():
         _require_active_admin(actor_id)
         try:
-            maintenance: MaintenanceRecord = MaintenanceRecord.objects.select_for_update().get(
-                pk=maintenance_id
-            )
+            maintenance_unit_id: int = MaintenanceRecord.objects.values_list(
+                "unit_id", flat=True
+            ).get(pk=maintenance_id)
         except MaintenanceRecord.DoesNotExist as error:
             raise ValidationError(
                 f"Maintenance record with ID {maintenance_id} does not exist."
             ) from error
 
-        unit: EquipmentUnit = lock_units((maintenance.unit_id,))[0]
+        unit: EquipmentUnit = lock_units((maintenance_unit_id,))[0]
+        try:
+            maintenance: MaintenanceRecord = MaintenanceRecord.objects.select_for_update().get(
+                pk=maintenance_id, unit_id=unit.pk
+            )
+        except MaintenanceRecord.DoesNotExist as error:
+            raise MaintenanceConflict(
+                "The maintenance record changed; refresh the page before retrying."
+            ) from error
 
         if maintenance.status != MaintenanceStatus.OPEN:
-            raise ValidationError("This maintenance record is already closed.")
+            raise MaintenanceConflict("This maintenance record is already closed.")
         if unit.status != UnitStatus.MAINTENANCE:
-            raise ValidationError(
+            raise MaintenanceConflict(
                 f"Physical unit {unit.asset_code} is not currently in maintenance."
             )
 

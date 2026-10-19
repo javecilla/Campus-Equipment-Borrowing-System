@@ -653,10 +653,10 @@ class MaintenanceCreateForm(forms.Form):
 
     def __init__(
         self,
-        data: QueryDict | None = None,
-        initial: dict[str, Any] | None = None,
+        data: QueryDict | None,
+        initial_unit_id: str | None,
     ) -> None:
-        super().__init__(data=data, initial=initial)
+        super().__init__(data=data, initial={"unit": initial_unit_id})
         self.fields["unit"].queryset = (
             EquipmentUnit.objects.filter(status=UnitStatus.AVAILABLE)
             .exclude(maintenance_records__status=MaintenanceStatus.OPEN)
@@ -730,10 +730,9 @@ class MaintenanceCloseForm(forms.Form):
             raise ValidationError("Action taken cannot be blank.")
         return action
 
-    def clean(self) -> dict[str, Any]:
-        cleaned_data: dict[str, Any] = super().clean()
-        outcome: str | None = cleaned_data.get("outcome")
-        repaired_condition: str | None = cleaned_data.get("repaired_condition")
+    def clean_repaired_condition(self) -> str:
+        outcome: str | None = self.cleaned_data.get("outcome")
+        repaired_condition: str = self.cleaned_data["repaired_condition"]
         if outcome == MaintenanceOutcome.AVAILABLE and not repaired_condition:
-            cleaned_data["repaired_condition"] = UnitCondition.GOOD
-        return cleaned_data
+            return UnitCondition.GOOD
+        return repaired_condition

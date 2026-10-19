@@ -1,6 +1,6 @@
 """Custom category and catalog item views; unit and maintenance workflows remain with their task owners."""
 
-from typing import Any, cast
+from typing import cast
 
 from django.contrib import messages
 from django.core.exceptions import ValidationError
@@ -57,6 +57,7 @@ from inventory.queries import (
 from inventory.services import (
     CategoryArchiveConflict,
     ItemArchiveConflict,
+    MaintenanceConflict,
     archive_catalog_item,
     archive_category,
     close_maintenance,
@@ -546,8 +547,9 @@ def maintenance_detail(request: HttpRequest, maintenance_id: int) -> HttpRespons
 @admin_required
 def maintenance_create(request: HttpRequest) -> HttpResponse:
     """Validate and persist manual maintenance opening under row locks and audit."""
+    response_status: int = 200
     if request.method == "POST":
-        form: MaintenanceCreateForm = MaintenanceCreateForm(data=request.POST)
+        form: MaintenanceCreateForm = MaintenanceCreateForm(data=request.POST, initial_unit_id=None)
         if form.is_valid():
             try:
                 selected_unit: EquipmentUnit = form.cleaned_data["unit"]
@@ -563,14 +565,13 @@ def maintenance_create(request: HttpRequest) -> HttpResponse:
                 return redirect(
                     "inventory_manage:maintenance-detail", maintenance_id=maintenance.pk
                 )
+            except MaintenanceConflict as error:
+                form.add_error(None, str(error))
+                response_status = 409
             except ValidationError as error:
                 form.add_error(None, error)
     else:
-        initial: dict[str, Any] = {}
-        unit_param: str | None = request.GET.get("unit")
-        if unit_param and unit_param.isdigit():
-            initial["unit"] = int(unit_param)
-        form = MaintenanceCreateForm(initial=initial)
+        form = MaintenanceCreateForm(data=None, initial_unit_id=request.GET.get("unit"))
 
     return render(
         request,
@@ -582,6 +583,7 @@ def maintenance_create(request: HttpRequest) -> HttpResponse:
             "mode": "create",
             "active_tab": "maintenance",
         },
+        status=response_status,
     )
 
 
@@ -590,12 +592,12 @@ def maintenance_create(request: HttpRequest) -> HttpResponse:
 def maintenance_close(request: HttpRequest, maintenance_id: int) -> HttpResponse:
     """Close an open maintenance record, reconcile unit status, and audit."""
     record: MaintenanceRecord = get_maintenance_or_404(maintenance_id)
+    response_status: int = 200
+    form: MaintenanceCloseForm | None = None
     if record.status != MaintenanceStatus.OPEN:
-        messages.error(request, "This maintenance record is already closed.")
-        return redirect("inventory_manage:maintenance-detail", maintenance_id=record.pk)
-
-    if request.method == "POST":
-        form: MaintenanceCloseForm = MaintenanceCloseForm(data=request.POST)
+        response_status = 409
+    elif request.method == "POST":
+        form = MaintenanceCloseForm(data=request.POST)
         if form.is_valid():
             try:
                 closed: MaintenanceRecord = close_maintenance(
@@ -611,6 +613,9 @@ def maintenance_close(request: HttpRequest, maintenance_id: int) -> HttpResponse
                     f'Maintenance for "{closed.unit.asset_code}" closed with outcome: {outcome_label}.',
                 )
                 return redirect("inventory_manage:maintenance-detail", maintenance_id=closed.pk)
+            except MaintenanceConflict as error:
+                form.add_error(None, str(error))
+                response_status = 409
             except ValidationError as error:
                 form.add_error(None, error)
     else:
@@ -630,9 +635,11 @@ def maintenance_close(request: HttpRequest, maintenance_id: int) -> HttpResponse
         "inventory/manage/maintenance_close.html",
         {
             "form": form,
+            "error": "This maintenance record is already closed." if form is None else None,
             "maintenance": record,
             "unit": record.unit,
             "title": f"Close maintenance for {record.unit.asset_code}",
             "active_tab": "maintenance",
         },
+        status=response_status,
     )
