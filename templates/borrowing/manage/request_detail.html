@@ -10,13 +10,38 @@
             <p class="mt-3 text-sm text-slate-600">Status: <strong data-testid="request-status">{{ borrow_request.get_status_display }}</strong></p>
         </header>
         <dl class="grid gap-4 border-t border-slate-200 pt-6 text-sm sm:grid-cols-2">
-            <div><dt class="text-slate-500">Borrower</dt><dd class="font-semibold">{{ borrow_request.owner.username }}</dd></div>
-            <div><dt class="text-slate-500">Submitted</dt><dd class="font-semibold">{{ borrow_request.submitted_at|date:"M j, Y, g:i a" }}</dd></div>
-            <div><dt class="text-slate-500">Requested due date</dt><dd class="font-semibold">{{ borrow_request.desired_due_date|date:"M j, Y" }}</dd></div>
-            <div><dt class="text-slate-500">Agreed due date</dt><dd class="font-semibold">{{ borrow_request.agreed_due_date|date:"M j, Y" }}</dd></div>
-            <div class="sm:col-span-2"><dt class="text-slate-500">Purpose</dt><dd class="font-semibold [overflow-wrap:anywhere]">{{ borrow_request.purpose }}</dd></div>
+            <div>
+                <dt class="text-slate-500">Borrower</dt>
+                <dd class="font-semibold">
+                    {{ borrow_request.owner.username }}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-slate-500">Submitted</dt>
+                <dd class="font-semibold">
+                    {{ borrow_request.submitted_at|date:"M j, Y, g:i a" }}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-slate-500">Requested due date</dt>
+                <dd class="font-semibold">
+                    {{ borrow_request.desired_due_date|date:"M j, Y" }}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-slate-500">Agreed due date</dt>
+                <dd class="font-semibold">
+                    {{ borrow_request.agreed_due_date|date:"M j, Y" }}
+                </dd>
+            </div>
+            <div class="sm:col-span-2">
+                <dt class="text-slate-500">Purpose</dt>
+                <dd class="font-semibold [overflow-wrap:anywhere]">
+                    {{ borrow_request.purpose }}
+                </dd>
+            </div>
         </dl>
-                {% if borrow_request.status == "PENDING" %}
+        {% if borrow_request.status == "PENDING" %}
             <div class="flex gap-4" data-testid="request-actions">
                 <a href="{% url 'borrowing_manage:request-approve' borrow_request.pk %}"
                    class="h-11 rounded-md bg-accent px-4 text-sm font-semibold leading-[2.75rem] text-white hover:bg-emerald-800">Approve</a>
@@ -26,8 +51,12 @@
         {% endif %}
         <section class="border-t border-slate-200 pt-6">
             <h2 class="font-heading text-xl font-semibold">Requested items</h2>
-            <div class="mt-4 overflow-x-auto" role="region" aria-label="Requested items" tabindex="0">
-                <table data-testid="request-items" class="min-w-full divide-y divide-slate-200 text-sm">
+            <div class="mt-4 overflow-x-auto"
+                 role="region"
+                 aria-label="Requested items"
+                 tabindex="0">
+                <table data-testid="request-items"
+                       class="min-w-full divide-y divide-slate-200 text-sm">
                     <caption class="sr-only">Items requested, with current availability</caption>
                     <thead class="bg-slate-50 text-left text-slate-600">
                         <tr>

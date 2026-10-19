@@ -10,7 +10,9 @@
             <p class="mt-3 text-sm text-slate-600">Borrower: {{ borrow_request.owner.username }} · Status: {{ borrow_request.get_status_display }}</p>
         </header>
         {% if conflict %}
-            <div role="alert" data-testid="request-conflict" class="border-l-4 border-rose-600 bg-rose-50 p-4 text-sm text-rose-800">
+            <div role="alert"
+                 data-testid="request-conflict"
+                 class="border-l-4 border-rose-600 bg-rose-50 p-4 text-sm text-rose-800">
                 <strong>Conflict:</strong> {{ conflict }}
             </div>
         {% endif %}
@@ -18,7 +20,8 @@
             <form method="post" class="space-y-4" data-testid="request-decision-form">
                 {% csrf_token %}
                 {% if form.non_field_errors %}
-                    <div role="alert" class="text-sm text-rose-700">{{ form.non_field_errors }}</div>
+                    <div role="alert"
+                         class="text-sm text-rose-700">{{ form.non_field_errors }}</div>
                 {% endif %}
                 {% for field in form %}
                     {% include "operations/manage/form_field.html" with field=field only %}
