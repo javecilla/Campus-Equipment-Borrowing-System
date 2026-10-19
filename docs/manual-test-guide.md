@@ -2,7 +2,7 @@
 
 ## Purpose and scope
 
-This guide covers T01-T12 and the T16 baseline integrated through PR #31 at `2615829`, plus the [verified local T16 corrections](../handoffs/t16-maintenance-integrity-and-conflict-fixes-10-19-2026.md) on `jerome`. Those corrections are Done locally, awaiting main integration. Expected outcomes below describe the corrected checkout; approval, release and returns remain pending. T12/T16 browser outcomes remain Not run until supplied.
+This guide covers the T01-T13/T16 baseline in main `23c1ad9` plus the [verified T13 query fixes](../handoffs/t13-query-fixes-and-publication-10-19-2026.md) on `jerome`. Both functional defects are fixed on that branch and await main integration. Expected results below describe the corrected checkout. T14 concurrency proof, release and returns remain pending; T12/T13/T16 browser results remain Not run until supplied.
 
 For the current borrower checks, go directly to [Module 9: request submission](#module-9--borrower-request-submission-t11) or [Module 10: request and loan tracking](#module-10--borrower-request-and-loan-tracking-t12). For equipment maintenance and reconciliation, see [Module 11: equipment maintenance](#module-11--equipment-maintenance-and-inventory-reconciliation-t16). Use the [result record](#recording-manual-results) to report what actually happened.
 
@@ -12,7 +12,7 @@ For automated tests, see [Running the automated suite](#running-the-automated-te
 
 ### Server must be running
 
-Follow [DEV startup](../DEV.md#everyday-startup) and rebuild assets after pulling template changes with `npm.cmd run build`. T11/T12/T16 add no migration or dependency. Keep the existing local database and test records.
+Follow [DEV startup](../DEV.md#everyday-startup) and rebuild assets after pulling template changes with `npm.cmd run build`. T11/T12/T13/T16 add no migration or dependency. Keep the existing local database and test records.
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py runserver
@@ -477,7 +477,7 @@ Once a unit has borrowing **or maintenance** history, only **internal notes** ca
 - If protected values are forged, they must remain unchanged; disabled fields can be ignored rather than producing a separate error
 - Editing internal notes only → succeeds
 
-*The maintenance-history case is testable now. The allocation-history case still requires T13 or existing coherent historical test data.*
+*The maintenance-history case is testable now. Allocation history can now be prepared through T13 approval; use fictional records and record actual outcomes.*
 
 ### 7.11 List filters
 
@@ -923,7 +923,7 @@ Compare Available, Reserved and Issued counts before and after a successful Pend
 
 Tab through purpose, date, each equipment/quantity field and Submit. Check associated labels, visible focus, reachable errors and a usable layout at desktop and narrow mobile widths. Record actual observations; these were not verified by the automated HTTP checks.
 
-T12 supplies the request/loan history pages and highlights the corresponding navigation tab on list, detail and confirmation pages, including request creation. Admin approval remains a separate T13 task. A lack of reserved units after submission is expected and does not indicate a failed T11 submission.
+T12 supplies the request/loan history pages and highlights the corresponding navigation tab on list, detail and confirmation pages, including request creation. Admin approval is now available through merged T13, with its verified local corrections recorded in Module 12. A lack of reserved units after submission is expected and does not indicate a failed T11 submission.
 
 ---
 
@@ -932,7 +932,7 @@ T12 supplies the request/loan history pages and highlights the corresponding nav
 **Entry:** `/portal/requests/` and `/portal/loans/`\
 **Login required:** active BASIC_USER\
 **Implemented revision:** PR #29, main `170cc38`, preserving Ralph source `eb04470`\
-**Prerequisite:** T11 is integrated through PR #27; T13 approval, T15 issue and T17 returns are separate pending workflows.
+**Prerequisite:** T11 is integrated through PR #27; T13 approval is now merged through PR #34 with verified query corrections on jerome awaiting integration. T15 issue and T17 returns remain pending.
 
 These are expected outcomes, not tests claimed as run. Use a borrower request created through T11. For foreign-record checks, use a second fictional BASIC_USER account and its own request/loan ID. Do not expose or copy another borrower's fields in screenshots.
 
@@ -996,9 +996,9 @@ Before: Pending, null cancellation fields, zero matching audits. After: Cancelle
 
 ### 10.3 Cancel an Approved request and release its reservations
 
-**Case T12-03 — pending prerequisite.** This scenario requires a request approved by the separate T13 workflow; no browser-based T13 approval action or local Approved request exists yet. Do not manually edit database statuses to substitute for the missing workflow.
+**Case T12-03 — now available to prepare.** Use [T13 approval in Module 12](#module-12--administrator-request-review-and-decisions-t13) on a fresh fictional request. The October 19, 22:31 local snapshot has no Approved requests yet; prepare this prerequisite through the browser workflow, without editing database statuses. Corrected jerome detail excludes ended allocations from Reserved units while retaining their history. Main `23c1ad9` still has the original display defect until integration.
 
-1. After T13 is integrated, record the Approved request ID and the Reserved status of every unit assigned to it.
+1. After approving through T13, record the Approved request ID and the Reserved status of every unit assigned to it.
 2. As that same borrower, open the request details and confirm cancellation.
 
 ✅ The request becomes Cancelled, every associated allocation ends with its cancellation timestamp, and all of its reserved units become Available together. The cancellation and audit row commit together. If any reservation is missing, changed, or incomplete, the action returns 409 and none of the request, allocations, units or audit entries change.
@@ -1028,7 +1028,7 @@ The automated T12 client tests cover role/method/CSRF, owner isolation, invalid 
 
 ## Module 11 — Equipment Maintenance and Inventory Reconciliation (T16)
 
-> **Baseline integrated through [PR #31](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/31) at `2615829`, source `5582868` (Kenneth Cortez). [T16 corrections](../handoffs/t16-maintenance-integrity-and-conflict-fixes-10-19-2026.md) are Done locally on `jerome`, awaiting main integration. Browser checks remain Not run.**
+> **Baseline integrated through [PR #31](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/31) at `2615829`, source `5582868` (Kenneth Cortez). [T16 corrections](../handoffs/t16-maintenance-integrity-and-conflict-fixes-10-19-2026.md) `d68d7f7` are integrated through PR #33 at `aa36c86`. Browser checks remain Not run.**
 > **Prerequisites integrated into main:** T08 physical units ([PR #22](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/22) at `6c91d48`) and T03 shared locking/audit ([PR #3](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/3) at `d122518`).
 > **Required role:** `ADMIN`.
 > **Entry URL:** `/manage/maintenance/` (`inventory_manage:maintenance-list`).
@@ -1154,7 +1154,7 @@ print(
   - ✅ Status badge: `Closed`; Outcome badge: `Retired` in slate.
   - ✅ Physical unit status is permanently set to `Retired`.
   - ✅ Summary count cards reconcile: `Retired: 1`, `Maintenance: 4`, `Available: 11`, `Serviceable: 11`, `Total: 16`.
-  - Retired unit cannot be selected for new maintenance. Borrowers choose catalog items, not physical units; availability falls by one. Approval/allocation proof remains pending T13.
+  - Retired unit cannot be selected for new maintenance. Borrowers choose catalog items, not physical units; availability falls by one. T13 now allocates eligible units; browser cases remain unrun and T14 competing-approval proof is still pending.
 
 ---
 
@@ -1164,7 +1164,7 @@ print(
 - **Scenario A: Repeat closure attempt**
   - Attempt to access `/manage/maintenance/<id>/close/` for an already-closed maintenance record.
   - **Expected results:**
-    - **Corrected local behavior:** GET and POST return 409 with `This maintenance record is already closed.` and no writes. The closed-record page has no submit form. Main's application baseline from PR #31 still has the old 302 behavior until these corrections are integrated.
+    - **Corrected local behavior:** GET and POST return 409 with `This maintenance record is already closed.` and no writes. The closed-record page has no submit form. PR #33 integrated this 409 behavior; do not confuse the original PR #31 baseline with current main.
     - ✅ No state modification occurs.
 - **Scenario B: Blank action taken on close**
   - Use existing open record 1 (`CEL-AVE-HDMI-001`) at `/manage/maintenance/1/close/`; select `Available` and `Good condition`, but leave `action` blank (`   `). This validation case must not close that record.
@@ -1201,11 +1201,151 @@ print(
   4. **CSRF protection:** Submitting POST to `/manage/maintenance/new/` or `/manage/maintenance/<id>/close/` without a valid CSRF token returns **403 Forbidden**.
   5. **Keyboard & Responsive navigation:** Use `Tab` / `Shift+Tab` to verify visible focus order across all filter inputs, action buttons, form controls, and table links. Verify clean grid stacking and no horizontal overflow on mobile viewports (375px).
 
-All 33 maintenance tests pass within the 224-test PostgreSQL suite. They include manual lifecycle/access/filter/count checks, seven new real integrity tests for the removed return-link argument, opening/repair audit rollback, changed-state 409, CSRF/protected fields, competing administrators and unit-before-maintenance closure locking. Browser, keyboard, mobile and pagination-boundary results remain **Not run**; these tests do not implement T17.
+All 33 maintenance tests pass within the current 252-test PostgreSQL suite (the earlier T16 review passed 224 total tests). They include manual lifecycle/access/filter/count checks, seven new real integrity tests for the removed return-link argument, opening/repair audit rollback, changed-state 409, CSRF/protected fields, competing administrators and unit-before-maintenance closure locking. Browser, keyboard, mobile and pagination-boundary results remain **Not run**; these tests do not implement T17.
 
 ---
 
 The manual `open_maintenance` action accepts no `source_return_id` and always applies Available-unit eligibility. Browser-supplied return/actor/status fields cannot control it. Future T17 must create matching damaged-return maintenance inside its complete return/allocation/audit transaction; the manual opener is not a damaged-return interface.
+
+## Module 12 — Administrator Request Review and Decisions (T13)
+
+**Owner:** Margareth Raine H. Ignacio (`marga`); Jerome with Codex for the authorized query fixes. **Revision:** PR #34 main baseline `23c1ad9`, preserving `c5cfe37`, plus [fixes on jerome](../handoffs/t13-query-fixes-and-publication-10-19-2026.md) awaiting main integration. **Status:** Done on corrected jerome; browser verification pending. **Role:** active ADMIN. **Entry:** `/manage/requests/`. T03/T11 are integrated; release/slips/returns remain pending. All browser cases below are **Not run**. Two automated HTTP/database regressions failed before the fixes and now pass.
+
+### Preparation and verified local records
+
+Read-only check: **October 19, 2026, 22:31 Asia/Manila**, main `23c1ad9`; `SET TRANSACTION READ ONLY` and `SHOW transaction_read_only` confirmed `on`. Settings: **7 days / 3 units per item**. Local records: **3 Pending requests**, no requests in other states, **0 loans**. No live rows were created or changed to write these cases. Prepare your own fictional requests rather than repurpose another borrower's records.
+
+| Catalog item | ID | Available at inspection | Use |
+| --- | --- | --- | --- |
+| HDMI Projector | 1 | 1 | Quantity 1 approval; quantity 2 shortage |
+| HDMI Switch 4-Port | 3 | 0 | Rejection or shortage without stock changes |
+
+Recheck settings, active borrower, item/category archive flags and availability before each action. Sign in as a fictional BASIC_USER, submit at `/portal/requests/new/`, record the resulting request ID, then switch to an active ADMIN. Queue search accepts **ID or borrower username**, not the purpose marker.
+
+| Field | Successful example value |
+| --- | --- |
+| Purpose | `T13-02 Approval 2026-10-19 run-01` |
+| Desired return date | `2026-10-22` |
+| Equipment item | HDMI Projector (ID 1) |
+| Quantity | `1` |
+| Other item rows | Blank |
+
+Use a new purpose/run suffix for every new request. On October 19, valid desired dates are October 20–26 inclusive; recompute as tomorrow through today + 7 days when testing later. Per-item quantities must be 1–3. Submission does not check stock; approval does. Record baseline status, available units and active allocations before each decision.
+
+### T13-01: Queue, filters and read-only detail
+
+| Field / action | Value | Expected result |
+| --- | --- | --- |
+| Request ID or borrower username | Your new request ID | Matching request only |
+| Request ID or borrower username | Your fictional borrower's username | That borrower's matching requests |
+| Status | Pending | Pending requests only |
+| Submitted from / through | `2026-10-19` / `2026-10-19` | Inclusive same-day results; adjust for actual submission date |
+| Submitted from / through | `2026-10-20` / `2026-10-19` | Date-range error and no unfiltered results |
+| Direct query | `?status=INVALID` or `?date_from=invalid` | Bound errors and no results |
+| Direct query | `?page=abc` or `?page=999999` | 404 on this snapshot |
+| Clear filters | Clear filters link | All requests, newest submission/ID first |
+
+Open detail and verify borrower, purpose, requested/agreed dates, quantities and current availability. Detail and decision confirmation GETs must not change status, allocations or audits. Pagination holds 25 rows and retains filters. With only 3 local requests, **multi-page traversal is Not run / insufficient records**; invalid-page checks do not prove that traversal.
+
+### T13-02: Approve and reserve exact quantities
+
+Use the fresh quantity-1 projector request while one projector remains Available.
+
+| Field / action | Value |
+| --- | --- |
+| Detail action | Approve |
+| Reason | `Approved for classroom demonstration - T13-02` |
+| Submit action | Approve and reserve units |
+
+Expected: GET changes nothing; valid POST returns 302 to request detail. Status becomes Approved with reason, deciding ADMIN and timestamp. Exactly one allocation is active for the requested unit, which becomes Reserved. Projector availability falls by one; other requests/units do not change. One `REQUEST_APPROVED` audit commits for this request, and no loan exists. Use the read-only verification below when the UI cannot show persisted state.
+
+### T13-03: Reason validation and stale decisions
+
+Test validation on a fresh Pending request before completing a valid decision.
+
+| Reason / action | Expected result |
+| --- | --- |
+| Empty or whitespace-only reason, either action | Required-field error; no decision, allocation, unit or audit change |
+| 501-character reason | Browser maximum-length enforcement or bound error (200 if submitted directly); no workflow change |
+| Valid reason up to 500 characters | Eligible action can proceed |
+
+For stale POST behavior, open two confirmation tabs while Pending, complete one valid decision, then submit the second with a valid reason. Expected: 409, no second decision/audit or extra reservation. A fresh GET for a non-Pending confirmation shows that it can no longer be decided and omits the form (currently 200). Cancelled/rejected requests cannot be approved.
+
+### T13-04: Reject without changing inventory
+
+Create a new request with purpose `T13-04 Rejection 2026-10-19 run-01`, date `2026-10-22`, HDMI Switch 4-Port, quantity `1`. Zero available stock does not block submission or rejection.
+
+| Field / action | Value |
+| --- | --- |
+| Detail action | Reject |
+| Reason | `Equipment not suitable for this activity - T13-04` |
+| Submit action | Reject request |
+
+Expected: 302 to detail, Rejected status with actor/time/reason, one `REQUEST_REJECTED` audit, no allocations and unchanged inventory. A stale repeat decision must not add another audit or change the recorded reason.
+
+### T13-05: Shortage is all-or-nothing
+
+First restore projector availability by cancelling the approved T13-02 request as its borrower (T13-06). Create purpose `T13-05 Shortage 2026-10-19 run-01`, date `2026-10-22`, projector quantity `2` (valid maximum 3, available 1). Approve with reason `Check atomic shortage - T13-05`.
+
+Expected: HTTP 409 with requested/available quantities and **Nothing was reserved**. The request stays Pending, no allocation/approval audit exists, and stock stays Available. For a multi-item check, use projector quantity 1 plus HDMI Switch 4-Port quantity 1; switch shortage must leave the projector unreserved too. Recheck dated stock first.
+
+### T13-06: Approved cancellation preserves history and clears Reserved units
+
+Run [T12-03](#module-10--borrower-request-and-loan-tracking-t12) on the approved T13-02 request as its owning BASIC_USER. Expected: Cancelled, allocation `cancelled_at`/`ended_at` set, physical unit Available again, and a `REQUEST_CANCELLED` audit. Reopen administrator detail.
+
+Expected on corrected jerome: Reserved units shows None for the cancelled request, availability is restored and the ended allocation remains stored. The new integration regression verifies all three plus the cancellation audit. Main `23c1ad9` still shows the ended allocation as Reserved until the fix is integrated. Browser result remains Not run; do not edit historical rows to hide the original defect.
+
+### T13-07: Unicode numeric search succeeds without an exception
+
+| Field | Value |
+| --- | --- |
+| Request ID or borrower username | `²` (superscript two) |
+
+Expected on corrected jerome: HTTP 200 with normal username matches or empty results. The query uses `isdecimal()` before converting an ID; `²` remains username search text. The new integration regression confirms a username containing `²` is found and Arabic-Indic decimal digits still match a request ID. Main `23c1ad9` raises `ValueError` for `²` until integration. Browser result remains Not run.
+
+### T13-08: Access, eligibility and audit integrity
+
+- Signed out: list/detail/confirmation redirect to login. Active BASIC_USER: direct administrator GET/POST returns 403. Inactive ADMIN sessions cannot mutate. Missing request IDs return 404; unsupported PUT/DELETE return 405.
+- Both decision POSTs require CSRF (403 without a valid token). Extra actor/owner/status/allocation fields must not control writes; use the real form for normal testing and retain any private tokens locally during direct HTTP tests.
+- Approval for an inactive borrower or archived item/category returns 409 without reservations. These browser cases need deliberately prepared fictional records through existing account/catalog interfaces; no such live changes were made for this guide.
+- Temporary PostgreSQL probes forced rejection of approval/rejection audit inserts and verified rollback of their business writes. These ran only in the test database; no live audit constraints were installed.
+- Desktop/mobile, keyboard focus, pagination boundaries and stale browser submissions still need actual results. **T14's separate-connection competing last-unit approvals are not implemented or verified by these cases or the T13 TestCase suite.**
+
+### Read-only verification of your fictional request
+
+In `manage.py shell`, replace `request_id` with your recorded ID before running; no preassigned T13 fixture ID exists:
+
+```python
+from django.db import connection, transaction
+from borrowing.models import BorrowRequest, Loan, UnitAllocation
+from operations.models import AuditLog, AuditTarget
+
+request_id = 123  # Replace with your fictional request ID.
+with transaction.atomic():
+    with connection.cursor() as cursor:
+        cursor.execute("SET TRANSACTION READ ONLY")
+    request = BorrowRequest.objects.get(pk=request_id)
+    print(request.status, request.decision_reason, request.decided_by_id, request.decided_at)
+    print(
+        list(
+            UnitAllocation.objects.filter(request_item__request_id=request_id).values_list(
+                "unit__asset_code", "unit__status", "cancelled_at", "ended_at"
+            )
+        )
+    )
+    print(
+        list(
+            AuditLog.objects.filter(
+                target_model=AuditTarget.BORROW_REQUEST, target_id=request_id
+            ).values_list("action", "actor_id")
+        )
+    )
+    print("Loans:", Loan.objects.filter(request_id=request_id).count())
+```
+
+Record actual browser outcomes and fictional IDs in the shared [result record](#recording-manual-results). Expected outcomes, known failures and Not run cases remain separate. No browser pass is claimed by this review.
+
+---
 
 ## Recording manual results
 
@@ -1214,8 +1354,9 @@ Use one row per actual test run. Expected outcomes in this guide do not count as
 | Case | Revision / browser / date | Actual result | Pass / Fail / Not run | Evidence / issue |
 | --- | --- | --- | --- | --- |
 | Example: T11-15 | `6c5ea8f`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Screenshot or request marker/ID, without private data |
+| Example: T13-02 | corrected jerome, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request ID; corrections awaiting main integration |
 | Example: T12-01 | `170cc38`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request/loan ID; no private data |
-| Example: T16-01 | local `jerome` T16 fixes, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional asset code/maintenance ID; no private data |
+| Example: T16-01 | `23c1ad9` including integrated T16 fixes, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional asset code/maintenance ID; no private data |
 
 Report the purpose marker/request ID and the smallest reproduction steps for a failure. Retain test records rather than deleting history to make counts match. Save real findings in the current handoff or the team's review record when supplied.
 
@@ -1223,11 +1364,10 @@ Report the purpose marker/request ID and the smallest reproduction steps for a f
 
 ## What is not testable yet
 
-The following features are **Not started** and have no implementation to test in the browser:
+T13 is available on corrected jerome with both functional findings resolved (Module 12); main integration is pending. The following tasks are **Not started**; T14 requires separate-connection integration testing and the other feature workflows have no browser implementation:
 
 | Task | Feature | Owner |
 | --- | --- | --- |
-| T13 | Admin request review queue, approval, and rejection | Margareth |
 | T14 | Competing-approval concurrency test | Jerome + Margareth |
 | T15 | Equipment release and printable borrowing slip | Margareth |
 | T17 | Per-unit returns, partial returns, damaged-return maintenance | Margareth + Kenneth |
@@ -1239,7 +1379,7 @@ The following features are **Not started** and have no implementation to test in
 
 ## Running the automated test suite
 
-The local corrected `jerome` checkout passed **224 PostgreSQL tests in 37.343s**, including 33 maintenance tests. The corrections are awaiting main integration. To run the current suite yourself:
+The corrected jerome checkout passed **252 PostgreSQL tests in 42.541s**, including 28 T13 and 33 maintenance tests. The focused T13 suite passed 28 tests in 0.809s. Both added regressions failed against main baseline `23c1ad9` and pass with the query fixes. Earlier 250-test/five-probe review results remain historical in the dated review; those temporary probes were not committed. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput
@@ -1248,6 +1388,9 @@ The local corrected `jerome` checkout passed **224 PostgreSQL tests in 37.343s**
 Run a specific module's tests:
 
 ```powershell
+# Administrator queue, review, approval and rejection (T13)
+.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_requests --noinput
+
 # Equipment maintenance and reconciliation (T16)
 .\.venv\Scripts\python.exe manage.py test inventory.tests.test_maintenance --noinput
 
@@ -1276,8 +1419,8 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests --noinput
 ```
 
-All tests must pass before handover; 224 is the verified count on the corrected local checkout. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
+All tests must pass before handover; 252 is the verified count on corrected jerome. Corrections must be integrated before dependent tasks consume accepted T13 from main. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
 
 ---
 
-*Manual testing guide - scope: T01-T12/T16 integrated baseline plus verified local T16 corrections awaiting main integration. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
+*Manual testing guide - scope: T01-T13/T16 baseline integrated, plus verified T13 query fixes on jerome awaiting main integration. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*

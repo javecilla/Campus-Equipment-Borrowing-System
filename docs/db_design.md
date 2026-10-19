@@ -2,7 +2,7 @@
 
 ## Status and conventions
 
-The shared schema is implemented in [accounts/models.py](../accounts/models.py), [inventory/models.py](../inventory/models.py), [borrowing/models.py](../borrowing/models.py), and [operations/models.py](../operations/models.py), with Django migrations as executable schema authority. Full workflow services remain future owners' work. Workflow rules are maintained in [SRS.md](SRS.md); transaction boundaries in [architecture.md](architecture.md). Acceptance and main integration evidence remain separate in [tasks.md](tasks.md#verified-task-evidence).
+The shared schema is implemented in [accounts/models.py](../accounts/models.py), [inventory/models.py](../inventory/models.py), [borrowing/models.py](../borrowing/models.py), and [operations/models.py](../operations/models.py), with Django migrations as executable schema authority. Implemented workflow coverage and remaining owners' work are recorded in the backlog. Workflow rules are maintained in [SRS.md](SRS.md); transaction boundaries in [architecture.md](architecture.md). Acceptance and main integration evidence remain separate in [tasks.md](tasks.md#verified-task-evidence).
 
 Use PostgreSQL, `BigAutoField`/bigint primary keys, timezone-aware `DateTimeField`/timestamptz, and `DateField`/date for calendar dates. All fields are required and NOT NULL unless marked nullable. Text may be blank only when explicitly allowed. Every foreign key is indexed. Transactional references use `PROTECT` deletion behavior; the application has no hard-delete workflow for users, catalog, units, or historical transactions. Profile's one-to-one user relation may use CASCADE but accounts are deactivated, not deleted.
 

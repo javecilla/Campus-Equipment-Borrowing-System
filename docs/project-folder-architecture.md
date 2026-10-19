@@ -23,7 +23,7 @@ Campus-Equipment-Borrowing-System/
 │   ├── models.py                                [existing] User and Profile
 │   ├── migrations/                              [existing]
 │   ├── views.py                                 [existing] login/logout/home, registration and T05 account handlers
-│   ├── portal_views.py                          [existing] borrower profile editing and pending portal modules
+│   ├── portal_views.py                          [existing] borrower profile editing; inventory/borrowing own the other portal handlers
 │   ├── forms.py                                 [existing] login, registration/profile, account search and status confirmation
 │   ├── urls.py, portal_urls.py                  [existing] account/portal auth routes
 │   ├── access.py, middleware.py                 [existing] active/role/owner checks
@@ -50,12 +50,12 @@ Campus-Equipment-Borrowing-System/
 ├── borrowing/                                   [existing]
 │   ├── models.py                                [existing] requests, allocations, loans, returns
 │   ├── migrations/                              [existing]
-│   ├── views.py                                 [existing] borrower submission/history/cancellation; admin workflows remain planned
-│   ├── forms.py                                 [existing] request submission/filter/confirmation; return forms planned
-│   ├── manage_urls.py                           [existing] protected administrator request/loan placeholders
-│   ├── services.py                              [existing] atomic submission/cancellation; approval/issue/return planned
-│   ├── queries.py                               [existing] owner-scoped request/loan history reads
-│   ├── tests/                                   [existing] request submission/tracking; remaining workflows planned
+│   ├── views.py                                 [existing] borrower submission/history/cancellation; admin request review/decisions
+│   ├── forms.py                                 [existing] submission/history/queue filters and decision/cancellation forms; returns planned
+│   ├── manage_urls.py                           [existing] administrator request queue/detail/decisions; loan placeholder
+│   ├── services.py                              [existing] atomic submission/cancellation/approval/rejection; issue/return planned
+│   ├── queries.py                               [existing] owner-scoped history and administrator request queue/detail reads
+│   ├── tests/                                   [existing] request submission/tracking/decisions; concurrency proof planned
 │   └── management/commands/                     [planned] controlled demonstration seed
 │
 ├── operations/                                  [existing]
@@ -88,8 +88,8 @@ Campus-Equipment-Borrowing-System/
 │   ├── inventory/                               [existing] catalog/unit/portal and maintenance pages
 │   │   ├── manage/                              [existing] catalog/photo/restore/unit and maintenance pages
 │   │   └── portal/                              [existing] equipment browsing list/detail pages
-│   ├── borrowing/                               [existing/planned] submission/history/cancellation present; admin workflows planned
-│   │   ├── manage/                              [planned] review, release, returns, slips
+│   ├── borrowing/                               [existing] submission and administrator request review/decision pages
+│   │   ├── manage/                              [existing/planned] request_list/detail/decision.html present; release/returns/slips planned
 │   │   └── portal/                              [existing] borrower request/loan history and cancellation
 │   └── operations/manage/                       [existing/planned] settings/audit pages; live dashboard/reports planned
 │
@@ -117,7 +117,7 @@ A **view** is a Python request handler in the relevant app's `views.py`. The pag
 
 The role prefix selects the audience; the feature app selects the Python module. Real basic-user equipment handlers belong in `inventory/`, and borrowing handlers in `borrowing/`. T10 equipment handlers are in `inventory/portal_views.py`, mounted through `accounts/portal_urls.py`. T11 request creation and T12 borrower request/loan history, detail and cancellation handlers live in `borrowing/views.py`; owner-scoped read helpers live in `borrowing/queries.py` and the atomic cancellation workflow in `borrowing/services.py`. The portal URLs are mounted through `accounts/portal_urls.py`. Feature pages extend the existing `operations/manage/base.html` or `accounts/portal/base.html` and fill `workspace_content`; both inherit `components/workspace.html` and the `base.html` document/asset shell. The [coding guide](coding-standards.md#tailwind-styling-pattern) defines the shared layout pattern.
 
-T16's maintenance baseline is integrated; its verified corrections are Done locally on `jerome` and await main integration; see [current evidence](tasks.md#verified-task-evidence). These page placements include existing account/settings/audit/inventory pages and planned borrowing examples; route names come from the HTTP contract:
+T13 request review/decisions and corrected T16 are integrated. T13's subsequent Unicode-search and reservation-display fixes are Done on `jerome`, awaiting main integration; smaller coding-convention follow-ups remain. See [current evidence](tasks.md#verified-task-evidence). These page placements include existing pages and explicitly planned borrowing examples; route names come from the HTTP contract:
 
 | Page | Python view location | Template location | Contracted URL name |
 | --- | --- | --- | --- |
@@ -130,7 +130,8 @@ T16's maintenance baseline is integrated; its verified corrections are Done loca
 | Submit a request | `borrowing/views.py` | `templates/borrowing/portal/request_form.html` | `portal:request-create` |
 | View/cancel own requests | `borrowing/views.py` | `templates/accounts/portal/request_list.html` | `portal:request-list` |
 | Track own request/loan | `borrowing/views.py` | `templates/accounts/portal/request_detail.html` and `loan_detail.html` | `portal:request-detail`, `portal:loan-detail` |
-| Approve a request | `borrowing/views.py` | `templates/borrowing/manage/request_approve.html` | `borrowing_manage:request-approve` |
+| Review requests | `borrowing/views.py` | `templates/borrowing/manage/request_list.html` and `request_detail.html` | `borrowing_manage:request-list`, `request-detail` |
+| Approve/reject a request | `borrowing/views.py` | `templates/borrowing/manage/request_decision.html` | `borrowing_manage:request-approve`, `request-reject` |
 | Record returns | `borrowing/views.py` | `templates/borrowing/manage/return_form.html` | `borrowing_manage:return-create` |
 | Edit operational settings | `operations/views.py` | `templates/operations/manage/settings_form.html` | `operations:settings` |
 | View audit history | `operations/views.py` | `templates/operations/manage/audit_list.html` | `operations:audit-list` |
@@ -161,8 +162,8 @@ For a form that changes data, the view binds the app's `forms.py` and calls the 
 1. Find the assigned task and accepted prerequisites in [tasks.md](tasks.md) and [PLAN.md](../PLAN.md). Use [api_spec.md](api_spec.md) for its route, namespace, access, form inputs, and response behavior.
 2. Choose the feature app from the page table. Add its request handler in `views.py`. Put allowed form fields in `forms.py`, reads in `queries.py`, and the complete write action in `services.py` as needed. Create only the layers this feature uses.
 3. Add the named route and mount it through `config/urls.py`. Management namespaces such as `inventory_manage` and `borrowing_manage` are separate from their `/manage/` path prefix. The `portal:*` names span accounts, inventory, and borrowing: coordinate one shared `portal` namespace in the root routing, referring to those feature views. Do not independently mount several competing `portal` namespaces.
-4. Create the feature HTML under the matching `templates/<app>/manage/` or `templates/<app>/portal/` path, extending its role base. Add reusable fragments under `templates/components/`. The base-template owners establish shared block names and navigation as their tasks are implemented.
-5. Add CSS/images/scripts under `static/` when needed. Custom base templates load the existing `css/fonts.css` through Django's static tag; the exact include and font paths are in [DEV.md](../DEV.md#fonts-and-static-assets).
+4. Create the feature HTML under the matching `templates/<app>/manage/` or `templates/<app>/portal/` path, extending its role base. Add reusable fragments under `templates/components/`. Use the existing `workspace_content` block and shared navigation; coordinate changes with their owners.
+5. Add CSS/images/scripts under `static/` when needed. The shared base loads compiled `build/app.css`; source `static/css/app.css` imports `fonts.css`. Rebuild rather than add duplicate font stylesheet links; the exact include and font paths are in [DEV.md](../DEV.md#fonts-and-static-assets).
 6. Add meaningful checks beside the feature in its `tests/` directory, run [the configured commands](../DEV.md#before-handing-over-work), then follow the [handoff workflow](../.agents/skills/project-handoff/SKILL.md). A new persistent field or constraint also needs an app migration.
 
 The shared Django authentication/access contract is integrated through T04 (PR #9, `cb96319`) in `accounts/access.py` and `accounts/middleware.py`. Views for later tasks reuse that interface after their owners sync main and verify the remaining task prerequisites; this folder guide does not authorize implementation.
