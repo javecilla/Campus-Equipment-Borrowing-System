@@ -313,8 +313,8 @@ def get_active_catalog_item_or_404(item_id: int) -> CatalogItem:
 
 
 def list_maintenance_records(
-    search_query: str = "",
-    status: str | None = None,
+    search_query: str,
+    status: str | None,
 ) -> QuerySet[MaintenanceRecord]:
     """Return maintenance records matching optional search query and status filter."""
     records: QuerySet[MaintenanceRecord] = MaintenanceRecord.objects.select_related(

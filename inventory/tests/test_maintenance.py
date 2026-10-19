@@ -19,7 +19,7 @@ from inventory.models import (
     UnitStatus,
 )
 from inventory.queries import get_overall_inventory_counts
-from inventory.services import close_maintenance, open_maintenance
+from inventory.services import MaintenanceConflict, close_maintenance, open_maintenance
 from operations.models import AuditAction, AuditLog, AuditTarget
 
 
@@ -97,7 +97,6 @@ class MaintenanceServiceTests(TestCase):
             actor_id=self.admin.pk,
             unit_id=unit.pk,
             problem=problem_text,
-            source_return_id=None,
         )
 
         unit.refresh_from_db()
@@ -122,32 +121,29 @@ class MaintenanceServiceTests(TestCase):
             self.assertIn("Screen flickers", audit.summary)
 
     def test_open_maintenance_rejects_reserved_unit(self) -> None:
-        with self.assertRaises(ValidationError) as ctx:
+        with self.assertRaises(MaintenanceConflict) as ctx:
             open_maintenance(
                 actor_id=self.admin.pk,
                 unit_id=self.reserved_unit.pk,
                 problem="Faulty knob",
-                source_return_id=None,
             )
         self.assertIn("reserved", str(ctx.exception).lower())
 
     def test_open_maintenance_rejects_issued_unit(self) -> None:
-        with self.assertRaises(ValidationError) as ctx:
+        with self.assertRaises(MaintenanceConflict) as ctx:
             open_maintenance(
                 actor_id=self.admin.pk,
                 unit_id=self.issued_unit.pk,
                 problem="Faulty probe",
-                source_return_id=None,
             )
         self.assertIn("issued", str(ctx.exception).lower())
 
     def test_open_maintenance_rejects_retired_unit(self) -> None:
-        with self.assertRaises(ValidationError) as ctx:
+        with self.assertRaises(MaintenanceConflict) as ctx:
             open_maintenance(
                 actor_id=self.admin.pk,
                 unit_id=self.retired_unit.pk,
                 problem="Cannot repair",
-                source_return_id=None,
             )
         self.assertIn("retired", str(ctx.exception).lower())
 
@@ -156,15 +152,13 @@ class MaintenanceServiceTests(TestCase):
             actor_id=self.admin.pk,
             unit_id=self.available_unit.pk,
             problem="First problem",
-            source_return_id=None,
         )
 
-        with self.assertRaises(ValidationError) as ctx:
+        with self.assertRaises(MaintenanceConflict) as ctx:
             open_maintenance(
                 actor_id=self.admin.pk,
                 unit_id=self.available_unit.pk,
                 problem="Second problem",
-                source_return_id=None,
             )
         self.assertIn("already in maintenance", str(ctx.exception).lower())
 
@@ -174,7 +168,6 @@ class MaintenanceServiceTests(TestCase):
                 actor_id=self.admin.pk,
                 unit_id=self.available_unit.pk,
                 problem="   ",
-                source_return_id=None,
             )
         self.assertIn("Problem description is required", str(ctx.exception))
 
@@ -184,7 +177,6 @@ class MaintenanceServiceTests(TestCase):
                 actor_id=self.inactive_admin.pk,
                 unit_id=self.available_unit.pk,
                 problem="Valid problem",
-                source_return_id=None,
             )
 
     def test_close_maintenance_with_available_outcome(self) -> None:
@@ -192,7 +184,6 @@ class MaintenanceServiceTests(TestCase):
             actor_id=self.admin.pk,
             unit_id=self.available_unit.pk,
             problem="Broken power switch",
-            source_return_id=None,
         )
 
         closed: MaintenanceRecord = close_maintenance(
@@ -227,7 +218,6 @@ class MaintenanceServiceTests(TestCase):
             actor_id=self.admin.pk,
             unit_id=self.available_unit.pk,
             problem="Main motherboard fried; unrepairable.",
-            source_return_id=None,
         )
 
         closed: MaintenanceRecord = close_maintenance(
@@ -257,7 +247,6 @@ class MaintenanceServiceTests(TestCase):
             actor_id=self.admin.pk,
             unit_id=self.available_unit.pk,
             problem="Lens smudges",
-            source_return_id=None,
         )
         close_maintenance(
             actor_id=self.admin.pk,
@@ -267,7 +256,7 @@ class MaintenanceServiceTests(TestCase):
             repaired_condition=UnitCondition.GOOD,
         )
 
-        with self.assertRaises(ValidationError) as ctx:
+        with self.assertRaises(MaintenanceConflict) as ctx:
             close_maintenance(
                 actor_id=self.admin.pk,
                 maintenance_id=record.pk,
@@ -282,7 +271,6 @@ class MaintenanceServiceTests(TestCase):
             actor_id=self.admin.pk,
             unit_id=self.available_unit.pk,
             problem="Loose casing",
-            source_return_id=None,
         )
 
         with self.assertRaises(ValidationError) as ctx:
@@ -308,7 +296,6 @@ class MaintenanceServiceTests(TestCase):
             actor_id=self.admin.pk,
             unit_id=self.available_unit.pk,
             problem="Calibration needed",
-            source_return_id=None,
         )
         in_maint_counts = get_overall_inventory_counts()
         self.assertEqual(in_maint_counts.available, 0)
@@ -540,7 +527,7 @@ class MaintenanceViewTests(TestCase):
         self.unit_in_maint.refresh_from_db()
         self.assertEqual(self.unit_in_maint.status, UnitStatus.RETIRED)
 
-    def test_maintenance_close_get_already_closed_redirects(self) -> None:
+    def test_maintenance_close_get_and_post_already_closed_conflict(self) -> None:
         self.client.force_login(self.admin)
         close_maintenance(
             actor_id=self.admin.pk,
@@ -549,10 +536,16 @@ class MaintenanceViewTests(TestCase):
             outcome=MaintenanceOutcome.AVAILABLE,
             repaired_condition=UnitCondition.GOOD,
         )
-        response = self.client.get(
-            reverse("inventory_manage:maintenance-close", args=[self.open_record.pk])
-        )
-        self.assertRedirects(
-            response,
-            reverse("inventory_manage:maintenance-detail", args=[self.open_record.pk]),
-        )
+        url: str = reverse("inventory_manage:maintenance-close", args=[self.open_record.pk])
+        before: int = AuditLog.objects.count()
+        for response in (
+            self.client.get(url),
+            self.client.post(url, {"action": "Repeat", "outcome": MaintenanceOutcome.RETIRED}),
+        ):
+            self.assertContains(response, "already closed", status_code=409)
+            self.assertNotContains(
+                response, 'data-testid="submit-maintenance-close"', status_code=409
+            )
+        self.open_record.refresh_from_db()
+        self.assertEqual(self.open_record.outcome, MaintenanceOutcome.AVAILABLE)
+        self.assertEqual(AuditLog.objects.count(), before)

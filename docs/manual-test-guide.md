@@ -2,7 +2,7 @@
 
 ## Purpose and scope
 
-This guide covers **T01-T12 and the T16 implementation integrated through PR #31 at `2615829`**, as of October 19, 2026. T16 remains In progress for [review fixes](../handoffs/t16-main-integration-and-documentation-review-10-19-2026.md); integration is separate from acceptance. Approval, release and returns remain pending. Expected results are instructions, not recorded passes. T12/T16 browser outcomes remain Not run until supplied.
+This guide covers T01-T12 and the T16 baseline integrated through PR #31 at `2615829`, plus the [verified local T16 corrections](../handoffs/t16-maintenance-integrity-and-conflict-fixes-10-19-2026.md) on `jerome`. Those corrections are Done locally, awaiting main integration. Expected outcomes below describe the corrected checkout; approval, release and returns remain pending. T12/T16 browser outcomes remain Not run until supplied.
 
 For the current borrower checks, go directly to [Module 9: request submission](#module-9--borrower-request-submission-t11) or [Module 10: request and loan tracking](#module-10--borrower-request-and-loan-tracking-t12). For equipment maintenance and reconciliation, see [Module 11: equipment maintenance](#module-11--equipment-maintenance-and-inventory-reconciliation-t16). Use the [result record](#recording-manual-results) to report what actually happened.
 
@@ -1028,12 +1028,12 @@ The automated T12 client tests cover role/method/CSRF, owner isolation, invalid 
 
 ## Module 11 — Equipment Maintenance and Inventory Reconciliation (T16)
 
-> **Integrated through [PR #31](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/31) at `2615829`, source `5582868` (Kenneth Cortez). T16 is In progress for [review fixes](../handoffs/t16-main-integration-and-documentation-review-10-19-2026.md); browser checks are Not run.**
+> **Baseline integrated through [PR #31](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/31) at `2615829`, source `5582868` (Kenneth Cortez). [T16 corrections](../handoffs/t16-maintenance-integrity-and-conflict-fixes-10-19-2026.md) are Done locally on `jerome`, awaiting main integration. Browser checks remain Not run.**
 > **Prerequisites integrated into main:** T08 physical units ([PR #22](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/22) at `6c91d48`) and T03 shared locking/audit ([PR #3](https://github.com/javecilla/Campus-Equipment-Borrowing-System/pull/3) at `d122518`).
 > **Required role:** `ADMIN`.
 > **Entry URL:** `/manage/maintenance/` (`inventory_manage:maintenance-list`).
 
-### Verified local database snapshot (October 19, 2026, 13:39 Asia/Manila)
+### Verified local database snapshot (October 19, 2026, 14:13 Asia/Manila)
 
 The connected PostgreSQL MCP reported `transaction_read_only=on`. This review read inventory/settings only and made no live writes. Recheck with read-only queries (`manage.py shell`) before execution:
 
@@ -1053,9 +1053,9 @@ print(
 )
 ```
 
-- **Current example:** `CEL-AVE-PROJ-001`, unit ID 1, `GOOD`, HDMI Projector / Audio Visual Equipment, is `AVAILABLE`. Dropdown label: `CEL-AVE-PROJ-001 — HDMI Projector (Good)`.
-- **Existing maintenance:** 3 Open, 0 Closed: record 1 / `CEL-AVE-HDMI-001` (unit 4), record 2 / `CEL-PHV-RLT-001` (unit 8), record 3 / `CEL-LAB-VCL-001` (unit 15). All three units are Damaged/Maintenance.
-- **Initial counts:** Available 13, Reserved 0, Issued 0, Maintenance 3, Retired 0, Serviceable 13, Total 16. Settings remain 7 days / 3 units. No loans exist.
+- **Current example:** `CEL-AVE-PROJ-002`, unit ID 2, `FAIR`, HDMI Projector / Audio Visual Equipment, is `AVAILABLE`. Dropdown label: `CEL-AVE-PROJ-002 — HDMI Projector (Fair)`.
+- **Existing maintenance:** 4 Open, 0 Closed: record 4 / `CEL-AVE-PROJ-001` (unit 1), plus record 1 / `CEL-AVE-HDMI-001` (unit 4), record 2 / `CEL-PHV-RLT-001` (unit 8), record 3 / `CEL-LAB-VCL-001` (unit 15). Units 4, 8 and 15 are Damaged/Maintenance; unit 1 is Good/Maintenance. For a fresh opening use projector 002, not unit 1. To continue the previous projector-001 run, its existing record is `/manage/maintenance/4/`; do not try to open it again.
+- **Initial counts:** Available 12, Reserved 0, Issued 0, Maintenance 4, Retired 0, Serviceable 12, Total 16. Settings remain 7 days / 3 units. No loans exist.
 - These replace Kenneth's workstation examples; `cam-qwert` / `sony` is not in this local snapshot. If data changed, select another eligible fictional unit and record the actual baseline. Counts below assume only these sequential cases change inventory. Reserved/Issued browser rejection and more-than-25-row pagination require additional legitimate records; leave them Not run here. No seed data was created by this review.
 - Test repair before retirement. Retirement has no reversal in the supplied interface; use a disposable fictional unit for that case.
 
@@ -1069,18 +1069,18 @@ print(
 
 | Field | Value | Notes |
 | --- | --- | --- |
-| Physical unit (`unit`) | `CEL-AVE-PROJ-001 — HDMI Projector (Good)` | Dropdown populated with eligible `AVAILABLE` units only |
+| Physical unit (`unit`) | `CEL-AVE-PROJ-002 — HDMI Projector (Fair)` | Dropdown populated with eligible `AVAILABLE` units only |
 | Problem description (`problem`) | `Projection image flickers intermittently during classroom use.` | Detailed issue description |
 
 - **Submit:** Click **Open maintenance**.
 - **Expected results:**
   - ✅ Redirects to `/manage/maintenance/<id>/` (`inventory_manage:maintenance-detail`).
-  - ✅ Green flash banner: `Maintenance opened for physical unit "CEL-AVE-PROJ-001".`
+  - ✅ Green flash banner: `Maintenance opened for physical unit "CEL-AVE-PROJ-002".`
   - ✅ Status badge displays `Open` in amber.
-  - ✅ Physical unit card reflects unit status `Maintenance` and condition `Good`.
+  - ✅ Physical unit card reflects unit status `Maintenance` and condition `Fair`.
   - ✅ Audit timeline shows `Opened at` timestamp and `by <admin-username>`.
-  - ✅ Visiting `/manage/maintenance/` displays the record in the table and updates the summary card to `Maintenance: 4`, `Available: 12`, `Total: 16`.
-  - ✅ Unit detail page (`/manage/units/1/`) reflects status `Maintenance`, hides the "Open maintenance" button, and lists this maintenance in the unit's maintenance history table with an active **Close** link.
+  - ✅ Visiting `/manage/maintenance/` displays the record in the table and updates the summary card to `Maintenance: 5`, `Available: 11`, `Total: 16`.
+  - ✅ Unit detail page (`/manage/units/2/`) reflects status `Maintenance`, hides the "Open maintenance" button, and lists this maintenance in the unit's maintenance history table with an active **Close** link.
   - ✅ Read-only database check: `MaintenanceRecord.objects.get(pk=...).status == 'OPEN'`, unit status is `'MAINTENANCE'`. `AuditLog` entry exists with `action='MAINTENANCE_OPENED'` and `target_model='inventory.MaintenanceRecord'`.
 
 ---
@@ -1100,11 +1100,11 @@ print(
     - ✅ No record created and no unit status changed.
 
 - **Scenario B: Ineligible unit rejection (already in maintenance)**
-  - Note: Unit `CEL-AVE-PROJ-001` is currently in maintenance from Case T16-01.
+  - Note: Unit `CEL-AVE-PROJ-002` is currently in maintenance from Case T16-01.
   - Navigate to `/manage/maintenance/new/`.
   - **Expected results:**
-    - ✅ The unit dropdown `unit` excludes `CEL-AVE-PROJ-001` entirely (only units in `AVAILABLE` status without active open maintenance appear).
-    - ✅ If a direct forged POST is sent with `unit=1`, the form returns an error: `Select a valid choice. That choice is not one of the available choices.` or `Unit CEL-AVE-PROJ-001 already has an active open maintenance record.` No second open record is created (enforcing `maintenance_one_open_unit` constraint).
+    - ✅ The unit dropdown `unit` excludes `CEL-AVE-PROJ-002` entirely (only units in `AVAILABLE` status without active open maintenance appear).
+    - ✅ If a direct forged POST is sent with `unit=2`, the form returns an error: `Select a valid choice. That choice is not one of the available choices.` or `Unit CEL-AVE-PROJ-002 already has an active open maintenance record.` No second open record is created (enforcing `maintenance_one_open_unit` constraint).
 
 ---
 
@@ -1123,14 +1123,14 @@ print(
 - **Submit:** Click **Complete & close maintenance**.
 - **Expected results:**
   - ✅ Redirects to `/manage/maintenance/<id>/` (`inventory_manage:maintenance-detail`).
-  - ✅ Green flash banner: `Maintenance for "CEL-AVE-PROJ-001" closed with outcome: Available.`
+  - ✅ Green flash banner: `Maintenance for "CEL-AVE-PROJ-002" closed with outcome: Available.`
   - ✅ Status badge displays `Closed` in slate.
   - ✅ Outcome badge displays `Repaired / Available` in emerald.
   - ✅ Resolution section displays the action taken, outcome, and closure timestamp/admin.
   - ✅ The "Close maintenance" button is no longer present.
   - ✅ Physical unit details show unit status restored to `Available`.
-  - ✅ Visiting `/manage/maintenance/` displays the record as `Closed`, and count cards reconcile: `Available: 13`, `Maintenance: 3`, `Total: 16`.
-  - ✅ Visiting unit detail (`/manage/units/1/`) shows status `Available`, the "Open maintenance" button is restored, and the maintenance table shows `Closed` with outcome `Repaired / Available`.
+  - ✅ Visiting `/manage/maintenance/` displays the record as `Closed`, and count cards reconcile: `Available: 12`, `Maintenance: 4`, `Total: 16`.
+  - ✅ Visiting unit detail (`/manage/units/2/`) shows status `Available`, the "Open maintenance" button is restored, and the maintenance table shows `Closed` with outcome `Repaired / Available`.
   - ✅ Read-only database check: `MaintenanceRecord` status is `'CLOSED'`, outcome is `'AVAILABLE'`, `closed_at` and `closed_by` are set. `AuditLog` entry exists with `action='MAINTENANCE_CLOSED'`.
 
 ---
@@ -1138,7 +1138,7 @@ print(
 ### Test Case T16-04: Close Maintenance with Retired Outcome
 
 - **Role:** Active `ADMIN`.
-- **Preparation:** Open maintenance on an available unit (e.g. `CEL-AVE-PROJ-001` or test unit) with problem `Catastrophic internal sensor failure; circuit board cracked.`
+- **Preparation:** Open maintenance on an available unit (e.g. `CEL-AVE-PROJ-002` or test unit) with problem `Catastrophic internal sensor failure; circuit board cracked.`
 - **Navigation:** Go to `/manage/maintenance/<id>/close/`.
 - **Form inputs:**
 
@@ -1153,7 +1153,7 @@ print(
   - ✅ Green flash banner: `Maintenance for "<asset-code>" closed with outcome: Retired.`
   - ✅ Status badge: `Closed`; Outcome badge: `Retired` in slate.
   - ✅ Physical unit status is permanently set to `Retired`.
-  - ✅ Summary count cards reconcile: `Retired: 1`, `Maintenance: 3`, `Available: 12`, `Serviceable: 12`, `Total: 16`.
+  - ✅ Summary count cards reconcile: `Retired: 1`, `Maintenance: 4`, `Available: 11`, `Serviceable: 11`, `Total: 16`.
   - Retired unit cannot be selected for new maintenance. Borrowers choose catalog items, not physical units; availability falls by one. Approval/allocation proof remains pending T13.
 
 ---
@@ -1164,7 +1164,7 @@ print(
 - **Scenario A: Repeat closure attempt**
   - Attempt to access `/manage/maintenance/<id>/close/` for an already-closed maintenance record.
   - **Expected results:**
-    - **Required contract:** duplicate closure POST returns 409 with a clear conflict and no writes. **Known defect at `2615829`:** GET and POST instead redirect (302) to detail with `This maintenance record is already closed.`; an isolated probe confirmed POST. Record this defect, not a passing acceptance result.
+    - **Corrected local behavior:** GET and POST return 409 with `This maintenance record is already closed.` and no writes. The closed-record page has no submit form. Main's application baseline from PR #31 still has the old 302 behavior until these corrections are integrated.
     - ✅ No state modification occurs.
 - **Scenario B: Blank action taken on close**
   - Use existing open record 1 (`CEL-AVE-HDMI-001`) at `/manage/maintenance/1/close/`; select `Available` and `Good condition`, but leave `action` blank (`   `). This validation case must not close that record.
@@ -1180,8 +1180,8 @@ print(
 - **Role:** Active `ADMIN`.
 - **Navigation:** `/manage/maintenance/`
 - **Scenarios:**
-  - **Search by asset code:** Enter `CEL-AVE-PROJ-001` in `q` field and click **Filter**.
-    - ✅ Result shows only maintenance records matching `CEL-AVE-PROJ-001`.
+  - **Search by asset code:** Enter `CEL-AVE-PROJ-002` in `q` field and click **Filter**.
+    - ✅ Result shows only maintenance records matching `CEL-AVE-PROJ-002`.
   - **Status filter:** Select `Open` in Status dropdown and click **Filter**.
     - ✅ Displays only open maintenance records.
   - **Status filter:** Select `Closed` in Status dropdown and click **Filter**.
@@ -1201,11 +1201,11 @@ print(
   4. **CSRF protection:** Submitting POST to `/manage/maintenance/new/` or `/manage/maintenance/<id>/close/` without a valid CSRF token returns **403 Forbidden**.
   5. **Keyboard & Responsive navigation:** Use `Tab` / `Shift+Tab` to verify visible focus order across all filter inputs, action buttons, form controls, and table links. Verify clean grid stacking and no horizontal overflow on mobile viewports (375px).
 
-The 26 submitted T16 tests cover manual service transitions, selected validation/access checks, audit creation, search/status filters and count reconciliation. They do not demonstrate separate-connection concurrency, audit-failure rollback, pagination boundaries or explicit CSRF rejection. Five additional isolated review probes verified create CSRF/list POST protection and reproduced return-link/conflict defects; see the [review](../handoffs/t16-main-integration-and-documentation-review-10-19-2026.md). Browser, keyboard and mobile results remain **Not run / awaiting user execution**.
+All 33 maintenance tests pass within the 224-test PostgreSQL suite. They include manual lifecycle/access/filter/count checks, seven new real integrity tests for the removed return-link argument, opening/repair audit rollback, changed-state 409, CSRF/protected fields, competing administrators and unit-before-maintenance closure locking. Browser, keyboard, mobile and pagination-boundary results remain **Not run**; these tests do not implement T17.
 
 ---
 
-Return-linked maintenance is a service interface for future T17, not a browser field. Isolated probes found that a non-null `source_return_id` accepts an unrelated return and bypasses unit eligibility, and accepts a Good return. Do not treat this path as accepted until Kenneth corrects and verifies the [findings](../handoffs/t16-main-integration-and-documentation-review-10-19-2026.md#review-findings).
+The manual `open_maintenance` action accepts no `source_return_id` and always applies Available-unit eligibility. Browser-supplied return/actor/status fields cannot control it. Future T17 must create matching damaged-return maintenance inside its complete return/allocation/audit transaction; the manual opener is not a damaged-return interface.
 
 ## Recording manual results
 
@@ -1215,7 +1215,7 @@ Use one row per actual test run. Expected outcomes in this guide do not count as
 | --- | --- | --- | --- | --- |
 | Example: T11-15 | `6c5ea8f`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Screenshot or request marker/ID, without private data |
 | Example: T12-01 | `170cc38`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request/loan ID; no private data |
-| Example: T16-01 | `2615829`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional asset code/maintenance ID; no private data |
+| Example: T16-01 | local `jerome` T16 fixes, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional asset code/maintenance ID; no private data |
 
 Report the purpose marker/request ID and the smallest reproduction steps for a failure. Retain test records rather than deleting history to make counts match. Save real findings in the current handoff or the team's review record when supplied.
 
@@ -1239,7 +1239,7 @@ The following features are **Not started** and have no implementation to test in
 
 ## Running the automated test suite
 
-The integrated source at `2615829` passed **217 PostgreSQL tests in 84.098s** during the October 19 T16 review, including 26 maintenance tests. Review probes found defects outside that coverage. To run the current suite yourself:
+The local corrected `jerome` checkout passed **224 PostgreSQL tests in 37.343s**, including 33 maintenance tests. The corrections are awaiting main integration. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput
@@ -1276,8 +1276,8 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests --noinput
 ```
 
-All tests must pass before handover; 217 is the verified count on integrated revision `2615829`. Passing tests alone do not resolve the T16 findings. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
+All tests must pass before handover; 224 is the verified count on the corrected local checkout. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
 
 ---
 
-*Manual testing guide — scope: T01-T12 and T16 integrated implementation, with T16 review fixes outstanding. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
+*Manual testing guide - scope: T01-T12/T16 integrated baseline plus verified local T16 corrections awaiting main integration. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
