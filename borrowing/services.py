@@ -14,6 +14,8 @@ from accounts.access import require_active_basic_user
 from accounts.models import User, UserRole
 from borrowing.models import (
     BorrowRequest,
+    Loan,
+    LoanUnit,
     RequestItem,
     RequestStatus,
     UnitAllocation,
@@ -370,3 +372,162 @@ def cancel_request(owner_id: int, request_id: int) -> BorrowRequest:
             summary=f"Request #{borrow_request.pk} cancelled by its borrower.",
         )
         return borrow_request
+
+
+def revise_due_date(
+    actor_id: int,
+    request_id: int,
+    agreed_due_date: date,
+    reason: str,
+) -> BorrowRequest:
+    """Revise an approved request's agreed due date before equipment release."""
+    reason = _clean_reason(reason)
+    owner_id = BorrowRequest.objects.values_list("owner_id", flat=True).get(pk=request_id)
+    with transaction.atomic():
+        _active_admin(actor_id)
+        locked = lock_request(owner_id, request_id)
+        borrow_request = locked.request
+
+        if borrow_request.status != RequestStatus.APPROVED:
+            raise WorkflowConflict(
+                f"Request #{borrow_request.pk} is {borrow_request.get_status_display().lower()}, "
+                "so its due date cannot be revised."
+            )
+        if locked.loan is not None:
+            raise WorkflowConflict("The request has already been released as a loan.")
+        if not locked.borrower.is_active:
+            raise WorkflowConflict("The borrower's account is inactive.")
+
+        if agreed_due_date < borrow_request.submitted_on:
+            raise ValidationError(
+                {"agreed_due_date": "Agreed due date cannot precede the submission date."}
+            )
+
+        duration_days = (agreed_due_date - borrow_request.submitted_on).days
+        if duration_days > borrow_request.max_loan_days_applied:
+            raise ValidationError(
+                {
+                    "agreed_due_date": (
+                        f"Agreed loan duration of {duration_days} day(s) exceeds the "
+                        f"applied limit of {borrow_request.max_loan_days_applied} day(s)."
+                    )
+                }
+            )
+
+        previous_due_date = borrow_request.agreed_due_date
+        borrow_request.agreed_due_date = agreed_due_date
+        borrow_request.save(update_fields=["agreed_due_date"])
+
+        write_audit(
+            actor_id=actor_id,
+            action=AuditAction.DUE_DATE_REVISED,
+            target_model=AuditTarget.BORROW_REQUEST,
+            target_id=borrow_request.pk,
+            summary=(
+                f"Revised agreed due date for request #{borrow_request.pk} "
+                f"from {previous_due_date.isoformat()} to {agreed_due_date.isoformat()}: {reason}"
+            ),
+        )
+        return borrow_request
+
+
+def issue_request(actor_id: int, request_id: int) -> Loan:
+    """Transition an approved request to ISSUED, creating Loan and LoanUnit records."""
+    owner_id = BorrowRequest.objects.values_list("owner_id", flat=True).get(pk=request_id)
+    with transaction.atomic():
+        admin = _active_admin(actor_id)
+        locked = lock_request(owner_id, request_id)
+        borrow_request = locked.request
+
+        if borrow_request.status != RequestStatus.APPROVED:
+            raise WorkflowConflict(
+                f"Request #{borrow_request.pk} is {borrow_request.get_status_display().lower()}, "
+                "so it cannot be released."
+            )
+        if locked.loan is not None:
+            raise WorkflowConflict("The request has already been released.")
+        if not locked.borrower.is_active:
+            raise WorkflowConflict("The borrower's account is inactive.")
+
+        request_items = tuple(
+            RequestItem.objects.select_for_update()
+            .filter(request_id=borrow_request.pk)
+            .order_by("pk")
+        )
+        if not request_items:
+            raise WorkflowConflict("The request has no items.")
+
+        allocations = tuple(
+            UnitAllocation.objects.filter(request_item__request_id=borrow_request.pk).order_by("pk")
+        )
+        if not allocations:
+            raise WorkflowConflict("The request has no allocated equipment units.")
+
+        item_counts: dict[int, int] = {}
+        for line in request_items:
+            item_counts[line.pk] = line.quantity
+
+        unit_ids: list[int] = []
+        alloc_counts: dict[int, int] = {}
+        for alloc in allocations:
+            if alloc.released_at is not None or alloc.cancelled_at is not None or alloc.ended_at is not None:
+                raise WorkflowConflict("One or more allocations have already been released or cancelled.")
+            alloc_counts[alloc.request_item_id] = alloc_counts.get(alloc.request_item_id, 0) + 1
+            unit_ids.append(alloc.unit_id)
+
+        if len(unit_ids) != len(set(unit_ids)) or any(
+            alloc_counts.get(item_id, 0) != count for item_id, count in item_counts.items()
+        ):
+            raise WorkflowConflict("The request is insufficiently or inconsistently allocated.")
+
+        locked_units = lock_units(tuple(unit_ids))
+        for unit in locked_units:
+            if unit.status != UnitStatus.RESERVED:
+                raise WorkflowConflict(
+                    f"Unit '{unit.asset_code}' is {unit.get_status_display().lower()}, not reserved."
+                )
+
+        now = timezone.now()
+        today = timezone.localdate(now)
+
+        locked_allocations = tuple(
+            UnitAllocation.objects.select_for_update()
+            .filter(pk__in=[alloc.pk for alloc in allocations])
+            .order_by("pk")
+        )
+        for alloc in locked_allocations:
+            alloc.released_at = now
+            alloc.save(update_fields=["released_at"])
+
+        for unit in locked_units:
+            unit.status = UnitStatus.ON_LOAN
+            unit.save(update_fields=["status", "updated_at"])
+
+        borrow_request.status = RequestStatus.ISSUED
+        borrow_request.save(update_fields=["status"])
+
+        loan = Loan.objects.create(
+            request=borrow_request,
+            issued_by=admin,
+            issued_at=now,
+            issued_on=today,
+            due_date=borrow_request.agreed_due_date,
+        )
+
+        for alloc in locked_allocations:
+            LoanUnit.objects.create(
+                loan=loan,
+                allocation=alloc,
+            )
+
+        write_audit(
+            actor_id=actor_id,
+            action=AuditAction.LOAN_RELEASED,
+            target_model=AuditTarget.LOAN,
+            target_id=loan.pk,
+            summary=(
+                f"Released loan #{loan.pk} for request #{borrow_request.pk} "
+                f"({len(locked_allocations)} unit(s) on loan)."
+            ),
+        )
+        return loan

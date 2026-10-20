@@ -217,3 +217,43 @@ class DecisionForm(forms.Form):
         strip=True,
         widget=forms.TextInput(attrs={"id": "decision-reason", "class": CONTROL_CLASSES}),
     )
+
+class DueDateRevisionForm(forms.Form):
+    """Admin pre-issue due date revision form with mandatory non-blank reason."""
+
+    agreed_due_date = forms.DateField(
+        label="Agreed Due Date",
+        input_formats=["%Y-%m-%d"],
+        widget=forms.DateInput(
+            attrs={"id": "revision-due-date", "type": "date", "class": CONTROL_CLASSES},
+            format="%Y-%m-%d",
+        ),
+    )
+    reason = forms.CharField(
+        label="Reason",
+        max_length=500,
+        strip=True,
+        widget=forms.TextInput(attrs={"id": "revision-reason", "class": CONTROL_CLASSES}),
+    )
+
+
+class LoanFilterForm(forms.Form):
+    """Admin loan list search and filter form."""
+
+    q = forms.CharField(
+        required=False,
+        max_length=200,
+        strip=True,
+        widget=forms.TextInput(
+            attrs={
+                "id": "filter-q",
+                "class": CONTROL_CLASSES,
+                "placeholder": "Search loan #, borrower, or item...",
+            }
+        ),
+    )
+    status = forms.ChoiceField(
+        required=False,
+        choices=[("", "All status"), ("active", "Active"), ("closed", "Closed")],
+        widget=forms.Select(attrs={"id": "filter-status", "class": CONTROL_CLASSES}),
+    )
