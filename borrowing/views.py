@@ -318,9 +318,7 @@ def request_reject(request: HttpRequest, request_id: int) -> HttpResponse:
 @admin_required
 def request_due_date(request: HttpRequest, request_id: int) -> HttpResponse:
     """GET shows the pre-issue due date revision form; POST updates agreed_due_date."""
-    borrow_request = get_object_or_404(
-        BorrowRequest.objects.select_related("owner"), pk=request_id
-    )
+    borrow_request = get_object_or_404(BorrowRequest.objects.select_related("owner"), pk=request_id)
     initial_data = {
         "agreed_due_date": borrow_request.agreed_due_date,
     }
@@ -358,9 +356,7 @@ def request_due_date(request: HttpRequest, request_id: int) -> HttpResponse:
 @admin_required
 def request_release(request: HttpRequest, request_id: int) -> HttpResponse:
     """GET confirms the equipment release; POST issues the request into an active loan."""
-    borrow_request = get_object_or_404(
-        BorrowRequest.objects.select_related("owner"), pk=request_id
-    )
+    borrow_request = get_object_or_404(BorrowRequest.objects.select_related("owner"), pk=request_id)
     conflict = None
     status = 200
 
@@ -459,9 +455,7 @@ def manage_loan_detail(request: HttpRequest, loan_id: int) -> HttpResponse:
 @admin_required
 def loan_slip(request: HttpRequest, loan_id: int) -> HttpResponse:
     """Clean, print-ready borrowing slip with borrower details, serials, and sign-offs."""
-    loan_units = (
-        LoanUnit.objects.select_related("allocation__unit__catalog_item").order_by("pk")
-    )
+    loan_units = LoanUnit.objects.select_related("allocation__unit__catalog_item").order_by("pk")
     loan = get_object_or_404(
         Loan.objects.select_related("request__owner", "issued_by").prefetch_related(
             Prefetch("units", queryset=loan_units)

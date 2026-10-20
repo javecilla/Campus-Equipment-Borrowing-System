@@ -210,6 +210,7 @@ class DecisionForm(forms.Form):
         widget=forms.TextInput(attrs={"id": "decision-reason", "class": CONTROL_CLASSES}),
     )
 
+
 class DueDateRevisionForm(forms.Form):
     """Admin pre-issue due date revision form with mandatory non-blank reason."""
 
@@ -233,7 +234,7 @@ class LoanFilterForm(forms.Form):
     """Admin loan list search and filter form."""
 
     q = forms.CharField(
-        label="Search loans",  
+        label="Search loans",
         required=False,
         max_length=200,
         strip=True,

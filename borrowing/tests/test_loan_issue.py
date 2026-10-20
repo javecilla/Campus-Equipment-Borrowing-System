@@ -143,14 +143,10 @@ class LoanIssueWorkflowTests(TestCase):
         )
         loan = issue_request(actor_id=self.admin.pk, request_id=self.borrow_request.pk)
 
-        active_resp = self.client.get(
-            reverse("borrowing_manage:loan-list"), {"status": "active"}
-        )
+        active_resp = self.client.get(reverse("borrowing_manage:loan-list"), {"status": "active"})
         self.assertEqual(active_resp.status_code, 200)
         self.assertContains(active_resp, f"#{loan.pk}")
 
-        closed_resp = self.client.get(
-            reverse("borrowing_manage:loan-list"), {"status": "closed"}
-        )
+        closed_resp = self.client.get(reverse("borrowing_manage:loan-list"), {"status": "closed"})
         self.assertEqual(closed_resp.status_code, 200)
         self.assertNotContains(closed_resp, f"#{loan.pk}")

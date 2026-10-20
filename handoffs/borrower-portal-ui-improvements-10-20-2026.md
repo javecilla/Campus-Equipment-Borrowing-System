@@ -17,12 +17,16 @@
 return render(request, "accounts/portal/home.html")
 
 # after
-return render(request, "accounts/portal/pending.html", {
-    "heading": "Borrower workspace",
-    "module": "T20 · Ralph with Ellyssa",
-    "description": "...",
-    "next_work": "...",
-})
+return render(
+    request,
+    "accounts/portal/pending.html",
+    {
+        "heading": "Borrower workspace",
+        "module": "T20 · Ralph with Ellyssa",
+        "description": "...",
+        "next_work": "...",
+    },
+)
 ```
 
 `home.html` is preserved for Ralph and Ellyssa to build out when T20 is authorized.

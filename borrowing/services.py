@@ -470,8 +470,14 @@ def issue_request(actor_id: int, request_id: int) -> Loan:
         unit_ids: list[int] = []
         alloc_counts: dict[int, int] = {}
         for alloc in allocations:
-            if alloc.released_at is not None or alloc.cancelled_at is not None or alloc.ended_at is not None:
-                raise WorkflowConflict("One or more allocations have already been released or cancelled.")
+            if (
+                alloc.released_at is not None
+                or alloc.cancelled_at is not None
+                or alloc.ended_at is not None
+            ):
+                raise WorkflowConflict(
+                    "One or more allocations have already been released or cancelled."
+                )
             alloc_counts[alloc.request_item_id] = alloc_counts.get(alloc.request_item_id, 0) + 1
             unit_ids.append(alloc.unit_id)
 
