@@ -1,4 +1,5 @@
 {% extends "operations/manage/base.html" %}
+{% load assets %}
 {% block title %}Requests · Campus Equipment{% endblock %}
 {% block workspace_content %}
     <section data-testid="request-queue" class="ui-page space-y-8">
@@ -58,14 +59,18 @@
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             {% for r in page %}
-                                <tr data-testid="request-row-{{ r.pk }}">
-                                    <td class="align-top whitespace-nowrap"><a href="{% url 'borrowing_manage:request-detail' r.pk %}"
+                                <tr data-testid="request-row-{{ r.pk }}"
+                                    data-request-row
+                                    class="cursor-pointer hover:bg-slate-50 focus-within:bg-slate-50">
+                                    <td class="align-middle whitespace-nowrap"><a href="{% url 'borrowing_manage:request-detail' r.pk %}"
+   data-request-link
+   data-testid="request-link-{{ r.pk }}"
    class="font-semibold text-accent underline underline-offset-4">#{{ r.pk }}</a></td>
-                                    <td class="align-top break-words">{{ r.owner.username }}</td>
-                                    <td class="align-top">{{ r.item_count }} item{{ r.item_count|pluralize }}</td>
-                                    <td class="align-top whitespace-nowrap">{{ r.submitted_at|date:"M j, Y" }}</td>
-                                    <td class="align-top whitespace-nowrap">{{ r.agreed_due_date|date:"M j, Y" }}</td>
-                                    <td class="align-top font-semibold">{{ r.get_status_display }}</td>
+                                    <td class="align-middle break-words">{{ r.owner.username }}</td>
+                                    <td class="align-middle whitespace-nowrap">{{ r.item_count }} item{{ r.item_count|pluralize }}</td>
+                                    <td class="align-middle whitespace-nowrap">{{ r.submitted_at|date:"M j, Y" }}</td>
+                                    <td class="align-middle whitespace-nowrap">{{ r.agreed_due_date|date:"M j, Y" }}</td>
+                                    <td class="align-middle font-semibold whitespace-nowrap">{{ r.get_status_display }}</td>
                                 </tr>
                             {% empty %}
                                 <tr>
@@ -96,4 +101,8 @@
             </section>
         {% endif %}
     </section>
+{% endblock %}
+{% block scripts %}
+    {{ block.super }}
+    <script type="module" src="{% compiled_asset 'build/request-list.js' %}"></script>
 {% endblock %}

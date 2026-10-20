@@ -52,7 +52,7 @@
                             <td>{{ loan.request.owner.username }}</td>
                             <td>{{ loan.issued_on|date:"M j, Y" }}</td>
                             <td>{{ loan.due_date|date:"M j, Y" }}</td>
-                            <td>{% if loan.closed_at %}Closed{% else %}Active{% endif %}</td>
+                            <td>{% if loan.is_active %}Active{% else %}Closed{% endif %}{% if loan.is_overdue %} · Overdue {{ loan.overdue_days }} day{{ loan.overdue_days|pluralize }}{% endif %}</td>
                             <td>{{ loan.outstanding_quantity }} / {{ loan.issued_quantity }}</td>
                             <td><a href="{% url 'borrowing_manage:loan-detail' loan.pk %}"
    data-testid="manage-loan-view-{{ loan.pk }}"

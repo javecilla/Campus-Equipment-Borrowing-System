@@ -112,7 +112,7 @@ def loan_list(request: HttpRequest) -> HttpResponse:
 @require_safe
 @admin_required
 def loan_detail(request: HttpRequest, loan_id: int) -> HttpResponse:
-    """Show the issued assets and stored return progress; no return action is implemented here."""
+    """Show issued assets, return progress and the derived overdue label."""
     loan: Loan = get_object_or_404(manage_loan_details(), pk=loan_id)
     today: date = timezone.localdate()
     return render(request, "borrowing/manage/loan_detail.html", {"loan": loan, "today": today})
