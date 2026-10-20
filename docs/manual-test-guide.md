@@ -115,6 +115,8 @@ Record the settings currently displayed before changing them. The values above a
 
 ### 1.7 Block an inactive account (requires creating one first)
 
+**Integration:** Alex's fix is merged through PR #46 at `c052900`; issue #18 is closed as completed. The combined source passed 304 PostgreSQL tests and the isolated browser cases below.
+
 Prerequisite: a fictional ADMIN and BASIC_USER with known private passwords. The October 20, 2026 integration-review read-only lookup found neither earlier example `localadmin` nor the chosen borrower's username; those names are not current setup evidence. Substitute your chosen fictional borrower in the steps below. No live account was changed during review.
 
 1. Log in as the administrator, go to `/manage/accounts/`, find the chosen fictional borrower, choose **Deactivate**, and confirm.
@@ -130,7 +132,7 @@ Prerequisite: a fictional ADMIN and BASIC_USER with known private passwords. The
 
 ✅ Each attempt displays only **Invalid username/email or password.** The page does not disclose whether either identifier exists, and no session is created.
 
-5. In the administrator session, reactivate the chosen borrower's username. Submit its unchanged username and password again.
+5. In the administrator session, reactivate the chosen fictional borrower. Submit its unchanged username and password again.
 
 ✅ Login succeeds and redirects to `/portal/`, confirming the earlier block was caused by deactivation.
 
