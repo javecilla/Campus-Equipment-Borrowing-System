@@ -1,19 +1,17 @@
 {% extends "operations/manage/base.html" %}
 {% block title %}Physical units · Campus Equipment{% endblock %}
 {% block workspace_content %}
-    <section data-testid="unit-list">
+    <section data-testid="unit-list" class="ui-page">
         {% include "inventory/manage/nav.html" with active_tab="units" %}
         <div class="space-y-8">
-            <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <header class="ui-page-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <p class="text-xs font-semibold tracking-widest text-accent uppercase">Equipment inventory</p>
-                    <h1 class="font-heading text-3xl font-semibold">Physical units</h1>
+                    <h1 class="font-heading font-semibold">Physical units</h1>
                 </div>
                 <a href="{% url 'inventory_manage:unit-create' %}"
                    data-testid="register-unit-button"
-                   class="inline-flex h-11 items-center justify-center rounded-md bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-800">
-                    Register physical unit
-                </a>
+                   class="ui-button ui-button--primary">Register physical unit</a>
             </header>
             <section aria-labelledby="inventory-summary-heading">
                 <h2 id="inventory-summary-heading" class="sr-only">Inventory count summary</h2>
@@ -59,57 +57,59 @@
                 <form data-testid="unit-search"
                       method="get"
                       action="{% url 'inventory_manage:unit-list' %}"
-                      class="grid gap-4 md:grid-cols-[minmax(0,1fr)_12rem_14rem_10rem_auto] md:items-end">
-                    <div>
-                        <label for="{{ form.q.id_for_label }}"
-                               class="mb-2 block text-sm font-medium">{{ form.q.label }}</label>
-                        {{ form.q }}
-                        {{ form.q.errors }}
+                      class="space-y-4">
+                    <div class="ui-filter-grid">
+                        <div>
+                            <label for="{{ form.q.id_for_label }}"
+                                   class="mb-2 block text-sm font-medium">{{ form.q.label }}</label>
+                            {{ form.q }}
+                            {{ form.q.errors }}
+                        </div>
+                        <div>
+                            <label for="{{ form.category.id_for_label }}"
+                                   class="mb-2 block text-sm font-medium">{{ form.category.label }}</label>
+                            {{ form.category }}
+                            {{ form.category.errors }}
+                        </div>
+                        <div>
+                            <label for="{{ form.item.id_for_label }}"
+                                   class="mb-2 block text-sm font-medium">{{ form.item.label }}</label>
+                            {{ form.item }}
+                            {{ form.item.errors }}
+                        </div>
+                        <div>
+                            <label for="{{ form.status.id_for_label }}"
+                                   class="mb-2 block text-sm font-medium">{{ form.status.label }}</label>
+                            {{ form.status }}
+                            {{ form.status.errors }}
+                        </div>
                     </div>
-                    <div>
-                        <label for="{{ form.category.id_for_label }}"
-                               class="mb-2 block text-sm font-medium">{{ form.category.label }}</label>
-                        {{ form.category }}
-                        {{ form.category.errors }}
-                    </div>
-                    <div>
-                        <label for="{{ form.item.id_for_label }}"
-                               class="mb-2 block text-sm font-medium">{{ form.item.label }}</label>
-                        {{ form.item }}
-                        {{ form.item.errors }}
-                    </div>
-                    <div>
-                        <label for="{{ form.status.id_for_label }}"
-                               class="mb-2 block text-sm font-medium">{{ form.status.label }}</label>
-                        {{ form.status }}
-                        {{ form.status.errors }}
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button type="submit"
-                                data-testid="unit-search-submit"
-                                class="h-11 rounded-md bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-800">
-                            Filter
-                        </button>
+                    <div class="flex items-center justify-end gap-4">
                         <a href="{% url 'inventory_manage:unit-list' %}"
                            data-testid="unit-search-clear"
-                           class="inline-flex h-11 items-center justify-center rounded-md border border-slate-200 px-3 text-sm font-medium text-slate-600 hover:bg-slate-50">
-                            Clear
-                        </a>
+                           class="text-sm font-semibold text-accent underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Clear filters</a>
+                        <button type="submit"
+                                data-testid="unit-search-submit"
+                                class="ui-button ui-button--tonal">Filter</button>
                     </div>
                 </form>
             </section>
-            <section class="border-y border-slate-200">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200">
+            <section class="ui-table-surface">
+                <div class="overflow-x-auto"
+                     tabindex="0"
+                     role="region"
+                     aria-label="Scrollable unit records table"
+                     data-testid="table-scroll-1">
+                    <table class="ui-data-table min-w-full divide-y divide-slate-200">
                         <thead class="bg-slate-50 text-left text-sm text-slate-600">
                             <tr>
-                                <th scope="col" class="px-5 py-3">Asset code</th>
-                                <th scope="col" class="px-5 py-3">Equipment item</th>
-                                <th scope="col" class="px-5 py-3">Category</th>
-                                <th scope="col" class="px-5 py-3">Condition</th>
-                                <th scope="col" class="px-5 py-3">Status</th>
-                                <th scope="col" class="px-5 py-3">Acquired on</th>
-                                <th scope="col" class="relative px-5 py-3 text-right">
+                                <th scope="col">Asset code</th>
+                                <th scope="col">Equipment item</th>
+                                <th scope="col">Category</th>
+                                <th scope="col">Condition</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Acquired on</th>
+                                <th scope="col" class="relative text-right">
                                     <span class="sr-only">Actions</span>
                                 </th>
                             </tr>
@@ -117,26 +117,26 @@
                         <tbody class="divide-y divide-slate-100">
                             {% for unit in page %}
                                 <tr data-testid="unit-row-{{ unit.pk }}">
-                                    <td class="px-5 py-4 font-mono font-semibold text-slate-900">
+                                    <td class="font-mono font-semibold text-slate-900">
                                         <a href="{% url 'inventory_manage:unit-detail' unit.pk %}"
                                            data-testid="unit-detail-{{ unit.pk }}"
                                            class="hover:text-accent hover:underline">
                                             {{ unit.asset_code }}
                                         </a>
                                     </td>
-                                    <td class="px-5 py-4 text-sm text-slate-900">
+                                    <td class="text-sm text-slate-900">
                                         <a href="{% url 'inventory_manage:item-detail' unit.catalog_item.pk %}"
                                            class="hover:text-accent hover:underline">
                                             {{ unit.catalog_item.name }}
                                         </a>
                                     </td>
-                                    <td class="px-5 py-4 text-sm text-slate-600">
+                                    <td class="text-sm text-slate-600">
                                         <a href="{% url 'inventory_manage:category-detail' unit.catalog_item.category.pk %}"
                                            class="hover:text-accent hover:underline">
                                             {{ unit.catalog_item.category.name }}
                                         </a>
                                     </td>
-                                    <td class="px-5 py-4 text-sm">
+                                    <td class="text-sm">
                                         {% if unit.condition == "GOOD" %}
                                             <span class="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">Good</span>
                                         {% elif unit.condition == "FAIR" %}
@@ -145,7 +145,7 @@
                                             <span class="inline-flex rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-700">Damaged</span>
                                         {% endif %}
                                     </td>
-                                    <td class="px-5 py-4 text-sm">
+                                    <td class="text-sm">
                                         {% if unit.status == "AVAILABLE" %}
                                             <span class="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-accent">Available</span>
                                         {% elif unit.status == "RESERVED" %}
@@ -158,8 +158,8 @@
                                             <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">Retired</span>
                                         {% endif %}
                                     </td>
-                                    <td class="px-5 py-4 text-sm text-slate-600 whitespace-nowrap">{{ unit.acquired_on|date:"Y-m-d" }}</td>
-                                    <td class="px-5 py-4 text-right text-sm whitespace-nowrap">
+                                    <td class="text-sm text-slate-600 whitespace-nowrap">{{ unit.acquired_on|date:"Y-m-d" }}</td>
+                                    <td class="text-right text-sm whitespace-nowrap">
                                         <div class="flex items-center justify-end gap-3">
                                             <a href="{% url 'inventory_manage:unit-detail' unit.pk %}"
                                                class="font-semibold text-accent hover:underline">
@@ -175,8 +175,7 @@
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="7"
-                                        class="px-5 py-8 text-center text-sm text-slate-500">
+                                    <td colspan="7" class="text-center text-sm text-slate-500">
                                         No physical units found matching your query.
                                     </td>
                                 </tr>
@@ -195,16 +194,12 @@
                         {% if page.has_previous %}
                             <a href="{% querystring page=page.previous_page_number %}"
                                data-testid="pagination-prev"
-                               class="inline-flex h-9 items-center rounded border border-slate-200 px-3 text-sm font-medium hover:bg-slate-50">
-                                Previous
-                            </a>
+                               class="ui-button ui-button--outline">Previous</a>
                         {% endif %}
                         {% if page.has_next %}
                             <a href="{% querystring page=page.next_page_number %}"
                                data-testid="pagination-next"
-                               class="inline-flex h-9 items-center rounded border border-slate-200 px-3 text-sm font-medium hover:bg-slate-50">
-                                Next
-                            </a>
+                               class="ui-button ui-button--outline">Next</a>
                         {% endif %}
                     </div>
                 </nav>

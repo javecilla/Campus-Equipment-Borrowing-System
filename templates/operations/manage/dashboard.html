@@ -1,14 +1,43 @@
 {% extends "operations/manage/base.html" %}
 {% block title %}Administrator workspace · Campus Equipment{% endblock %}
 {% block workspace_content %}
-    <section data-testid="manage-home" aria-labelledby="manage-heading">
+    <section data-testid="manage-home"
+             aria-labelledby="manage-heading"
+             class="ui-page">
         <p class="text-xs font-semibold tracking-widest text-accent uppercase">Administrator workspace</p>
         <h1 id="manage-heading"
-            class="mt-3 font-heading text-3xl font-semibold tracking-tight">Welcome, {{ request.user.first_name }}.</h1>
-        <p class="mt-4 max-w-2xl leading-7 text-slate-500">Manage basic-user accounts now, or explore the upcoming modules using the tabs above.</p>
-        <div class="mt-12 max-w-2xl border-t border-slate-200 pt-6">
-            <h2 class="text-sm font-semibold">Upcoming modules</h2>
-            <p class="mt-2 text-sm leading-6 text-slate-500">Alex's T18 module will add live summaries, overdue monitoring, and borrowing charts after release and return workflows are available.</p>
+            class="mt-3 font-heading font-semibold tracking-tight">Welcome, {{ request.user.first_name }}.</h1>
+        <p class="mt-4 leading-7 text-slate-500">Review borrowing requests and manage campus equipment, accounts, and maintenance.</p>
+        <div class="ui-dashboard-grid">
+            <section class="ui-surface" aria-labelledby="manage-tools-heading">
+                <h2 id="manage-tools-heading"
+                    class="font-heading text-base font-semibold">Equipment &amp; borrowing</h2>
+                <p class="mt-2 text-sm text-slate-500">Everything you need for day-to-day equipment management.</p>
+                <div class="ui-launch-grid">
+                    {% include "components/action_link.html" with route="inventory_manage:item-list" label="Equipment catalog" description="Manage catalog items and physical units." testid="home-manage-equipment" only %}
+                    {% include "components/action_link.html" with route="borrowing_manage:request-list" label="Requests and approvals" description="Review quantities, availability, and borrowing decisions." testid="home-manage-requests" only %}
+                    {% include "components/action_link.html" with route="accounts:manage-list" label="Borrower accounts" description="Find borrowers and review account access." testid="home-manage-accounts" only %}
+                    {% include "components/action_link.html" with route="inventory_manage:maintenance-list" label="Maintenance" description="Track repair work and equipment condition." testid="home-manage-maintenance" only %}
+                </div>
+            </section>
+            <section class="ui-surface" aria-labelledby="workspace-tools-heading">
+                <h2 id="workspace-tools-heading"
+                    class="font-heading text-base font-semibold">Workspace tools</h2>
+                <a href="{% url 'operations:settings' %}"
+                   class="ui-tool-link"
+                   data-testid="home-manage-settings">
+                    Borrowing settings
+                    {% include "components/icon.html" with icon="settings" only %}
+                </a>
+                <a href="{% url 'operations:audit-list' %}"
+                   class="ui-tool-link"
+                   data-testid="home-manage-audit">
+                    Audit history
+                    {% include "components/icon.html" with icon="audit-list" only %}
+                </a>
+                <h3 class="mt-6 text-sm font-semibold">Dashboard summaries</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-500">Live summaries, overdue monitoring, and borrowing charts will be available after the release and return workflows are implemented.</p>
+            </section>
         </div>
     </section>
 {% endblock %}

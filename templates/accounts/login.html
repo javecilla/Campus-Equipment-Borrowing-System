@@ -3,61 +3,62 @@
 {% block title %}Sign in · Campus Equipment{% endblock %}
 {% block meta_description %}Sign in to the Campus Equipment Borrowing System.{% endblock %}
 {% block content %}
-    <main class="flex min-h-svh flex-col bg-surface px-6 pt-12 text-slate-900 sm:pt-20"
-          data-testid="login-page">
-        <section class="mx-auto w-full max-w-sm" aria-labelledby="login-heading">
-            <header class="mb-8 text-center">
-                <img src="{% static 'images/logo.png' %}"
-                     alt="Campus Equipment"
-                     width="48"
-                     height="48"
-                     class="mx-auto mb-6 h-12 w-12 rounded-xl">
-                <h1 id="login-heading"
-                    class="mb-2 font-heading text-2xl font-semibold tracking-tight">Welcome back.</h1>
-                <p class="text-sm leading-6 text-slate-500">Sign in to Campus Equipment.</p>
-            </header>
-            {% include "components/messages.html" %}
-            <form method="post" action="{% url 'accounts:login' %}" class="space-y-4">
-                {% csrf_token %}
-                {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-                {% if form.non_field_errors %}
-                    <div class="rounded-md border border-rose-100 bg-rose-50 px-3 py-2.5 text-sm leading-5 text-rose-700"
-                         role="alert"
-                         data-testid="login-error">{{ form.non_field_errors }}</div>
-                {% endif %}
-                <div>
-                    <label for="{{ form.username.id_for_label }}"
-                           class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.username.label }}</label>
-                    {{ form.username }}
-                    {% if form.username.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.username.errors }}</div>{% endif %}
-                </div>
-                <div>
-                    <label for="{{ form.password.id_for_label }}"
-                           class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.password.label }}</label>
-                    {{ form.password }}
-                    {% if form.password.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.password.errors }}</div>{% endif %}
-                </div>
-                <button type="submit"
-                        class="h-11 w-full rounded-md bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                        data-testid="login-submit">Sign in</button>
-            </form>
-            <p class="mt-6 text-center text-xs leading-5 text-slate-500">
-                Need a borrower account?
-                <a href="{% url 'accounts:register' %}"
-                   class="font-medium text-accent hover:underline"
-                   data-testid="login-register-link">Register here</a>.
-            </p>
-        </section>
-        <div class="pointer-events-none -mx-6 mt-auto pt-12 sm:pt-16">
+    <main class="ui-auth" data-testid="login-page">
+        <div class="ui-auth-layout">
+            {% include "components/auth_intro.html" %}
+            <section class="ui-auth-form" aria-labelledby="login-heading">
+                <header class="mb-8 text-center">
+                    <img src="{% static 'images/logo.jpg' %}"
+                         alt="Campus Equipment"
+                         width="48"
+                         height="48"
+                         class="mx-auto mb-6 h-12 w-12 rounded-xl">
+                    <h1 id="login-heading"
+                        class="mb-2 font-heading font-semibold tracking-tight">Welcome back.</h1>
+                    <p class="text-sm leading-6 text-slate-500">Sign in to Campus Equipment.</p>
+                </header>
+                {% include "components/messages.html" %}
+                <form method="post" action="{% url 'accounts:login' %}" class="space-y-4">
+                    {% csrf_token %}
+                    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+                    {% if form.non_field_errors %}
+                        <div class="rounded-md border border-rose-100 bg-rose-50 px-3 py-2.5 text-sm leading-5 text-rose-700"
+                             role="alert"
+                             data-testid="login-error">{{ form.non_field_errors }}</div>
+                    {% endif %}
+                    <div>
+                        <label for="{{ form.username.id_for_label }}"
+                               class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.username.label }}</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.username.errors }}</div>{% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.password.id_for_label }}"
+                               class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.password.label }}</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.password.errors }}</div>{% endif %}
+                    </div>
+                    <button type="submit"
+                            class="ui-button ui-button--primary w-full"
+                            data-testid="login-submit">Sign in</button>
+                </form>
+                <p class="mt-6 text-center text-xs leading-5 text-slate-500">
+                    Need a borrower account?
+                    <a href="{% url 'accounts:register' %}"
+                       class="font-medium text-accent hover:underline"
+                       data-testid="login-register-link">Register here</a>.
+                </p>
+            </section>
+        </div>
+        <!-- <div class="ui-auth-wave">
             <svg xmlns="http://www.w3.org/2000/svg"
                  viewBox="0 0 1440 320"
                  preserveAspectRatio="none"
                  aria-hidden="true"
-                 focusable="false"
-                 class="block h-32 w-full sm:h-48">
-                <path fill="#047857" fill-opacity="1" d="M0,128L48,133.3C96,139,192,149,288,138.7C384,128,480,96,576,85.3C672,75,768,85,864,80C960,75,1056,53,1152,53.3C1248,53,1344,75,1392,85.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z">
+                 focusable="false">
+                <path fill="var(--md-sys-color-primary)" fill-opacity="1" d="M0,128L48,133.3C96,139,192,149,288,138.7C384,128,480,96,576,85.3C672,75,768,85,864,80C960,75,1056,53,1152,53.3C1248,53,1344,75,1392,85.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z">
                 </path>
             </svg>
-        </div>
+        </div> -->
     </main>
 {% endblock %}

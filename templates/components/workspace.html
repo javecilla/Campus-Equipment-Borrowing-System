@@ -1,32 +1,36 @@
 {% extends "base.html" %}
 {% load static assets %}
 {% block content %}
-    <div class="flex min-h-svh flex-col bg-surface text-slate-900">
+    <div class="ui-workspace">
         <a href="#workspace-main"
            class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-white focus:p-3 focus:text-accent">Skip to content</a>
-        <header class="sticky top-0 z-20 border-b border-slate-200 bg-white">
-            <div class="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-4 gap-y-3 px-5 py-4 sm:px-8 xl:flex-nowrap">
-                <div class="shrink-0">{% include "components/brand.html" %}</div>
-                <nav class="order-3 flex w-full flex-wrap gap-1 xl:order-none xl:w-auto xl:flex-1 xl:justify-center"
+        <header class="ui-app-header">
+            <div class="ui-header-inner">
+                <div class="ui-workspace-brand">{% include "components/brand.html" %}</div>
+                <nav class="ui-navigation"
+                     data-scroll-navigation
                      aria-label="{% block navigation_label %}Workspace{% endblock %}"
                      data-testid="workspace-navigation">
                     {% block navigation %}{% endblock %}
                 </nav>
-                {% block account_menu %}{% endblock %}
+                <div class="ui-sidebar-logout">{% include "components/logout.html" %}</div>
             </div>
         </header>
-        <main id="workspace-main"
-              tabindex="-1"
-              class="mx-auto w-full max-w-6xl flex-1 px-5 py-10 outline-none sm:px-8 sm:py-12">
+        <div class="ui-workspace-bar" data-testid="workspace-bar">
+            <span class="hidden min-w-0 font-heading text-lg font-medium">{% block workspace_label %}Workspace{% endblock %}</span>
+            {% block account_link %}{% endblock %}
+        </div>
+        <main id="workspace-main" tabindex="-1" class="ui-main">
             {% include "components/messages.html" %}
             {% block workspace_content %}{% endblock %}
         </main>
-        <footer class="mx-auto w-full max-w-6xl px-5 py-6 text-xs text-slate-500 sm:px-8">
-            <div class="border-t border-slate-100 pt-5">Campus Equipment Borrowing System</div>
+        <footer class="ui-footer">
+            <div class="border-t border-slate-100 pt-5 hidden">Campus Equipment Borrowing System</div>
         </footer>
     </div>
 {% endblock %}
 {% block scripts %}
     {{ block.super }}
-    <script type="module" src="{% compiled_asset 'build/account-menu.js' %}"></script>
+    <script type="module"
+            src="{% compiled_asset 'build/workspace-navigation.js' %}"></script>
 {% endblock %}

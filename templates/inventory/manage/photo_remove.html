@@ -2,9 +2,9 @@
 {% block title %}Remove equipment photo · {{ item.name }}{% endblock %}
 {% block workspace_content %}
     {% include "inventory/manage/nav.html" with active_tab="items" %}
-    <section class="max-w-2xl space-y-6"
+    <section class="ui-page space-y-6"
              data-testid="equipment-photo-remove-section">
-        <h1 class="font-heading text-3xl font-semibold">Remove photo for {{ item.name }}?</h1>
+        <h1 class="font-heading font-semibold">Remove photo for {{ item.name }}?</h1>
         {% if error %}
             <p role="alert" class="text-amber-800">{{ error }}</p>
         {% endif %}
@@ -14,10 +14,10 @@
             {% csrf_token %}
             <button type="submit"
                     data-testid="equipment-photo-remove-submit"
-                    class="min-h-11 rounded-md bg-rose-600 px-5 text-sm font-semibold text-white hover:bg-rose-700">Remove photo</button>
+                    class="ui-button ui-button--danger">Remove photo</button>
             <a href="{% url 'inventory_manage:item-detail' item.pk %}"
                data-testid="equipment-photo-remove-cancel"
-               class="inline-flex min-h-11 items-center rounded-md border border-slate-200 px-4 text-sm font-semibold">Cancel</a>
+               class="ui-button ui-button--outline">Cancel</a>
         </form>
     </section>
 {% endblock %}

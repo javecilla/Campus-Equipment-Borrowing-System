@@ -6,6 +6,8 @@ Run commands in **PowerShell from the project root**, where `manage.py` lives. E
 
 **Current phase: T01-T14/T16 are Done and integrated.** PR #37 at `5381c83` integrates T14 source `058357c`; main already contains T13 query fixes through PR #35. **254 PostgreSQL tests passed in 39.994s** and configured checks pass. Margareth / T15 is ready with integrated T13/T14; it remains Not started. T17 still needs T15. Browser outcomes and recorded cleanup remain pending. See [integration receipt](handoffs/t14-publication-main-integration-and-t15-readiness-10-20-2026.md) and [current handoff](HANDOFF.md).
 
+**UI-09 is implemented locally on `jerome`, awaiting publication/integration.** Its shared M3 presentation does not change workflow APIs or T15 ownership. Read the [canonical component rules](docs/coding-standards.md#shared-m3-roles-and-components-ui-09) before adding feature templates.
+
 For where to add views, models, forms, URLs, and page templates, use [Project Folder Architecture](docs/project-folder-architecture.md).
 
 To have your coding agent implement your assigned backlog work, copy your member prompt from [Team AI implementation prompts](docs/team-agent-prompts.md). It includes implementation authorization, prerequisite checks, verification, and handoff; feature changes stay uncommitted for review.
@@ -123,9 +125,9 @@ Then start the server:
 
 Open **<http://127.0.0.1:8000/>** for the custom sign-in route. With `DJANGO_DEBUG=True`, the Tailwind/font preview remains available directly at **<http://127.0.0.1:8000/test>**. The terminal should report no system-check errors or unapplied migrations. Keep that terminal open while working; stop with Ctrl+C, or Ctrl+Break on Windows.
 
-### Expected startup screen
+### Earlier startup screen
 
-Anonymous visitors now see the custom sign-in page, with the existing green branding and bottom wave:
+The supplied screenshot below records the earlier minimal sign-in page. Local UI-09 now uses a responsive M3 layout with the existing brand logo/wave, a contextual desktop panel and stacked compact-screen form; the authentication flow is unchanged:
 
 ![Campus Equipment sign-in page with username or email, password, and the green bottom wave](static/images/login-screen.png)
 
@@ -282,14 +284,16 @@ The library rationale and course-pattern requirements are in [architecture.md](d
 
 | Path                     | Purpose                                                                                                                                   |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `static/css/app.css`     | Tailwind entry point, local font import, font theme, and explicit source locations                                                        |
+| `static/css/app.css`     | Tailwind entry point, local fonts, shared M3 components and explicit source locations                                                        |
 | `static/css/fonts.css`   | Existing local font declarations; imported into Tailwind's base layer                                                                     |
 | `static/js/*.js`         | Browser page modules; the JavaScript build compiles every top-level module                                                                |
 | `static/build/`          | Generated CSS, browser ES modules/chunks, and any generated dependency license notices                                                    |
 | `templates/base.html`    | Shared document shell loading `build/app.css`, favicon links, and metadata; blocks: title, meta_description, extra_head, content, scripts |
 | `static/images/favicon/` | Supplied browser/touch icons and web manifest; manifest icon paths are relative to this directory                                         |
 
-`npm.cmd run build` creates a minified build. `npm.cmd run dev` runs CSS and JavaScript watchers together and stops the sibling if either exits. Build before running `collectstatic` or assembling a submission; include the complete generated build, including chunks/license files, in a runnable artifact. Source control keeps the npm lockfile and source assets; the submission process must build assets explicitly because ignored files are not supplied by Git.
+`npm.cmd run build` compiles minified CSS/browser modules. The fixed palette lives in `static/css/app.css`; no color-generation dependency or separate `theme.css` is required. `build:css` invokes `check:theme` (`scripts/check-theme.mjs`) before compiling, including at CSS watcher startup. Run `npm.cmd run check:theme` after editing semantic role colors; the dependency-free check rejects nine text-role pairs below 4.5:1. See the [canonical component rules](docs/coding-standards.md#shared-m3-roles-and-components-ui-09) for the desktop sidebar and compact navigation. Frontend agents also load the shared [campus-ui skill](.agents/skills/campus-ui/SKILL.md); it guides component reuse and browser verification without acting as an enforcement service.
+
+ `npm.cmd run dev` runs CSS and JavaScript watchers together and stops the sibling if either exits. Build before running `collectstatic` or assembling a submission; include the complete generated build, including chunks/license files, in a runnable artifact. Source control keeps the npm lockfile and source assets; the submission process must build assets explicitly because ignored files are not supplied by Git.
 
 When updating a workstation from the earlier Axios setup, remove its obsolete generated `static/build/http.js` and `static/build/axios-LICENSE.txt` if present before rebuilding or collecting static files. Current builds do not create those files. Keep the source assets and font license files.
 
@@ -311,7 +315,7 @@ The common shell loads the compiled stylesheet, including local fonts; do not lo
 
 Use ordinary Django forms and links for the current server-rendered pages. Login and logout use native form submission with CSRF tokens; no JavaScript HTTP library is installed or needed.
 
-Load an actual page module through its template's scripts block, preserving `{{ block.super }}`, with `<script type="module" src="{% compiled_asset 'build/your-page.js' %}"></script>` and `{% load assets %}`. The build compiles/minifies `frontend-test.js`, `account-menu.js` and the local `equipment-photo.js` preview. The shared workspace loads the account disclosure for outside-click/Escape dismissal; native links/forms still handle profile navigation and logout. Use the [coding guide](docs/coding-standards.md#browser-interactions) for future explicitly authorized enhancements and the [HTTP contract](docs/api_spec.md#common-protocol) for existing HTML/form/CSV response semantics.
+Load an actual page module through its template's scripts block, preserving `{{ block.super }}`, with `<script type="module" src="{% compiled_asset 'build/your-page.js' %}"></script>` and `{% load assets %}`. The build compiles/minifies `frontend-test.js`, `workspace-navigation.js` and the local `equipment-photo.js` preview. The workspace uses a native top-bar profile link and a red sidebar POST logout form; no account dropdown script is needed. Use the [coding guide](docs/coding-standards.md#browser-interactions) for future explicitly authorized enhancements and the [HTTP contract](docs/api_spec.md#common-protocol) for existing HTML/form/CSV response semantics.
 
 ## Working with migrations
 
@@ -350,7 +354,7 @@ Formatting is split by language so Django tags and Python keep their correct par
 | Django templates                   | `.\.venv\Scripts\djlint.exe templates --reformat` | `.\.venv\Scripts\djlint.exe templates --check` |
 | Python                             | `.\.venv\Scripts\ruff.exe format .`               | `.\.venv\Scripts\ruff.exe format --check .`    |
 
-Install both dependency sets first: `npm.cmd ci` and `.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt`. Prettier is pinned in package.json; djLint/Ruff are pinned in requirements-dev.txt. `.prettierrc.json` and pyproject.toml hold shared options; `.prettierignore` excludes Django HTML, Python, private files, dependencies, fonts, and generated output. The npm scripts target source/config files, without rewriting historical Markdown. To format a changed Markdown file deliberately, run `.\node_modules\.bin\prettier.cmd path/to/changed-file.md --write` with its actual path; prose wrapping is preserved.
+Install both dependency sets first: `npm.cmd ci` and `.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt`. Prettier is pinned in package.json; djLint/Ruff are pinned in requirements-dev.txt. `.prettierrc.json` and pyproject.toml hold shared options; `.prettierignore` excludes Django HTML, Python, private files, dependencies, fonts, and generated output. The npm scripts target source/config files and `scripts/**/*.mjs`, without rewriting historical Markdown. To format a changed Markdown file deliberately, run `.\node_modules\.bin\prettier.cmd path/to/changed-file.md --write` with its actual path; prose wrapping is preserved.
 
 For a small feature, use the local formatter executable on the actual owned paths, then run the full non-writing checks. Do not use Prettier's generic HTML parser on Django templates or enable two formatters for the same language in your editor. Editor extensions are optional; the CLI is the team reference. djLint is configured as a Django template formatter; its separate optional linter rules are not a new acceptance gate. Ruff remains the Python linter. No pre-commit hook, automatic Tailwind class sorter, or CI job is installed.
 
@@ -465,7 +469,7 @@ Restart Django after applying the migration. The bundled Pillow wheel includes i
 
 The root `static/` directory contains shared source files. [Django's static-files finder](https://docs.djangoproject.com/en/5.2/howto/static-files/) searches it through `STATICFILES_DIRS` in [config/settings.py](config/settings.py). `STATIC_URL` defines the browser prefix `/static/`, so `static/fonts/...` is served at `/static/fonts/...`. Keep `STATIC_ROOT` (`staticfiles/`) separate for generated collection output.
 
-[static/css/fonts.css](static/css/fonts.css) defines the local DM Sans variable fonts and all Poppins weights/styles. [app.css](static/css/app.css) imports it into Tailwind's base layer, and [base.html](templates/base.html) loads the compiled stylesheet once:
+[static/css/fonts.css](static/css/fonts.css) defines the local DM Sans variable fonts and all Poppins weights/styles. [app.css](static/css/app.css) imports it into Tailwind's base layer alongside the fixed color roles, and [base.html](templates/base.html) loads the compiled stylesheet once:
 
 ```django
 {% load assets %}

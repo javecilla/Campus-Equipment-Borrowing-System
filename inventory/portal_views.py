@@ -29,7 +29,7 @@ def equipment_list(request: HttpRequest) -> HttpResponse:
         form = PortalItemSearchForm(None)
         items = list_active_catalog_items(search_query="", category_id=None)
 
-    paginator: Paginator[CatalogItem] = Paginator(items, 25)
+    paginator: Paginator[CatalogItem] = Paginator(items, 10)
     page_number: str = request.GET.get("page", "1")
     try:
         page: Page[CatalogItem] = paginator.page(page_number)

@@ -4,6 +4,8 @@
 
 This guide covers T01-T14/T16 integrated in main, including T13 query fixes through PR #35 and T14 concurrency proof through PR #37 at `5381c83` ([Module 13](#module-13--postgresql-competing-approvals-t14)). T15 / Margareth is ready with T13/T14 satisfied, but remains Not started. Release and returns remain pending; T12/T13/T16 browser results remain Not run until supplied.
 
+The shared M3 UI refresh (UI-09) is implemented locally on `jerome`, not integrated; [Module 14](#module-14--shared-m3-layout-and-controls-ui-09) records its actual layout/accessibility smoke checks separately from the workflow cases below.
+
 For the current borrower checks, go directly to [Module 9: request submission](#module-9--borrower-request-submission-t11) or [Module 10: request and loan tracking](#module-10--borrower-request-and-loan-tracking-t12). For equipment maintenance and reconciliation, see [Module 11: equipment maintenance](#module-11--equipment-maintenance-and-inventory-reconciliation-t16). Use the [result record](#recording-manual-results) to report what actually happened.
 
 For automated tests, see [Running the automated suite](#running-the-automated-test-suite) at the bottom.
@@ -972,7 +974,7 @@ Record the actual new request ID from the confirmation/list. On October 19 with 
 5. Open a request. Verify its item/category details, decision status/reason when decided, and current due dates.
 6. Substitute another borrower's request ID in the detail URL. The response should be 404 without revealing record contents. Invalid page numbers should also return 404; invalid status filters should show a validation error and no records.
 
-Pagination shows 25 records per page. If a fictional borrower already has more than 25, verify Previous/Next retains the selected status and does not duplicate/skip rows. The three-record snapshot cannot exercise that boundary; leave it Not run until suitable records exist. Cross-user checks also need a second fictional borrower's known request; the snapshot found no such request.
+Pagination shows 6 records per page. If a fictional borrower already has more than 6, verify Previous/Next retains the selected status and does not duplicate/skip rows. The three-record snapshot cannot exercise that boundary; leave it Not run until suitable records exist. Cross-user checks also need a second fictional borrower's known request; the snapshot found no such request.
 
 ### 10.2 Cancel a Pending request
 
@@ -1056,7 +1058,7 @@ print(
 - **Current example:** `CEL-AVE-PROJ-002`, unit ID 2, `FAIR`, HDMI Projector / Audio Visual Equipment, is `AVAILABLE`. Dropdown label: `CEL-AVE-PROJ-002 — HDMI Projector (Fair)`.
 - **Existing maintenance:** 4 Open, 0 Closed: record 4 / `CEL-AVE-PROJ-001` (unit 1), plus record 1 / `CEL-AVE-HDMI-001` (unit 4), record 2 / `CEL-PHV-RLT-001` (unit 8), record 3 / `CEL-LAB-VCL-001` (unit 15). Units 4, 8 and 15 are Damaged/Maintenance; unit 1 is Good/Maintenance. For a fresh opening use projector 002, not unit 1. To continue the previous projector-001 run, its existing record is `/manage/maintenance/4/`; do not try to open it again.
 - **Initial counts:** Available 12, Reserved 0, Issued 0, Maintenance 4, Retired 0, Serviceable 12, Total 16. Settings remain 7 days / 3 units. No loans exist.
-- These replace Kenneth's workstation examples; `cam-qwert` / `sony` is not in this local snapshot. If data changed, select another eligible fictional unit and record the actual baseline. Counts below assume only these sequential cases change inventory. Reserved/Issued browser rejection and more-than-25-row pagination require additional legitimate records; leave them Not run here. No seed data was created by this review.
+- These replace Kenneth's workstation examples; `cam-qwert` / `sony` is not in this local snapshot. If data changed, select another eligible fictional unit and record the actual baseline. Counts below assume only these sequential cases change inventory. Reserved/Issued browser rejection and more-than-5-row pagination require additional legitimate records; leave them Not run here. No seed data was created by this review.
 - Test repair before retirement. Retirement has no reversal in the supplied interface; use a disposable fictional unit for that case.
 
 ---
@@ -1188,7 +1190,7 @@ print(
     - ✅ Displays only closed maintenance records.
   - **Clear filters:** Click **Clear**.
     - ✅ Restores unfiltered list.
-  - **Pagination:** List paginates at 25 rows per page; pagination links preserve active `q` and `status` query parameters using `{% querystring %}`. Invalid page returns 404.
+  - **Pagination:** List paginates at 5 rows per page; pagination links preserve active `q` and `status` query parameters using `{% querystring %}`. Invalid page returns 404.
 
 ---
 
@@ -1394,6 +1396,64 @@ Expected: one complete approval with exactly two allocations and two Reserved un
 On October 20, 2026, a **read-only local inspection at 07:55 Asia/Manila** verified PostgreSQL 17.5, Read Committed isolation and limits 7 days / 3 per item. The fixture snapshots above match those limits but do not read or modify live settings, accounts or stock. Actual automated results: the implementation run passed **2 focused tests in 0.894s**; the fresh publication run passed **254 full-suite tests in 39.994s**. Both runs created and destroyed the separate PostgreSQL test database. All required configured checks pass; see [integration receipt](../handoffs/t14-publication-main-integration-and-t15-readiness-10-20-2026.md).
 
 Manual/browser simultaneous submissions are **Not run**. To record a fresh terminal reproduction, retain its command, revision, Asia/Manila timestamp, count and actual outcome in the result record below. T14 is integrated; Margareth / T15 is ready, Not started.
+
+---
+
+## Module 14 — Shared M3 Layout and Controls (UI-09)
+
+**Owner:** Jerome Avecilla with Codex assistance. **Revision:** local uncommitted `jerome` on main `01b25a9` (PR #38); UI-09 is not integrated into main. **Scope:** shared presentation across existing templates, not T15/T17 workflows or full T20 acceptance. Follow [DEV setup/build](../DEV.md#frontend-assets-tailwind-and-page-scripts) and the [canonical M3 component rules](coding-standards.md#shared-m3-roles-and-components-ui-09).
+
+The October 20, 2026, **08:42 Asia/Manila read-only inspection** confirmed active fictional `auth_demo_admin` / `auth_demo_user` accounts, limits 7 days / 3 per item, active item IDs 21/1/2, unit IDs 2/3/4, maintenance IDs 1/2/3 and that the fictional borrower's request #3 was Approved. These are dated local fixtures, not a seed promise. Recheck your own records before opening their IDs; use your existing account's private password, never share credentials. UI checks need no new inventory, approval, cancellation or settings writes.
+
+### UI09-01: Build and compare responsive layouts
+
+```powershell
+npm.cmd ci
+npm.cmd run build
+.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
+```
+
+The build reads the fixed palette from `app.css`, verifies nine foreground/background role pairs at **at least 4.5:1** without a third-party color library, then compiles shared CSS and browser modules. There is no separate `theme.css` request. Restart the server after source changes when using `--noreload`; otherwise use the ordinary development server's template reload behavior.
+
+| Field / action | Value / expected result |
+| --- | --- |
+| ADMIN entry pages | `/manage/`, `/manage/items/`, `/manage/units/new/`, `/manage/requests/`, `/manage/settings/`, `/manage/audit/` |
+| BASIC_USER entry pages | `/portal/`, `/portal/equipment/`, `/portal/requests/new/`, `/portal/requests/`, `/portal/profile/` |
+| Compact viewport | `320 × 1000` and `375 × 1000`; single-column fields/cards, compact account avatar and horizontally scrollable tabs |
+| Medium viewport | `768 × 1000`; no whole-page horizontal overflow |
+| Sidebar breakpoint | `1023 × 1000` keeps compact navigation; `1024 × 1000` has a 240px desktop sidebar and remaining-width main column. |
+| Expanded viewport | `1440 × 1000` and `1920 × 1000`; white panels, neutral gray canvas, teal active navigation, matching header/main gutters and adaptive catalog tracks |
+| Form breakpoint | Unit form at `839px` uses one field column; `840px` uses two. Equipment/asset code and condition/acquisition date share rows. |
+| Request form breakpoint | At `1440px`, purpose/date and requested-item rows occupy adjacent 1:2 panes; compact screens stack them. |
+| Home shortcuts | ADMIN: equipment, requests, accounts, maintenance plus settings/audit tools; two panel columns from 1200px. BASIC_USER: equipment, request creation, own requests, profile. Each opens an existing named route; no static dashboard counts are shown. |
+
+Expected: consistent labels, input height, primary/tonal/outlined/destructive action emphasis, surface shape and table spacing. Controls are at least 48px high. Long tables scroll inside their own region while the page remains within the viewport. Labels remain associated with controls; view pages have no duplicate IDs.
+
+### UI09-02: Keyboard, motion, scrolling and error states
+
+| Field / action | Concrete value / expected result |
+| --- | --- |
+| Keyboard entry | Reload an ADMIN page, `Tab` to Skip to content and `Enter`; focus moves to main content with no missing tab destination. |
+| Profile link | At 320/375/640/768/1023/1024/1440/1702px, the top workspace bar shows the avatar, display name and role without a dropdown. Click it or focus it and press Enter: ADMIN opens `/manage/profile/`; BASIC_USER opens `/portal/profile/`. The link has `aria-current="page"` on the profile page. |
+| Log out row | At 1024px and wider, the red icon/text row sits at the bottom of the sidebar with the same padding, spacing and icon size as the other links. At 320px it sits beside the brand. Confirm it remains visible at 1024 × 500. Activate it to submit a CSRF-protected POST, return to sign-in, then verify a protected profile URL redirects to sign-in. |
+| Compact current destination | Open `/manage/audit/` at 320px; the active tab is revealed in the scrolling navigation. |
+| Table scrolling | On `/manage/accounts/` at 320px, focus the named scrollable table region; arrow/trackpad scrolling reaches off-screen columns without scrolling the whole page sideways. |
+| Reduced motion | Emulate `prefers-reduced-motion: reduce`; press/hover changes occur without animated transitions and keyboard focus remains visible. |
+| Press feedback | Hold the New equipment item action before releasing; subtle scale feedback is visible. Release navigates to the existing item form without a business write. |
+| Cancellation emphasis | Open the eligible request cancellation confirmation without submitting; Confirm cancellation uses the shared danger button. |
+| Unicode queue filter | `q=²`; normal results/empty state, no exception. |
+| Invalid date filters | From `2026-10-22`, through `2026-10-20`; bound range error without workflow writes. |
+| Invalid request | Leave purpose, return date and item rows blank, then Submit request; bound errors retain labels/unique IDs and no request is created. |
+| Invalid sign-in | Username/email `ui-check@example.invalid`, password `invalid-local-ui-check`; the generic sign-in error remains visible and readable. |
+| Wrong role | BASIC_USER opens `/manage/items/`; custom 403 remains enforced and styled. |
+
+Use the [result record](#recording-manual-results) for additional tests. Do not submit valid create/update/decision/cancellation actions just to inspect their appearance; their workflow cases remain in their existing modules.
+
+### Actual execution and limits
+
+The fixed-palette follow-up on October 20 passed **12 home/profile page checks** across both roles at 320/1024/1440px in Chrome **155.0.8059.84**: expected colors/font, visible profile link, one compiled stylesheet, no separate theme request and no page overflow. Both roles' direct profile navigation and logout passed **4 interaction checks**. All 31 semantic color values match the earlier generated palette exactly. The dependency-free build check accepts the nine text-role pairs and rejects low-contrast/missing-role fixtures without changing application CSS. The new campus-ui skill and Django skill passed metadata validation. See the [dependency/skill handoff](../handoffs/fixed-palette-and-shared-campus-ui-skill-10-20-2026.md) for verification and concurrent-work limits. Prior navigation acceptance remains in the [navigation handoff](../handoffs/sidebar-logout-and-topbar-profile-link-10-20-2026.md), with broader routes/forms in the [reference-design handoff](../handoffs/minimal-dashboard-reference-and-ui-review-10-20-2026.md).
+
+The current follow-up PostgreSQL suite passed **254 tests in 42.919s** using a separately named test database after the standard shared test database run encountered fixture/teardown interference; see the handoff for the failed attempt. Configured build/format/template/Django/migration/pip/audit checks pass. These UI checks do not establish complete screen-reader conformance, Firefox/Safari results, every populated loan/return screen or the outstanding full lifecycle/manual cases. No business mutations were performed in the browser. Temporary sessions for the existing fictional accounts were used and logged out. No new account/inventory seed data or migrations were introduced. UI-09 remains local and uncommitted; T15 stays ready on integrated main and T20 retains its original workflow gates.
 
 ---
 
