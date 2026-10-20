@@ -49,6 +49,21 @@
                    class="ui-button ui-button--outline">Reject</a>
             </div>
         {% endif %}
+        {% if borrow_request.status == "APPROVED" %}
+            <div class="flex flex-wrap gap-3" data-testid="approved-request-actions">
+                <a href="{% url 'borrowing_manage:request-release' borrow_request.pk %}"
+                   data-testid="request-release-link"
+                   class="ui-button ui-button--primary">Release equipment</a>
+                <a href="{% url 'borrowing_manage:request-due-date' borrow_request.pk %}"
+                   data-testid="request-due-date-link"
+                   class="ui-button ui-button--outline">Revise due date</a>
+            </div>
+        {% endif %}
+        {% if loan %}
+            <a href="{% url 'borrowing_manage:loan-detail' loan.pk %}"
+               data-testid="request-loan-link"
+               class="ui-button ui-button--outline">View loan #{{ loan.pk }}</a>
+        {% endif %}
         <section class="border-t border-slate-200 pt-6">
             <h2 class="font-heading text-xl font-semibold">Requested items</h2>
             <div class="mt-4 overflow-x-auto"

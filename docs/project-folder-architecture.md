@@ -51,9 +51,12 @@ Campus-Equipment-Borrowing-System/
 │   ├── models.py                                [existing] requests, allocations, loans, returns
 │   ├── migrations/                              [existing]
 │   ├── views.py                                 [existing] borrower submission/history/cancellation; admin request review/decisions
-│   ├── forms.py                                 [existing] submission/history/queue filters and decision/cancellation forms; returns planned
-│   ├── manage_urls.py                           [existing] administrator request queue/detail/decisions; loan placeholder
-│   ├── services.py                              [existing] atomic submission/cancellation/approval/rejection; issue/return planned
+│   ├── forms.py                                 [existing] submission/history/queue/loan filters and decision/cancellation/date/release forms; returns planned
+│   ├── manage_urls.py                           [existing] administrator request decisions, due-date/release and loan list/detail/slip routes
+│   ├── services.py                              [existing] atomic submission/cancellation/approval/rejection; returns planned
+│   ├── release_services.py                      [existing; T15 on jerome] audited pre-issue date revision and one-time release
+│   ├── release_views.py                         [existing; T15 on jerome] administrator date/release forms and loan/slip pages
+│   ├── reservations.py                          [existing; T15 on jerome] complete reservation checks/locks shared with cancellation
 │   ├── queries.py                               [existing] owner-scoped history and administrator request queue/detail reads
 │   ├── tests/                                   [existing] request submission/tracking/decisions; concurrency proof planned
 │   └── management/commands/                     [planned] controlled demonstration seed
@@ -89,7 +92,7 @@ Campus-Equipment-Borrowing-System/
 │   │   ├── manage/                              [existing] catalog/photo/restore/unit and maintenance pages
 │   │   └── portal/                              [existing] equipment browsing list/detail pages
 │   ├── borrowing/                               [existing] submission and administrator request review/decision pages
-│   │   ├── manage/                              [existing/planned] request_list/detail/decision.html present; release/returns/slips planned
+│   │   ├── manage/                              [existing/planned] request/decision and local T15 date/release/loan/slip pages present; returns planned
 │   │   └── portal/                              [existing] borrower request/loan history and cancellation
 │   └── operations/manage/                       [existing/planned] settings/audit pages; live dashboard/reports planned
 │
@@ -99,10 +102,10 @@ Campus-Equipment-Borrowing-System/
 │   ├── fonts/                                   [existing] DM Sans/Poppins and license notices
 │   ├── images/                                  [existing] branding, default equipment photo and setup screenshots
 │   ├── js/frontend-test.js                       [existing] preview font-load check
-│   ├── js/workspace-navigation.js                [existing; UI-09 local] reveal current compact navigation tab
+│   ├── js/workspace-navigation.js                [existing; UI-09 integrated] reveal current compact navigation tab
 │   ├── js/equipment-photo.js                     [existing] local image preview and selection removal
 │   └── build/                                   [generated] ignored CSS/browser modules/chunks
-├── scripts/check-theme.mjs                      [existing; UI-09 local] validate fixed stylesheet text-role contrast
+├── scripts/check-theme.mjs                      [existing; UI-09 integrated] validate fixed stylesheet text-role contrast
 ├── package.json                                 [existing] npm dependencies/build/watch commands
 ├── package-lock.json                            [existing] exact npm dependency graph
 ├── docs/                                        [existing] canonical requirements/design guides
@@ -118,7 +121,7 @@ A **view** is a Python request handler in the relevant app's `views.py`. The pag
 
 The role prefix selects the audience; the feature app selects the Python module. Real basic-user equipment handlers belong in `inventory/`, and borrowing handlers in `borrowing/`. T10 equipment handlers are in `inventory/portal_views.py`, mounted through `accounts/portal_urls.py`. T11 request creation and T12 borrower request/loan history, detail and cancellation handlers live in `borrowing/views.py`; owner-scoped read helpers live in `borrowing/queries.py` and the atomic cancellation workflow in `borrowing/services.py`. The portal URLs are mounted through `accounts/portal_urls.py`. Feature pages extend the existing `operations/manage/base.html` or `accounts/portal/base.html` and fill `workspace_content`; both inherit `components/workspace.html` and the `base.html` document/asset shell. The [coding guide](coding-standards.md#tailwind-styling-pattern) defines the shared layout pattern.
 
-T13 request review/decisions and corrected T16 are integrated. T13's subsequent Unicode-search and reservation-display fixes are integrated through PR #35 at `cf50d0c`; smaller coding-convention follow-ups remain. PR #37 at `5381c83` integrates T14 [separate-connection approval tests](../borrowing/tests/test_approval_concurrency.py). T15 / Jerome is ready, Not started; its release/slip pages below remain planned. See [current evidence](tasks.md#verified-task-evidence). These page placements include existing pages and explicitly planned borrowing examples; route names come from the HTTP contract:
+T13 request review/decisions and corrected T16 are integrated. T13's subsequent Unicode-search and reservation-display fixes are integrated through PR #35 at `cf50d0c`; smaller coding-convention follow-ups remain. PR #37 at `5381c83` integrates T14 [separate-connection approval tests](../borrowing/tests/test_approval_concurrency.py). T15 / Jerome is Done on `jerome`, not integrated into main; its release/date/loan/slip paths below exist. The standalone printable slip extends `base.html` and reuses `loan_summary.html`; ordinary feature pages retain their role shell. See [current evidence](tasks.md#verified-task-evidence). These page placements include existing pages and explicitly planned borrowing examples; route names come from the HTTP contract:
 
 | Page | Python view location | Template location | Contracted URL name |
 | --- | --- | --- | --- |
@@ -133,6 +136,8 @@ T13 request review/decisions and corrected T16 are integrated. T13's subsequent 
 | Track own request/loan | `borrowing/views.py` | `templates/accounts/portal/request_detail.html` and `loan_detail.html` | `portal:request-detail`, `portal:loan-detail` |
 | Review requests | `borrowing/views.py` | `templates/borrowing/manage/request_list.html` and `request_detail.html` | `borrowing_manage:request-list`, `request-detail` |
 | Approve/reject a request | `borrowing/views.py` | `templates/borrowing/manage/request_decision.html` | `borrowing_manage:request-approve`, `request-reject` |
+| Revise/release an Approved request (local T15) | `borrowing/release_views.py` | `templates/borrowing/manage/request_due_date.html` and `request_release.html` | `borrowing_manage:request-due-date`, `request-release` |
+| View issued loans/slip (local T15) | `borrowing/release_views.py` | `templates/borrowing/manage/loan_list.html`, `loan_detail.html`, `loan_summary.html` and `loan_slip.html` | `borrowing_manage:loan-list`, `loan-detail`, `loan-slip` |
 | Record returns | `borrowing/views.py` | `templates/borrowing/manage/return_form.html` | `borrowing_manage:return-create` |
 | Edit operational settings | `operations/views.py` | `templates/operations/manage/settings_form.html` | `operations:settings` |
 | View audit history | `operations/views.py` | `templates/operations/manage/audit_list.html` | `operations:audit-list` |

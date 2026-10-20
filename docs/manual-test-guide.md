@@ -4,9 +4,9 @@
 
 Kenneth, Margareth and Ellyssa now focus on validation, documentation and manual testing under the [current responsibilities](tasks.md#current-ownership-and-support-responsibilities). Run available cases and record actual outcomes; unimplemented flows remain Not run. Report T15/T16 defects to Jerome, T17/T20 defects to Ralph and T18/T19 defects to Alex. Diagram preparation stays on standby until Jerome's go signal after system completion, subject to T25 prerequisites.
 
-This guide covers T01-T14/T16 integrated in main, including T13 query fixes through PR #35 and T14 concurrency proof through PR #37 at `5381c83` ([Module 13](#module-13--postgresql-competing-approvals-t14)). T15 / Jerome is ready with T13/T14 satisfied, but remains Not started. Release and returns remain pending; T12/T13/T16 browser results remain Not run until supplied.
+This guide covers T01-T14/T16 integrated in main, including T13 query fixes through PR #35 and T14 concurrency proof through PR #37 at `5381c83` ([Module 13](#module-13--postgresql-competing-approvals-t14)). T15 is Done on `jerome`, not integrated into main; [Module 15](#module-15--release-due-date-revision-and-borrowing-slip-t15) records release/date/slip checks. Returns remain pending; T12/T13/T16 browser results remain Not run until supplied.
 
-The shared M3 UI refresh (UI-09) is implemented locally on `jerome`, not integrated; [Module 14](#module-14--shared-m3-layout-and-controls-ui-09) records its actual layout/accessibility smoke checks separately from the workflow cases below.
+The shared M3 UI refresh (UI-09) is integrated through PR #39 at `a35e0f1`, source `043822e`, preserved in main `866eb7e`; [Module 14](#module-14--shared-m3-layout-and-controls-ui-09) records its actual layout/accessibility smoke checks separately from the workflow cases below.
 
 For the current borrower checks, go directly to [Module 9: request submission](#module-9--borrower-request-submission-t11) or [Module 10: request and loan tracking](#module-10--borrower-request-and-loan-tracking-t12). For equipment maintenance and reconciliation, see [Module 11: equipment maintenance](#module-11--equipment-maintenance-and-inventory-reconciliation-t16). Use the [result record](#recording-manual-results) to report what actually happened.
 
@@ -16,7 +16,7 @@ For automated tests, see [Running the automated suite](#running-the-automated-te
 
 ### Server must be running
 
-Follow [DEV startup](../DEV.md#everyday-startup) and rebuild assets after pulling template changes with `npm.cmd run build`. T11/T12/T13/T16 add no migration or dependency. Keep the existing local database and test records.
+Follow [DEV startup](../DEV.md#everyday-startup) and rebuild assets after pulling template changes with `npm.cmd run build`. T11/T12/T13/T15/T16 add no migration or dependency. Keep the existing local database and test records.
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py runserver
@@ -936,7 +936,7 @@ T12 supplies the request/loan history pages and highlights the corresponding nav
 **Entry:** `/portal/requests/` and `/portal/loans/`\
 **Login required:** active BASIC_USER\
 **Implemented revision:** PR #29, main `170cc38`, preserving Ralph source `eb04470`\
-**Prerequisite:** T11 is integrated through PR #27; T13 approval is now merged through PR #34 with verified query corrections on jerome awaiting integration. T15 issue and T17 returns remain pending.
+**Prerequisite:** T11 is integrated through PR #27; T13 approval and query corrections are integrated through PR #34/#35. T15 issue is implemented locally, not integrated; T17 returns remain pending.
 
 These are expected outcomes, not tests claimed as run. Use a borrower request created through T11. For foreign-record checks, use a second fictional BASIC_USER account and its own request/loan ID. Do not expose or copy another borrower's fields in screenshots.
 
@@ -1205,7 +1205,7 @@ print(
   4. **CSRF protection:** Submitting POST to `/manage/maintenance/new/` or `/manage/maintenance/<id>/close/` without a valid CSRF token returns **403 Forbidden**.
   5. **Keyboard & Responsive navigation:** Use `Tab` / `Shift+Tab` to verify visible focus order across all filter inputs, action buttons, form controls, and table links. Verify clean grid stacking and no horizontal overflow on mobile viewports (375px).
 
-All 33 maintenance tests pass within the current 254-test PostgreSQL suite (the earlier T16 review passed 224 total tests). They include manual lifecycle/access/filter/count checks, seven new real integrity tests for the removed return-link argument, opening/repair audit rollback, changed-state 409, CSRF/protected fields, competing administrators and unit-before-maintenance closure locking. Browser, keyboard, mobile and pagination-boundary results remain **Not run**; these tests do not implement T17.
+All 33 maintenance tests also pass within the T15 273-test PostgreSQL suite (the earlier T16 review passed 224 total tests). They include manual lifecycle/access/filter/count checks, seven new real integrity tests for the removed return-link argument, opening/repair audit rollback, changed-state 409, CSRF/protected fields, competing administrators and unit-before-maintenance closure locking. Browser, keyboard, mobile and pagination-boundary results remain **Not run**; these tests do not implement T17.
 
 ---
 
@@ -1213,7 +1213,7 @@ The manual `open_maintenance` action accepts no `source_return_id` and always ap
 
 ## Module 12 — Administrator Request Review and Decisions (T13)
 
-**Owner:** Margareth Raine H. Ignacio (`marga`); Jerome with Codex for the authorized query fixes. **Revision:** PR #34 baseline `23c1ad9`, preserving `c5cfe37`, plus [fixes `1d7a3c7`](../handoffs/t13-query-fixes-and-publication-10-19-2026.md) integrated through PR #35 at main `cf50d0c`. **Status:** Done and integrated; browser verification pending. **Role:** active ADMIN. **Entry:** `/manage/requests/`. T03/T11 are integrated; release/slips/returns remain pending. All browser cases below are **Not run**. Two automated HTTP/database regressions failed before the fixes and now pass.
+**Owner:** Margareth Raine H. Ignacio (`marga`); Jerome with Codex for the authorized query fixes. **Revision:** PR #34 baseline `23c1ad9`, preserving `c5cfe37`, plus [fixes `1d7a3c7`](../handoffs/t13-query-fixes-and-publication-10-19-2026.md) integrated through PR #35 at main `cf50d0c`. **Status:** Done and integrated; browser verification pending. **Role:** active ADMIN. **Entry:** `/manage/requests/`. T03/T11 are integrated; release/slips are implemented locally under T15; returns remain pending. All browser cases below are **Not run**. Two automated HTTP/database regressions failed before the fixes and now pass.
 
 ### Preparation and verified local records
 
@@ -1397,13 +1397,13 @@ Expected: one complete approval with exactly two allocations and two Reserved un
 
 On October 20, 2026, a **read-only local inspection at 07:55 Asia/Manila** verified PostgreSQL 17.5, Read Committed isolation and limits 7 days / 3 per item. The fixture snapshots above match those limits but do not read or modify live settings, accounts or stock. Actual automated results: the implementation run passed **2 focused tests in 0.894s**; the fresh publication run passed **254 full-suite tests in 39.994s**. Both runs created and destroyed the separate PostgreSQL test database. All required configured checks pass; see [integration receipt](../handoffs/t14-publication-main-integration-and-t15-readiness-10-20-2026.md).
 
-Manual/browser simultaneous submissions are **Not run**. To record a fresh terminal reproduction, retain its command, revision, Asia/Manila timestamp, count and actual outcome in the result record below. T14 is integrated; Jerome / T15 is ready, Not started.
+Manual/browser simultaneous submissions are **Not run**. To record a fresh terminal reproduction, retain its command, revision, Asia/Manila timestamp, count and actual outcome in the result record below. T14 is integrated; T15 is Done on `jerome`, not integrated into main.
 
 ---
 
 ## Module 14 — Shared M3 Layout and Controls (UI-09)
 
-**Owner:** Jerome Avecilla with Codex assistance. **Revision:** local uncommitted `jerome` on main `01b25a9` (PR #38); UI-09 is not integrated into main. **Scope:** shared presentation across existing templates, not T15/T17 workflows or full T20 acceptance. Follow [DEV setup/build](../DEV.md#frontend-assets-tailwind-and-page-scripts) and the [canonical M3 component rules](coding-standards.md#shared-m3-roles-and-components-ui-09).
+**Owner:** Jerome Avecilla with Codex assistance. **Revision:** the original UI browser run used local `jerome` on main `01b25a9` (PR #38); UI-09 source `043822e` is now integrated through PR #39 at `a35e0f1`, preserved in main `866eb7e`. These are the original run results, not a new full UI execution. **Scope:** shared presentation across existing templates, not T15/T17 workflows or full T20 acceptance. Follow [DEV setup/build](../DEV.md#frontend-assets-tailwind-and-page-scripts) and the [canonical M3 component rules](coding-standards.md#shared-m3-roles-and-components-ui-09).
 
 The October 20, 2026, **08:42 Asia/Manila read-only inspection** confirmed active fictional `auth_demo_admin` / `auth_demo_user` accounts, limits 7 days / 3 per item, active item IDs 21/1/2, unit IDs 2/3/4, maintenance IDs 1/2/3 and that the fictional borrower's request #3 was Approved. These are dated local fixtures, not a seed promise. Recheck your own records before opening their IDs; use your existing account's private password, never share credentials. UI checks need no new inventory, approval, cancellation or settings writes.
 
@@ -1455,9 +1455,87 @@ Use the [result record](#recording-manual-results) for additional tests. Do not 
 
 The fixed-palette follow-up on October 20 passed **12 home/profile page checks** across both roles at 320/1024/1440px in Chrome **155.0.8059.84**: expected colors/font, visible profile link, one compiled stylesheet, no separate theme request and no page overflow. Both roles' direct profile navigation and logout passed **4 interaction checks**. All 31 semantic color values match the earlier generated palette exactly. The dependency-free build check accepts the nine text-role pairs and rejects low-contrast/missing-role fixtures without changing application CSS. The new campus-ui skill and Django skill passed metadata validation. See the [dependency/skill handoff](../handoffs/fixed-palette-and-shared-campus-ui-skill-10-20-2026.md) for verification and concurrent-work limits. Prior navigation acceptance remains in the [navigation handoff](../handoffs/sidebar-logout-and-topbar-profile-link-10-20-2026.md), with broader routes/forms in the [reference-design handoff](../handoffs/minimal-dashboard-reference-and-ui-review-10-20-2026.md).
 
-The current follow-up PostgreSQL suite passed **254 tests in 42.919s** using a separately named test database after the standard shared test database run encountered fixture/teardown interference; see the handoff for the failed attempt. Configured build/format/template/Django/migration/pip/audit checks pass. These UI checks do not establish complete screen-reader conformance, Firefox/Safari results, every populated loan/return screen or the outstanding full lifecycle/manual cases. No business mutations were performed in the browser. Temporary sessions for the existing fictional accounts were used and logged out. No new account/inventory seed data or migrations were introduced. UI-09 remains local and uncommitted; T15 stays ready on integrated main and T20 retains its original workflow gates.
+The earlier UI follow-up PostgreSQL suite passed **254 tests in 42.919s** using a separately named test database after the standard shared test database run encountered fixture/teardown interference; see the handoff for the failed attempt. Configured build/format/template/Django/migration/pip/audit checks pass. These UI checks do not establish complete screen-reader conformance, Firefox/Safari results, every populated loan/return screen or the outstanding full lifecycle/manual cases. No business mutations were performed in the browser. Temporary sessions for the existing fictional accounts were used and logged out. No new account/inventory seed data or migrations were introduced. UI-09 is integrated; T15 is verified on `jerome` and still requires main integration for T17. T20 retains its workflow gates.
 
 ---
+
+## Module 15 — Release, Due-Date Revision and Borrowing Slip (T15)
+
+**Owner:** Jerome Avecilla (`jerome`). **Revision:** T15 implementation on `jerome` from main baseline `866eb7e`; **not integrated into main**. T13/T14 prerequisites and T16 are integrated. **Role:** active ADMIN. **Entry:** `/manage/requests/` → Approved request → **Revise due date** or **Release equipment**; **Issued loans** opens `/manage/loans/`. Run `npm.cmd run build` before starting Django so the native print button's module exists.
+
+### Checked records and date boundaries
+
+A **read-only local check on October 20, 2026, 15:38 Asia/Manila** found limits 7 days / 3 per item, two Approved requests, two Pending requests, two Reserved units and no loans. Both Approved owners were active BASIC_USER accounts and neither request had a loan. No live rows were changed for this guide or the browser checks.
+
+| Request | Submitted | Original / agreed due date | Snapshot maximum due date | Complete reservation |
+| --- | --- | --- | --- | --- |
+| #3 | 2026-10-18 | 2026-10-24 | 2026-10-25 | One unit: `CEL-LAB-DMM-001`, item ID 13, request-item ID 5 |
+| #4 | 2026-10-19 | 2026-10-21 | 2026-10-26 | One unit: `CEL-PHV-TRP-001`, item ID 5, request-item ID 6 |
+
+Reservations had no release/cancellation/end timestamps and matched their Reserved units and requested quantities. These are dated, unexecuted live examples: recheck status, ownership eligibility, relationships and dates before use. The valid revised date is after submission, on/after today's campus date and within the request's snapshotted maximum, regardless of later settings changes. A stale/expired example is not evidence of a defect. If no valid date remains, the borrower must cancel and submit a new request; do not backdate live records.
+
+### T15-01: Revise the agreed due date before issue
+
+Open `/manage/requests/4/due-date/`. GET displays the existing date and changes nothing.
+
+| Field | Value |
+| --- | --- |
+| Agreed due date | `2026-10-24` |
+| Reason | `Laboratory schedule moved` |
+
+**Expected:** Save redirects to request #4. Agreed due date becomes October 24; original desired date stays October 21, approval metadata and quantity/duration snapshots remain intact. Audit history shows `DUE_DATE_REVISED`, the administrator and old/new dates with the reason. No loan or unit-state change occurs.
+
+| Invalid input / boundary | Expected |
+| --- | --- |
+| `2026-10-19` or earlier for request #4 | Bound date error; must be after submission and on/after today |
+| `2026-10-27` for request #4 | Bound date error; exceeds the October 26 snapshot maximum |
+| Blank reason or more than 500 characters | Bound reason error; no date/audit change |
+| Date already stored as agreed due date | Bound error; no duplicate revision audit |
+| Request #4 submitted October 19, revised to October 20 while today is October 20 | Valid boundary; release on that same campus date is allowed |
+
+Invalid forms return 200 with errors. Non-Approved/already-issued actions return 409. Only use the same-day example when that date is still valid; it changes the due date if actually submitted.
+
+### T15-02: Release once and inspect the loan/slip
+
+After the successful revision above, open `/manage/requests/4/release/`.
+
+| Field / control | Value |
+| --- | --- |
+| Request | #4, still Approved and unissued |
+| Borrower | The existing active owner displayed on the request |
+| Reserved asset | `CEL-PHV-TRP-001`, quantity 1 |
+| Due date | `2026-10-24`, from the stored agreed date |
+| Action | **Confirm release**; no actor, status or unit-selection fields |
+
+**Expected:** GET and Cancel do not write. Confirm redirects to the generated `/manage/loans/<loan_id>/`; record the real ID. Request becomes Issued, the reserved unit becomes Issued, one Loan and one LoanUnit exist, and the allocation's release timestamp matches the loan's issue timestamp. The allocation remains active (no end timestamp) until a future return. `LOAN_RELEASED` appears in audit history for the Loan reference. Actor/time/date come from the server; forged workflow fields cannot override them.
+
+Use **Borrowing slip** to open `/manage/loans/<loan_id>/slip/`. Check borrower name/username, request/loan IDs, issue date/time in Asia/Manila, issuer, agreed due date, and the exact asset code. **Print slip** opens native browser printing; navigation and controls do not appear in the printed content. Detail and slip use the same stored loan/assets. The list search accepts a loan ID or borrower username and shows issued/outstanding counts and Active/Closed state. Returns are not implemented by T15.
+
+### T15-03: Conflicts, authorization and rollback
+
+| Scenario | Expected |
+| --- | --- |
+| Repeat Confirm release, or revise an issued request | 409; no extra loan, LoanUnit, release audit or date change |
+| Owner tries to cancel after issue | 409; active issued allocation remains intact |
+| Pending, Rejected, Cancelled or returned request is submitted to release | 409; no loan or inventory changes |
+| Current campus date is later than agreed due date | 409; revision within the original snapshot or a new borrower request is required |
+| Missing/extra/ended/released allocations, mismatched item or non-Reserved unit | 409; all business records remain unchanged |
+| Basic user directly opens any management form, list, detail or slip | 403; anonymous users redirect to login; inactive sessions are denied |
+| Mutation without CSRF, or POST to list/detail/slip | 403 for missing CSRF; 405 for the read-only endpoint |
+| Existing reservation's item/category is subsequently archived | Release remains possible under BR-13; archival does not strand an otherwise valid reservation |
+
+Use the automated checks below for expired/inconsistent records and database-induced audit failure; do not corrupt or backdate live records to create these cases. PostgreSQL audit-constraint rejection must roll back the whole date revision or release. Two overlapping release attempts must produce one loan and one conflict; overlapping release/cancel must produce exactly one complete winner and one conflict.
+
+```powershell
+.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_release borrowing.tests.test_release_concurrency --noinput
+```
+
+### Actual verification and remaining manual coverage
+
+- Full PostgreSQL suite: **273 tests passed in 45.268s**, including 19 T15 tests and all 33 T16 maintenance tests. The focused T15/cancellation/T16 run passed 62 tests in 8.722s. Both race tests prove overlapping separate-connection lock waits before checking complete stored outcomes. Audit rollback uses real temporary PostgreSQL check constraints, with no mocked audit writer.
+- Playwright CLI 0.1.22 / Chrome, October 20, 2026: an **isolated test database** supplied request #1 with `TEST-CAM-001` and `T15-BROWSER-002`. Browser revision changed October 23 to October 24; blank reason was rejected; keyboard Tab reached Save; release Cancel returned without issuing; Confirm created loan #1 with both assets and counts `2 / 0 / 2`. Search, detail, slip, native print invocation and hidden print controls passed. Screenshots at desktop 1440px and compact 390/320px were inspected; tested pages stayed within the viewport, with local table scrolling. Browser console had no errors or warnings. These fixture IDs are **not live records**.
+- Initial focused run failed because the new print module had not been built; `npm.cmd run build` fixed that prerequisite and the rerun passed. Configured checks are recorded in the handoff. Repository-wide Ruff formatting reports three untouched files; changed Python files pass formatting. No T16 lifecycle browser result is inferred from T15 checks.
+- Actual live release/revision examples above, more-than-25-loan pagination, Firefox/Safari, physical printer output and complete screen-reader testing are **Not run**. Record new outcomes in the shared result table. T17 stays Not started until T15 is accepted and integrated into main.
 
 ## Recording manual results
 
@@ -1476,11 +1554,11 @@ Report the purpose marker/request ID and the smallest reproduction steps for a f
 
 ## What is not testable yet
 
-T13 including both query fixes is integrated (Module 12); T14 concurrency tests are integrated through PR #37 (Module 13). T15 prerequisites are satisfied; release remains Not started. The following tasks remain **Not started**; their full workflows are not implemented:
+T13 including both query fixes is integrated (Module 12); T14 concurrency tests are integrated through PR #37 (Module 13). T15 release/date/slip pages are Done on `jerome`, not integrated into main; see Module 15. The following tasks remain **Not started**; their full workflows are not implemented:
 
 | Task | Feature | Owner |
 | --- | --- | --- |
-| T15 | Equipment release and printable borrowing slip | Jerome |
+
 | T17 | Per-unit returns, partial returns, damaged-return maintenance | Ralph |
 | T18 | Live dashboard cards and charts | Alex |
 | T19 | Loan/overdue reports and CSV export | Alex |
@@ -1533,8 +1611,8 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests --noinput
 ```
 
-All tests must pass before handover; 254 is the verified count on the integrated T14 source. T13/T14 are integrated and T15 is ready, Not started. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
+All tests must pass before handover; 254 is the verified count on the integrated T14 source. T13/T14 are integrated; T15 is Done locally with 273 passing tests and awaits main integration. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
 
 ---
 
-*Manual testing guide - scope: T01-T14/T16 integrated; T15 ready with integrated prerequisites, Not started. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
+*Manual testing guide - scope: T01-T14/T16 integrated; T15 Done on `jerome`, not integrated into main; Module 15 records actual checks. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*

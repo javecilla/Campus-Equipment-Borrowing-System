@@ -1,0 +1,43 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}Release equipment · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section class="ui-page space-y-6" data-testid="release-page">
+        <header class="ui-page-header">
+            <a href="{% url 'borrowing_manage:request-detail' borrow_request.pk %}"
+               data-testid="release-back"
+               class="text-sm font-semibold text-accent underline underline-offset-4">Back to request #{{ borrow_request.pk }}</a>
+            <h1 class="mt-4 font-heading font-semibold">Release equipment</h1>
+            <p class="mt-3 text-sm text-slate-600">Request #{{ borrow_request.pk }} · Borrower: {{ borrow_request.owner.username }} · Due {{ borrow_request.agreed_due_date|date:"M j, Y" }}</p>
+        </header>
+        <p class="text-sm text-slate-600">Confirm that you are handing over all reserved units below. Release creates one loan and cannot be repeated. The due date must be on or after today's campus date.</p>
+        <ul class="divide-y divide-slate-100 text-sm"
+            data-testid="release-reservations">
+            {% for row in lines %}
+                <li class="py-3">
+                    <strong>{{ row.line.catalog_item.name }}</strong> · Quantity {{ row.line.quantity }}
+                    <p class="mt-1 text-slate-600">Reserved: {% for allocation in row.units %}{{ allocation.unit.asset_code }}{% if not forloop.last %}, {% endif %}{% empty %}No reserved units{% endfor %}</p>
+                </li>
+            {% empty %}
+                <li>No items are reserved for this request.</li>
+            {% endfor %}
+        </ul>
+        {% if conflict %}
+            <p role="alert"
+               data-testid="release-conflict"
+               class="border-l-4 border-rose-600 bg-rose-50 p-4 text-sm text-rose-800">{{ conflict }}</p>
+        {% else %}
+            <form method="post" class="flex flex-wrap gap-3" data-testid="release-form">
+                {% csrf_token %}
+                <button type="submit"
+                        data-testid="release-submit"
+                        class="ui-button ui-button--primary">Confirm release</button>
+                <a href="{% url 'borrowing_manage:request-detail' borrow_request.pk %}"
+                   data-testid="release-cancel"
+                   class="ui-button ui-button--outline">Cancel</a>
+            </form>
+            <a href="{% url 'borrowing_manage:request-due-date' borrow_request.pk %}"
+               data-testid="release-revise-date"
+               class="text-sm font-semibold text-accent underline underline-offset-4">Revise due date before release</a>
+        {% endif %}
+    </section>
+{% endblock %}

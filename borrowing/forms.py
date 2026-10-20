@@ -6,11 +6,12 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator
 from django.forms import BaseFormSet, formset_factory
+from django.http import QueryDict
 from django.utils import timezone
 
-from borrowing.models import RequestStatus
+from borrowing.models import BorrowRequest, RequestStatus
 from inventory.models import CatalogItem
-from operations.validation import LoanLimits, validate_requested_due_date
+from operations.validation import LoanLimits, validate_requested_due_date, validate_revised_due_date
 
 CONTROL_CLASSES: str = "ui-input"
 TEXTAREA_CLASSES: str = "ui-input ui-textarea"
@@ -208,4 +209,67 @@ class DecisionForm(forms.Form):
         max_length=500,
         strip=True,
         widget=forms.TextInput(attrs={"id": "decision-reason", "class": CONTROL_CLASSES}),
+    )
+
+
+class DueDateRevisionForm(forms.Form):
+    """Parse only the agreed date and reason; use the addressed request's limit snapshot."""
+
+    agreed_due_date = forms.DateField(
+        label="Agreed due date",
+        input_formats=["%Y-%m-%d"],
+        widget=forms.DateInput(
+            attrs={"id": "agreed-due-date", "type": "date", "class": CONTROL_CLASSES},
+            format="%Y-%m-%d",
+        ),
+    )
+    reason = forms.CharField(
+        label="Reason",
+        max_length=500,
+        strip=True,
+        widget=forms.Textarea(attrs={"id": "due-date-reason", "class": TEXTAREA_CLASSES}),
+    )
+
+    def __init__(self, data: QueryDict | None, borrow_request: BorrowRequest, today: date) -> None:
+        super().__init__(data=data, initial={"agreed_due_date": borrow_request.agreed_due_date})
+        self.submitted_on: date = borrow_request.submitted_on
+        self.today: date = today
+        self.limits: LoanLimits = LoanLimits(
+            borrow_request.max_loan_days_applied, borrow_request.max_quantity_applied
+        )
+        self.fields["agreed_due_date"].widget.attrs.update(
+            {
+                "min": date.fromordinal(
+                    max(today.toordinal(), self.submitted_on.toordinal() + 1)
+                ).isoformat(),
+                "max": date.fromordinal(
+                    min(
+                        date.max.toordinal(),
+                        self.submitted_on.toordinal() + self.limits.max_loan_days,
+                    )
+                ).isoformat(),
+            }
+        )
+
+    def clean_agreed_due_date(self) -> date:
+        proposed: date = self.cleaned_data["agreed_due_date"]
+        try:
+            return validate_revised_due_date(self.submitted_on, proposed, self.today, self.limits)
+        except ValidationError as error:
+            raise forms.ValidationError(error.messages) from error
+
+
+class ReleaseConfirmationForm(forms.Form):
+    """Require CSRF-protected confirmation without client-controlled workflow fields."""
+
+
+class LoanSearchForm(forms.Form):
+    """Validate administrator loan search before querying the database."""
+
+    q = forms.CharField(
+        label="Loan ID or borrower username",
+        required=False,
+        max_length=150,
+        strip=True,
+        widget=forms.SearchInput(attrs={"id": "loan-query", "class": CONTROL_CLASSES}),
     )

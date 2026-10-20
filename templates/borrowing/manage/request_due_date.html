@@ -1,0 +1,38 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}Revise due date · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section class="ui-page space-y-6" data-testid="due-date-page">
+        <header class="ui-page-header">
+            <a href="{% url 'borrowing_manage:request-detail' borrow_request.pk %}"
+               data-testid="due-date-back"
+               class="text-sm font-semibold text-accent underline underline-offset-4">Back to request #{{ borrow_request.pk }}</a>
+            <h1 class="mt-4 font-heading font-semibold">Revise agreed due date</h1>
+            <p class="mt-3 text-sm text-slate-600">Borrower: {{ borrow_request.owner.username }} · Request #{{ borrow_request.pk }}</p>
+        </header>
+        <p class="text-sm text-slate-600">The original requested date ({{ borrow_request.desired_due_date|date:"M j, Y" }}) stays unchanged. Choose a different date after submission, no later than {{ borrow_request.max_loan_days_applied }} days after {{ borrow_request.submitted_on|date:"M j, Y" }}, and on or after today. If no valid date remains, the borrower must cancel and submit a new request.</p>
+        {% if conflict %}
+            <p role="alert"
+               data-testid="due-date-conflict"
+               class="border-l-4 border-rose-600 bg-rose-50 p-4 text-sm text-rose-800">{{ conflict }}</p>
+        {% else %}
+            <form method="post" class="space-y-5" data-testid="due-date-form">
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div role="alert"
+     class="text-sm text-rose-700">{{ form.non_field_errors }}</div>{% endif %}
+                <div class="ui-form-grid">
+                    {% for field in form %}
+                        {% include "operations/manage/form_field.html" with field=field only %}
+                    {% endfor %}
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <button type="submit"
+                            data-testid="due-date-submit"
+                            class="ui-button ui-button--primary">Save due date</button>
+                    <a href="{% url 'borrowing_manage:request-detail' borrow_request.pk %}"
+                       data-testid="due-date-cancel"
+                       class="ui-button ui-button--outline">Cancel</a>
+                </div>
+            </form>
+        {% endif %}
+    </section>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load assets %}
+{% block title %}Borrowing slip #{{ loan.pk }} · Campus Equipment{% endblock %}
+{% block content %}
+    <main class="ui-page mx-auto my-8 max-w-4xl p-6 print:m-0 print:max-w-none print:border-0 print:p-0 print:shadow-none"
+          data-testid="loan-slip">
+        <div class="mb-6 flex flex-wrap gap-3 print:hidden"
+             data-testid="loan-slip-controls">
+            <a href="{% url 'borrowing_manage:loan-detail' loan.pk %}"
+               data-testid="slip-back"
+               class="ui-button ui-button--outline">Back to loan</a>
+            <button type="button"
+                    id="loan-slip-print"
+                    data-testid="slip-print"
+                    class="ui-button ui-button--primary">Print slip</button>
+        </div>
+        <header class="mb-6">
+            <p class="text-sm font-semibold text-accent">Campus Equipment Borrowing System</p>
+            <h1 class="mt-2 font-heading font-semibold">Borrowing slip #{{ loan.pk }}</h1>
+        </header>
+        {% include "borrowing/manage/loan_summary.html" with loan=loan only %}
+    </main>
+{% endblock %}
+{% block scripts %}
+    <script type="module" src="{% compiled_asset 'build/borrowing-slip.js' %}"></script>
+{% endblock %}

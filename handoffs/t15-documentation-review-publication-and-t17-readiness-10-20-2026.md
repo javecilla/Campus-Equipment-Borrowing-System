@@ -1,0 +1,23 @@
+# T15 Documentation Review, Publication and T17 Readiness
+
+- **Owner:** Jerome Avecilla with Codex co-author credit; Ralph is the next feature owner.
+- **Date:** October 20, 2026, Asia/Manila.
+- **Scope:** User-authorized current-documentation review, then commit/push of the completed T15 implementation and documentation on `jerome` with `Co-authored-by: Codex <codex@openai.com>`. No PR, main merge, T17 implementation or diagram authorization.
+- **Current outcome:** Documentation review prepared the T17 consumer handoff. T15 is accepted on the member branch; T16 is already accepted and integrated. T17 stays **Not started** until T15 main integration. Publication verification is pending the authorized commit/push; this receipt will be finalized after the remote result is checked.
+
+## Reviewed state and interfaces
+
+[DEV.md's T17 handoff](../DEV.md#t17-readiness-and-consumer-handoff) identifies Ralph's branch, prerequisite integration gate, actual T15 issue/locking interfaces, existing return/maintenance schema and still-planned return endpoint. The pre-release `lock_reserved_units` helper rejects released allocations, so it is not a return helper. The manual maintenance opener accepts only Available units and no return identifier; T17 must own its complete damaged-return transaction. Canonical return behavior remains in the [SRS](../docs/SRS.md#business-rules-and-calculations), [database](../docs/db_design.md#issue-and-return), [lock order](../docs/architecture.md#transaction-boundaries-and-lock-order) and [HTTP/formset contract](../docs/api_spec.md#custom-administration-requests-loans-and-maintenance), without duplicating a new design or starting implementation.
+
+Current README/DEV/AGENTS, backlog, HANDOFF, SRS/architecture/HTTP/database/folder summaries and manual guide distinguish accepted T15 branch work from integrated main prerequisites. The outdated README startup-screen anchor and portal page-size descriptions were corrected against actual headings/code. Prior UI-09/DOC-09 and ownership publication labels were reconciled with fetched Git history: UI source `043822e` is merged through PR #39 at `a35e0f1`; ownership source `bffd6fd` and receipt `2b56477` are merged through PR #41 at `866eb7e`. The shared skill tree is unchanged between UI source and fetched main. Historical handoffs and original requirement/member source files are preserved.
+
+## Verification
+
+- Reused the [completed implementation verification](t15-release-due-date-revision-and-borrowing-slip-10-20-2026.md): **273 PostgreSQL tests passed in 45.268s**, including 19 T15 and all 33 T16 maintenance tests; 62 focused checks passed. Isolated Chrome revision/release/search/slip/native-print checks passed. That snapshot records commands, screenshots, cleanup and unrun coverage. This review changes documentation only; no new application-test or browser run is claimed.
+- Reviewed all 19 current project Markdown documents plus the two new handoffs: **851 relative links/anchors resolve**, code fences are balanced and no broken local links remain. The README startup-screen anchor is corrected. Route page-size descriptions match actual Paginator calls. All 31 application tasks remain present; only T15 changes status from the baseline, and T17 remains Ralph / Not started. T16 code, original requirement/member files and completed handoffs are unchanged. Fetched main ancestry verifies UI/ownership/T13/T14/T16 integration; `git diff --check` passes.
+- Publication source/remote verification is pending the authorized commit/push; this in-progress receipt will be finalized with the actual source identity after that result.
+- The implementation snapshot records three pre-existing repository-wide Ruff formatting findings; they remain open. This publication does not claim they were fixed or close prior manual/browser follow-ups.
+
+## Next owner and remaining gate
+
+Jerome handles review and separately authorized main integration of T15. Commit/push alone does not make Ralph / T17 ready. After the actual merge, record its source/main identity and checks in the backlog/current handoff, then Ralph syncs `ralph` with main, verifies ancestry and starts only when implementation is authorized. T15/T16 add no migration or dependency; rebuild assets after syncing. T17 owns partial/full/damaged returns, duplicate prevention, final-only closure and derived overdue behavior, with matching manual cases and real transaction/access tests. T18/T19/T20 retain their dependencies. Kenneth, Margareth and Ellyssa continue validation/documentation/manual testing; diagrams await system completion, Jerome's explicit go signal and T25 prerequisites.
