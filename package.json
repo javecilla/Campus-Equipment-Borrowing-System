@@ -24,5 +24,8 @@
     "esbuild": "0.28.2",
     "prettier": "3.9.10",
     "tailwindcss": "4.3.0"
+  },
+  "dependencies": {
+    "chart.js": "4.5.1"
   }
 }

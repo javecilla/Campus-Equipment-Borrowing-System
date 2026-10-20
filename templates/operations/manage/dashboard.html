@@ -6,59 +6,118 @@
              aria-labelledby="manage-dashboard-heading"
              class="ui-page">
         <div class="space-y-8">
-            <header class="ui-page-header">
-                <p class="text-xs font-semibold tracking-widest text-accent uppercase">Administrator workspace</p>
-                <h1 id="manage-dashboard-heading"
-                    class="font-heading font-semibold">Live dashboard</h1>
-                <p class="mt-3 text-sm leading-6 text-slate-600">Current inventory and borrowing activity from committed system records.</p>
+            <header class="ui-page-header flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <p class="text-xs font-semibold tracking-widest text-accent uppercase">Administrator workspace</p>
+                    <h1 id="manage-dashboard-heading"
+                        class="mt-2 font-heading font-semibold">Dashboard</h1>
+                    <p class="mt-3 text-sm leading-6 text-slate-600">Equipment readiness, requests to review, and borrowing activity at a glance.</p>
+                </div>
+                <p class="text-sm text-slate-500">
+                    <time datetime="{{ campus_today|date:'Y-m-d' }}"
+                          class="block font-semibold text-slate-700">{{ campus_today|date:"F j, Y" }}</time>
+                    Updated on page load · Campus time
+                </p>
             </header>
             <section aria-labelledby="dashboard-summary-heading">
                 <h2 id="dashboard-summary-heading" class="sr-only">Current dashboard totals</h2>
                 <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <article class="ui-surface border-t-4 border-t-emerald-600">
-                        <p class="text-sm font-semibold text-slate-600">Available units</p>
+                    <article class="ui-surface">
+                        <div class="flex items-center justify-between gap-3">
+                            <p class="text-sm font-semibold text-slate-600">Available units</p>
+                            <span class="rounded-lg bg-emerald-50 p-2 text-accent">
+                                {% include "components/icon.html" with icon="inventory_manage" only %}
+                            </span>
+                        </div>
                         <p class="mt-3 font-heading text-4xl font-semibold text-slate-950"
                            data-testid="dashboard-available-units">{{ snapshot.cards.available_units }}</p>
                         <p class="mt-2 text-sm text-slate-500">Ready for reservation</p>
+                        <a href="{% url 'inventory_manage:unit-list' %}?status=AVAILABLE"
+                           class="mt-5 inline-block text-sm font-semibold text-accent underline underline-offset-4"
+                           data-testid="dashboard-view-available">View available units</a>
                     </article>
-                    <article class="ui-surface border-t-4 border-t-amber-500">
-                        <p class="text-sm font-semibold text-slate-600">Pending requests</p>
+                    <article class="ui-surface">
+                        <div class="flex items-center justify-between gap-3">
+                            <p class="text-sm font-semibold text-slate-600">Pending requests</p>
+                            <span class="rounded-lg bg-emerald-50 p-2 text-accent">
+                                {% include "components/icon.html" with icon="request-list" only %}
+                            </span>
+                        </div>
                         <p class="mt-3 font-heading text-4xl font-semibold text-slate-950"
                            data-testid="dashboard-pending-requests">{{ snapshot.cards.pending_requests }}</p>
                         <p class="mt-2 text-sm text-slate-500">Awaiting an administrator decision</p>
+                        <a href="{% url 'borrowing_manage:request-list' %}?status=PENDING"
+                           class="mt-5 inline-block text-sm font-semibold text-accent underline underline-offset-4"
+                           data-testid="dashboard-review-pending">Review pending requests</a>
                     </article>
-                    <article class="ui-surface border-t-4 border-t-cyan-700">
-                        <p class="text-sm font-semibold text-slate-600">Active loans</p>
+                    <article class="ui-surface">
+                        <div class="flex items-center justify-between gap-3">
+                            <p class="text-sm font-semibold text-slate-600">Active loans</p>
+                            <span class="rounded-lg bg-emerald-50 p-2 text-accent">
+                                {% include "components/icon.html" with icon="loan-list" only %}
+                            </span>
+                        </div>
                         <p class="mt-3 font-heading text-4xl font-semibold text-slate-950"
                            data-testid="dashboard-active-loans">{{ snapshot.cards.active_loans }}</p>
                         <p class="mt-2 text-sm text-slate-500">At least one unit outstanding</p>
+                        <a href="{% url 'borrowing_manage:loan-list' %}"
+                           class="mt-5 inline-block text-sm font-semibold text-accent underline underline-offset-4"
+                           data-testid="dashboard-view-loans">View loan records</a>
                     </article>
-                    <article class="ui-surface border-t-4 border-t-rose-600">
-                        <p class="text-sm font-semibold text-slate-600">Overdue loans</p>
+                    <article class="ui-surface">
+                        <div class="flex items-center justify-between gap-3">
+                            <p class="text-sm font-semibold text-slate-600">Overdue loans</p>
+                            <span class="rounded-lg bg-rose-50 p-2 text-rose-700">
+                                {% include "components/icon.html" with icon="audit-list" only %}
+                            </span>
+                        </div>
                         <p class="mt-3 font-heading text-4xl font-semibold text-slate-950"
                            data-testid="dashboard-overdue-loans">{{ snapshot.cards.overdue_loans }}</p>
                         <p class="mt-2 text-sm text-slate-500">Active past the agreed due date</p>
+                        <a href="{% url 'borrowing_manage:loan-list' %}"
+                           class="mt-5 inline-block text-sm font-semibold text-accent underline underline-offset-4"
+                           data-testid="dashboard-review-due-dates">Review loan due dates</a>
                     </article>
                 </div>
             </section>
-            <section class="grid gap-6 xl:grid-cols-2" aria-label="Borrowing charts">
-                <article class="ui-surface" aria-labelledby="monthly-issued-heading">
+            <section class="grid min-w-0 gap-6 xl:grid-cols-2"
+                     aria-label="Borrowing charts">
+                <article class="ui-surface min-w-0" aria-labelledby="monthly-issued-heading">
                     <div>
                         <p class="text-xs font-semibold tracking-widest text-accent uppercase">Loan activity</p>
                         <h2 id="monthly-issued-heading"
                             class="mt-2 font-heading text-lg font-semibold">Monthly issued loans</h2>
-                        <p class="mt-2 text-sm leading-6 text-slate-500">Each released loan is counted once, regardless of its unit quantity.</p>
+                        <p id="monthly-chart-description"
+                           class="mt-2 text-sm leading-6 text-slate-500">Borrowing volume by month. Each released loan counts once, even when it includes several units.</p>
                     </div>
                     {% if snapshot.monthly_issued_loans %}
-                        <div id="monthly-issued-loans-chart"
-                             class="mt-6"
-                             data-dashboard-chart
-                             data-chart-label="Monthly issued loan counts"
-                             data-testid="monthly-issued-loans-chart"></div>
+                        <p class="mt-5 text-sm text-slate-500"><strong class="font-heading text-2xl font-semibold text-slate-950"
+        data-testid="dashboard-issued-loan-total">{{ issued_loan_total }}</strong> loan{{ issued_loan_total|pluralize }} issued</p>
+                        {% with last_month=snapshot.monthly_issued_loans|last %}
+                            <p class="mt-1 text-xs text-slate-500">{{ snapshot.monthly_issued_loans.0.label }} – {{ last_month.label }} · Includes months with no releases</p>
+                        {% endwith %}
+                        <div id="monthly-chart-container" class="mt-5" hidden>
+                            <div class="overflow-x-auto rounded-md focus-visible:outline-2 focus-visible:outline-accent"
+                                 role="region"
+                                 aria-label="Monthly loan chart; scroll horizontally for longer histories"
+                                 tabindex="0"
+                                 data-testid="monthly-chart-scroll">
+                                <div class="relative h-72">
+                                    <canvas id="monthly-issued-loans-chart"
+                                            role="img"
+                                            aria-label="Monthly issued loans, oldest to newest"
+                                            aria-describedby="monthly-chart-description"
+                                            data-testid="monthly-issued-loans-chart">Exact monthly counts are available in the data table below.</canvas>
+                                </div>
+                            </div>
+                        </div>
                         <details class="mt-6 border-t border-slate-200 pt-4 text-sm">
-                            <summary class="cursor-pointer font-semibold text-accent">View monthly chart data</summary>
+                            <summary class="cursor-pointer font-semibold text-accent"
+                                     data-testid="monthly-chart-data-toggle">View monthly chart data</summary>
                             <div class="mt-3 overflow-x-auto">
-                                <table class="ui-data-table min-w-full">
+                                <table class="ui-data-table min-w-full"
+                                       data-testid="monthly-chart-table">
+                                    <caption class="sr-only">Monthly issued-loan counts, including months with no releases</caption>
                                     <thead>
                                         <tr>
                                             <th scope="col">Month</th>
@@ -81,23 +140,40 @@
                            data-testid="monthly-issued-loans-empty">No issued loans yet.</p>
                     {% endif %}
                 </article>
-                <article class="ui-surface" aria-labelledby="category-usage-heading">
+                <article class="ui-surface min-w-0" aria-labelledby="category-usage-heading">
                     <div>
                         <p class="text-xs font-semibold tracking-widest text-accent uppercase">Equipment usage</p>
                         <h2 id="category-usage-heading"
                             class="mt-2 font-heading text-lg font-semibold">Issued units by category</h2>
-                        <p class="mt-2 text-sm leading-6 text-slate-500">Every issued physical unit remains counted after return.</p>
+                        <p id="category-chart-description"
+                           class="mt-2 text-sm leading-6 text-slate-500">Compare borrowing demand across categories. Counts include returned units and repeat issues over time.</p>
                     </div>
                     {% if snapshot.category_issued_units %}
-                        <div id="category-issued-units-chart"
-                             class="mt-6"
-                             data-dashboard-chart
-                             data-chart-label="Issued physical units by equipment category"
-                             data-testid="category-issued-units-chart"></div>
+                        <p class="mt-5 text-sm text-slate-500"><strong class="font-heading text-2xl font-semibold text-slate-950"
+        data-testid="dashboard-issued-unit-total">{{ issued_unit_total }}</strong> unit{{ issued_unit_total|pluralize }} issued across {{ snapshot.category_issued_units|length }} categor{{ snapshot.category_issued_units|length|pluralize:"y,ies" }}</p>
+                        <p class="mt-1 text-xs text-slate-500">All recorded releases · Highest usage first</p>
+                        <div id="category-chart-container"
+                             class="mt-5 max-h-80 overflow-y-auto rounded-md focus-visible:outline-2 focus-visible:outline-accent"
+                             role="region"
+                             aria-label="Category usage chart; scroll vertically for more categories"
+                             tabindex="0"
+                             data-testid="category-chart-scroll"
+                             hidden>
+                            <div class="relative">
+                                <canvas id="category-issued-units-chart"
+                                        role="img"
+                                        aria-label="Physical units issued by category, highest usage first"
+                                        aria-describedby="category-chart-description"
+                                        data-testid="category-issued-units-chart">Exact counts and full category names are available in the data table below.</canvas>
+                            </div>
+                        </div>
                         <details class="mt-6 border-t border-slate-200 pt-4 text-sm">
-                            <summary class="cursor-pointer font-semibold text-accent">View category chart data</summary>
+                            <summary class="cursor-pointer font-semibold text-accent"
+                                     data-testid="category-chart-data-toggle">View category chart data</summary>
                             <div class="mt-3 overflow-x-auto">
-                                <table class="ui-data-table min-w-full">
+                                <table class="ui-data-table min-w-full"
+                                       data-testid="category-chart-table">
+                                    <caption class="sr-only">All recorded issued units by category, including returned units</caption>
                                     <thead>
                                         <tr>
                                             <th scope="col">Category</th>
@@ -126,12 +202,30 @@
                     <h2 id="manage-tools-heading"
                         class="font-heading text-base font-semibold">Equipment &amp; borrowing</h2>
                     <p class="mt-2 text-sm text-slate-500">Open the live workflows behind these summaries.</p>
-                    <div class="ui-launch-grid">
-                        {% include "components/action_link.html" with route="inventory_manage:item-list" label="Equipment catalog" description="Manage catalog items and physical units." testid="home-manage-equipment" only %}
-                        {% include "components/action_link.html" with route="borrowing_manage:request-list" label="Requests and approvals" description="Review quantities, availability, and borrowing decisions." testid="home-manage-requests" only %}
-                        {% include "components/action_link.html" with route="accounts:manage-list" label="Borrower accounts" description="Find borrowers and review account access." testid="home-manage-accounts" only %}
-                        {% include "components/action_link.html" with route="inventory_manage:maintenance-list" label="Maintenance" description="Track repair work and equipment condition." testid="home-manage-maintenance" only %}
-                    </div>
+                    <a href="{% url 'inventory_manage:item-list' %}"
+                       class="ui-tool-link"
+                       data-testid="home-manage-equipment">
+                        Equipment catalog
+                        {% include "components/icon.html" with icon="equipment-list" only %}
+                    </a>
+                    <a href="{% url 'borrowing_manage:request-list' %}"
+                       class="ui-tool-link"
+                       data-testid="home-manage-requests">
+                        Requests and approvals
+                        {% include "components/icon.html" with icon="request-list" only %}
+                    </a>
+                    <a href="{% url 'accounts:manage-list' %}"
+                       class="ui-tool-link"
+                       data-testid="home-manage-accounts">
+                        Borrower accounts
+                        {% include "components/icon.html" with icon="accounts" only %}
+                    </a>
+                    <a href="{% url 'inventory_manage:maintenance-list' %}"
+                       class="ui-tool-link"
+                       data-testid="home-manage-maintenance">
+                        Maintenance
+                        {% include "components/icon.html" with icon="audit-list" only %}
+                    </a>
                 </section>
                 <section class="ui-surface" aria-labelledby="workspace-tools-heading">
                     <h2 id="workspace-tools-heading"

@@ -4,4 +4,11 @@
    class="ui-nav-link">
     {% include "components/icon.html" with icon=section only %}
     {{ label }}
+    {% if badge %}
+        <span class="ui-nav-badge"
+              data-testid="{{ testid }}-badge"
+              aria-label="{{ badge }} pending request{{ badge|pluralize }}">
+            {% if badge > 99 %}99+{% else %}{{ badge }}{% endif %}
+        </span>
+    {% endif %}
 </a>
