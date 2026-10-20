@@ -15,7 +15,11 @@
     {% include "components/navigation_link.html" with route="accounts:manage-list" label="User accounts" testid="nav-manage-accounts" current=request.resolver_match.namespace section="accounts" only %}
     {% include "components/navigation_link.html" with route="inventory_manage:item-list" label="Equipment" testid="nav-manage-equipment" current=request.resolver_match.namespace section="inventory_manage" only %}
     {% include "components/navigation_link.html" with route="borrowing_manage:request-list" label="Borrowing" testid="nav-manage-borrowing" current=request.resolver_match.namespace section="borrowing_manage" badge=nav_pending_requests only %}
-    {% include "components/navigation_link.html" with route="operations:loan-report" label="Reports" testid="nav-manage-reports" current=request.resolver_match.url_name section="loan-report" only %}
+    {% if report_navigation_active %}
+        {% include "components/navigation_link.html" with route="operations:loan-report" label="Reports" testid="nav-manage-reports" current="loan-report" section="loan-report" only %}
+    {% else %}
+        {% include "components/navigation_link.html" with route="operations:loan-report" label="Reports" testid="nav-manage-reports" current=request.resolver_match.url_name section="loan-report" only %}
+    {% endif %}
     {% include "components/navigation_link.html" with route="operations:settings" label="Settings" testid="nav-manage-settings" current=request.resolver_match.url_name section="settings" only %}
     {% include "components/navigation_link.html" with route="operations:audit-list" label="Audit history" testid="nav-manage-audit" current=request.resolver_match.url_name section="audit-list" only %}
 {% endblock %}

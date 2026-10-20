@@ -1,4 +1,4 @@
-"""Allowlisted settings inputs and read-only audit search filters."""
+"""Allowlisted settings inputs and read-only operational filters."""
 
 from datetime import date
 from typing import cast
@@ -80,6 +80,39 @@ class AuditSearchForm(forms.Form):
 
     def clean(self) -> dict[str, str | int | date | None]:
         cleaned_data: dict[str, str | int | date | None] = super().clean()
+        date_from: date | None = cast(date | None, cleaned_data.get("date_from"))
+        date_to: date | None = cast(date | None, cleaned_data.get("date_to"))
+        if date_from is not None and date_to is not None and date_from > date_to:
+            raise ValidationError("The start date must be on or before the end date.")
+        return cleaned_data
+
+
+class ReportDateFilterForm(forms.Form):
+    """Validate optional inclusive issue-date bounds for loan reports."""
+
+    date_from = forms.DateField(
+        label="Issue date from",
+        required=False,
+        input_formats=["%Y-%m-%d"],
+        help_text="Optional. Includes loans issued on this date.",
+        widget=forms.DateInput(
+            attrs={"id": "report-date-from", "type": "date", "class": CONTROL_CLASSES},
+            format="%Y-%m-%d",
+        ),
+    )
+    date_to = forms.DateField(
+        label="Issue date through",
+        required=False,
+        input_formats=["%Y-%m-%d"],
+        help_text="Optional. Includes loans issued on this date.",
+        widget=forms.DateInput(
+            attrs={"id": "report-date-to", "type": "date", "class": CONTROL_CLASSES},
+            format="%Y-%m-%d",
+        ),
+    )
+
+    def clean(self) -> dict[str, date | None]:
+        cleaned_data: dict[str, date | None] = super().clean()
         date_from: date | None = cast(date | None, cleaned_data.get("date_from"))
         date_to: date | None = cast(date | None, cleaned_data.get("date_to"))
         if date_from is not None and date_to is not None and date_from > date_to:

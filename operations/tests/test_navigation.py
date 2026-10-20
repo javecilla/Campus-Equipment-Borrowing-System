@@ -17,10 +17,10 @@ ADMIN_READ_ONLY: tuple[str, ...] = (
     "inventory_manage:maintenance-list",
     "borrowing_manage:request-list",
     "borrowing_manage:loan-list",
-    "operations:loan-report",
     "operations:audit-list",
     "operations:profile",
 )
+ADMIN_GET_ONLY: tuple[str, ...] = ("operations:loan-report",)
 PORTAL_READ_ONLY: tuple[str, ...] = (
     "portal:equipment-list",
     "portal:request-list",
@@ -65,7 +65,7 @@ class WorkspaceNavigationTests(TestCase):
             reverse("accounts:manage-activate", args=[account_id]),
             reverse("accounts:manage-deactivate", args=[account_id]),
             reverse("operations:settings"),
-            *(reverse(name) for name in ADMIN_READ_ONLY),
+            *(reverse(name) for name in (*ADMIN_READ_ONLY, *ADMIN_GET_ONLY)),
         )
         portal_paths: tuple[str, ...] = (
             reverse("portal:home"),
@@ -89,8 +89,16 @@ class WorkspaceNavigationTests(TestCase):
 
     def test_read_only_pages_enforce_role_authentication_and_safe_methods(self) -> None:
         for user, forbidden, permitted in (
-            (self.records.admin, PORTAL_MODULE_DESTINATIONS, ADMIN_READ_ONLY),
-            (self.records.borrower, ADMIN_READ_ONLY, PORTAL_READ_ONLY),
+            (
+                self.records.admin,
+                PORTAL_MODULE_DESTINATIONS,
+                ADMIN_READ_ONLY,
+            ),
+            (
+                self.records.borrower,
+                (*ADMIN_READ_ONLY, *ADMIN_GET_ONLY),
+                PORTAL_READ_ONLY,
+            ),
         ):
             self.client.force_login(user)
             for name in forbidden:
@@ -102,15 +110,21 @@ class WorkspaceNavigationTests(TestCase):
                     self.assertEqual(
                         self.client.post(reverse(name), {"is_active": False}).status_code, 405
                     )
+        self.client.force_login(self.records.admin)
+        for name in ADMIN_GET_ONLY:
+            with self.subTest(role=self.records.admin.role, name=name):
+                self.assertEqual(self.client.get(reverse(name)).status_code, 200)
+                self.assertEqual(self.client.head(reverse(name)).status_code, 405)
+                self.assertEqual(self.client.post(reverse(name), {}).status_code, 405)
         anonymous = Client()
-        for name in (*ADMIN_READ_ONLY, *PORTAL_MODULE_DESTINATIONS):
+        for name in (*ADMIN_READ_ONLY, *ADMIN_GET_ONLY, *PORTAL_MODULE_DESTINATIONS):
             with self.subTest(anonymous=name):
                 response = anonymous.get(reverse(name))
                 self.assertRedirects(response, f"{reverse('accounts:login')}?next={reverse(name)}")
 
     def test_deactivated_sessions_cannot_open_read_only_pages(self) -> None:
         for user, routes in (
-            (self.records.admin, ADMIN_READ_ONLY),
+            (self.records.admin, (*ADMIN_READ_ONLY, *ADMIN_GET_ONLY)),
             (self.records.borrower, PORTAL_MODULE_DESTINATIONS),
         ):
             for name in routes:
