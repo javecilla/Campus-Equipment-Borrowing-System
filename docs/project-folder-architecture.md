@@ -70,6 +70,7 @@ Campus-Equipment-Borrowing-System/
 │   ├── validation.py                            [existing] pure item/limit/date validation
 │   ├── services.py                              [existing] audited settings update
 │   ├── queries.py                               [existing] loan-limit, audit and T18 dashboard reads; reporting comes later
+?   ??? context_processors.py                    [existing; UI-12] active-admin navigation badge context
 │   ├── tests/                                   [existing] foundation integration checks
 │   ├── views.py                                 [existing] settings/audit/profile handlers and T18 live dashboard
 │   ├── workspace_views.py                       [existing] pending report presentation
@@ -105,6 +106,8 @@ Campus-Equipment-Borrowing-System/
 │   ├── js/frontend-test.js                       [existing] preview font-load check
 │   ├── js/workspace-navigation.js                [existing; UI-09 integrated] reveal current compact navigation tab
 │   ├── js/equipment-photo.js                     [existing] local image preview and selection removal
+?   ??? js/dashboard-charts.js                    [existing; UI-11 member branch] Chart.js monthly/category charts
+?   ??? licenses/chartjs-MIT.txt                  [existing; UI-11 member branch] complete Chart.js/color MIT notices
 │   └── build/                                   [generated] ignored CSS/browser modules/chunks
 ├── scripts/check-theme.mjs                      [existing; UI-09 integrated] validate fixed stylesheet text-role contrast
 ├── package.json                                 [existing] npm dependencies/build/watch commands

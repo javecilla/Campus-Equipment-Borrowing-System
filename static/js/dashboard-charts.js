@@ -1,73 +1,198 @@
+import { BarController, BarElement, CategoryScale, Chart, LinearScale, Tooltip } from "chart.js";
+
+Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
+
+/** @typedef {{ label: string, value: number }} ChartPoint */
+/** @typedef {{ primary: string, secondary: string, text: string, grid: string, font: string }} ChartTheme */
+
+/** @param {string} scriptId @returns {ChartPoint[]} */
 function readSeries(scriptId) {
     const script = document.getElementById(scriptId);
-
     if (!(script instanceof HTMLScriptElement)) {
         throw new Error(`Dashboard chart data ${scriptId} is missing.`);
     }
-
-    const parsed = JSON.parse(script.textContent || "[]");
+    const parsed = JSON.parse(script.textContent);
     if (!Array.isArray(parsed)) {
         throw new Error(`Dashboard chart data ${scriptId} must be an array.`);
     }
-
     return parsed.map((point) => {
         if (
             typeof point !== "object" ||
             point === null ||
             typeof point.label !== "string" ||
-            !Number.isInteger(point.value) ||
+            !Number.isSafeInteger(point.value) ||
             point.value < 0
         ) {
             throw new Error(`Dashboard chart data ${scriptId} contains an invalid point.`);
         }
-        return point;
+        return { label: point.label, value: point.value };
     });
 }
 
-function renderBarChart(rootId, scriptId) {
-    const root = document.getElementById(rootId);
-    if (!(root instanceof HTMLElement)) {
-        return;
-    }
-
-    const series = readSeries(scriptId);
-    if (series.length === 0) {
-        return;
-    }
-
-    const maximum = Math.max(...series.map((point) => point.value), 1);
-    const list = document.createElement("ul");
-    list.className = "space-y-4";
-    list.setAttribute("aria-label", root.dataset.chartLabel || "Dashboard chart");
-
-    for (const point of series) {
-        const row = document.createElement("li");
-        row.className =
-            "grid gap-2 text-sm sm:grid-cols-[minmax(8rem,1fr)_minmax(10rem,2fr)_3rem] sm:items-center";
-
-        const label = document.createElement("span");
-        label.className = "font-medium text-slate-700";
-        label.textContent = point.label;
-
-        const track = document.createElement("span");
-        track.className = "h-3 overflow-hidden rounded-full bg-slate-100";
-        track.setAttribute("aria-hidden", "true");
-
-        const bar = document.createElement("span");
-        bar.className = "block h-full rounded-full bg-accent";
-        bar.style.width = `${Math.max((point.value / maximum) * 100, 2)}%`;
-        track.append(bar);
-
-        const value = document.createElement("span");
-        value.className = "font-semibold text-slate-900 sm:text-right";
-        value.textContent = String(point.value);
-
-        row.append(label, track, value);
-        list.append(row);
-    }
-
-    root.replaceChildren(list);
+/** @returns {ChartTheme} */
+function chartTheme() {
+    const style = getComputedStyle(document.documentElement);
+    const roles = [
+        "--md-sys-color-primary",
+        "--md-sys-color-tertiary",
+        "--md-sys-color-on-surface-variant",
+        "--md-sys-color-outline-variant",
+    ].map((name) => {
+        const color = style.getPropertyValue(name).trim();
+        if (!color) {
+            throw new Error(`Dashboard chart theme token ${name} is missing.`);
+        }
+        return color;
+    });
+    return {
+        primary: roles[0],
+        secondary: roles[1],
+        text: roles[2],
+        grid: roles[3],
+        font: getComputedStyle(document.body).fontFamily,
+    };
 }
 
-renderBarChart("monthly-issued-loans-chart", "monthly-issued-loans-data");
-renderBarChart("category-issued-units-chart", "category-issued-units-data");
+/** @param {import("chart.js").TooltipItem<"bar">[]} items @returns {string[]} */
+function tooltipTitle(items) {
+    const length = Math.max(12, Math.floor((items[0].chart.width - 32) / 8));
+    let label = items[0].label;
+    const lines = [];
+    while (label.length > length) {
+        const space = label.lastIndexOf(" ", length);
+        const end = space > 0 ? space : length;
+        lines.push(label.slice(0, end));
+        label = label.slice(end).trimStart();
+    }
+    lines.push(label);
+    return lines;
+}
+
+/** @param {ChartTheme} theme @returns {import("chart.js").ChartOptions<"bar">} */
+function chartOptions(theme) {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        color: theme.text,
+        font: { family: theme.font, size: 12 },
+        interaction: { mode: "nearest", axis: "xy", intersect: true },
+        plugins: {
+            tooltip: {
+                displayColors: false,
+                padding: 12,
+                titleFont: { family: theme.font },
+                bodyFont: { family: theme.font },
+                callbacks: { title: tooltipTitle },
+            },
+        },
+    };
+}
+
+/** @param {ChartPoint[]} series @param {ChartTheme} theme */
+function renderMonthlyChart(series, theme) {
+    const container = document.getElementById("monthly-chart-container");
+    const canvas = document.getElementById("monthly-issued-loans-chart");
+    if (!(container instanceof HTMLElement) || !(canvas instanceof HTMLCanvasElement)) {
+        throw new Error("Monthly loan chart canvas or container is missing.");
+    }
+    container.hidden = false;
+    canvas.parentElement.style.minWidth = `${Math.max(200, series.length * 64)}px`;
+    new Chart(canvas, {
+        type: "bar",
+        data: {
+            labels: series.map((point) => point.label),
+            datasets: [
+                {
+                    label: "Loans issued",
+                    data: series.map((point) => point.value),
+                    backgroundColor: theme.primary,
+                    borderRadius: 5,
+                    maxBarThickness: 44,
+                },
+            ],
+        },
+        options: {
+            ...chartOptions(theme),
+            scales: {
+                x: { grid: { display: false }, ticks: { maxRotation: 0 } },
+                y: {
+                    beginAtZero: true,
+                    suggestedMax: 1,
+                    border: { display: false },
+                    grid: { color: theme.grid },
+                    ticks: { precision: 0 },
+                    title: { display: true, text: "Loans issued" },
+                },
+            },
+        },
+    });
+    canvas.dataset.chartReady = "true";
+}
+
+/** @param {ChartPoint[]} series @param {ChartTheme} theme */
+function renderCategoryChart(series, theme) {
+    const container = document.getElementById("category-chart-container");
+    const canvas = document.getElementById("category-issued-units-chart");
+    if (!(container instanceof HTMLElement) || !(canvas instanceof HTMLCanvasElement)) {
+        throw new Error("Category usage chart canvas or container is missing.");
+    }
+    container.hidden = false;
+    canvas.parentElement.style.height = `${Math.max(280, series.length * 52 + 64)}px`;
+    new Chart(canvas, {
+        type: "bar",
+        data: {
+            labels: series.map((point) => point.label),
+            datasets: [
+                {
+                    label: "Units issued",
+                    data: series.map((point) => point.value),
+                    backgroundColor: theme.secondary,
+                    borderRadius: 5,
+                    maxBarThickness: 26,
+                },
+            ],
+        },
+        options: {
+            ...chartOptions(theme),
+            indexAxis: "y",
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    suggestedMax: 1,
+                    border: { display: false },
+                    grid: { color: theme.grid },
+                    ticks: { precision: 0 },
+                    title: { display: true, text: "Physical units issued" },
+                },
+                y: {
+                    grid: { display: false },
+                    border: { display: false },
+                    ticks: {
+                        autoSkip: false,
+                        callback: function (value) {
+                            const label = this.getLabelForValue(value);
+                            const length = Math.max(8, Math.floor((this.chart.width * 0.4) / 7));
+                            return label.length > length ? `${label.slice(0, length)}…` : label;
+                        },
+                    },
+                    afterFit: (scale) => {
+                        scale.width = Math.min(scale.width, scale.chart.width * 0.45);
+                    },
+                },
+            },
+        },
+    });
+    canvas.dataset.chartReady = "true";
+}
+
+await document.fonts.ready;
+const monthlySeries = readSeries("monthly-issued-loans-data");
+const categorySeries = readSeries("category-issued-units-data");
+const theme = chartTheme();
+if (monthlySeries.length > 0) {
+    renderMonthlyChart(monthlySeries, theme);
+}
+if (categorySeries.length > 0) {
+    renderCategoryChart(categorySeries, theme);
+}

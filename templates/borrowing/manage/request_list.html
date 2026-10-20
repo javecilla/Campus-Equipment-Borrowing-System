@@ -29,12 +29,12 @@
                 {% endfor %}
             </div>
             <div class="flex items-center justify-end gap-4">
-                <button type="submit"
-                        data-testid="request-search-submit"
-                        class="ui-button ui-button--tonal">Search requests</button>
                 <a href="{% url 'borrowing_manage:request-list' %}"
                    data-testid="request-reset"
                    class="text-sm font-semibold text-accent underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Clear filters</a>
+                <button type="submit"
+                        data-testid="request-search-submit"
+                        class="ui-button ui-button--tonal">Search requests</button>
             </div>
         </form>
         {% if form.is_valid %}

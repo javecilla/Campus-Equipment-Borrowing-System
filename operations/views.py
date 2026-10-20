@@ -1,5 +1,6 @@
 """Custom dashboard, settings, profile, and audit views."""
 
+from datetime import date
 from typing import cast
 
 from django.contrib import messages
@@ -15,7 +16,13 @@ from accounts.access import admin_required
 from accounts.models import User
 from operations.forms import AuditSearchForm, SettingsForm
 from operations.models import AuditLog, SystemSetting
-from operations.queries import ChartPoint, audit_history, dashboard_snapshot, get_system_setting
+from operations.queries import (
+    ChartPoint,
+    DashboardSnapshot,
+    audit_history,
+    dashboard_snapshot,
+    get_system_setting,
+)
 from operations.services import update_settings
 
 
@@ -28,12 +35,16 @@ def _chart_data(points: tuple[ChartPoint, ...]) -> list[dict[str, str | int]]:
 @admin_required
 def dashboard(request: HttpRequest) -> HttpResponse:
     """Display current inventory, request, loan, and issued-unit summaries."""
-    snapshot = dashboard_snapshot(timezone.localdate())
+    today: date = timezone.localdate()
+    snapshot: DashboardSnapshot = dashboard_snapshot(today)
     return render(
         request,
         "operations/manage/dashboard.html",
         {
             "snapshot": snapshot,
+            "campus_today": today,
+            "issued_loan_total": sum(point.value for point in snapshot.monthly_issued_loans),
+            "issued_unit_total": sum(point.value for point in snapshot.category_issued_units),
             "monthly_chart_data": _chart_data(snapshot.monthly_issued_loans),
             "category_chart_data": _chart_data(snapshot.category_issued_units),
         },
