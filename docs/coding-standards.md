@@ -123,7 +123,7 @@ At 1024px and wider, the workspace uses a 240px sticky sidebar with brand, line-
 
 ### Shared M3 roles and components (UI-09)
 
-The shared design system is implemented locally on `jerome`, awaiting publication/integration. [app.css](../static/css/app.css) owns the fixed semantic roles, dashboard utility colors and shared shapes; [base.html](../templates/base.html) loads the compiled stylesheet once. Primary is `#1b5a5a`, canvas `#f8f9fa`, and panel `#ffffff`. Existing `--md-sys-color-*` names are stable CSS tokens, with no Material Color Utilities dependency or palette generator. [The dependency-free contrast check](../scripts/check-theme.mjs) rejects nine text-role pairs below 4.5:1 during CSS builds. Retain DM Sans/Poppins and light mode.
+The shared design system is integrated through PR #39 at `a35e0f1`. [app.css](../static/css/app.css) owns the fixed semantic roles, dashboard utility colors and shared shapes; [base.html](../templates/base.html) loads the compiled stylesheet once. Primary is `#1b5a5a`, canvas `#f8f9fa`, and panel `#ffffff`. Existing `--md-sys-color-*` names are stable CSS tokens, with no Material Color Utilities dependency or palette generator. [The dependency-free contrast check](../scripts/check-theme.mjs) rejects nine text-role pairs below 4.5:1 during CSS builds. Retain DM Sans/Poppins and light mode.
 
 | Component | Shared pattern |
 | --- | --- |
@@ -138,7 +138,7 @@ The shared design system is implemented locally on `jerome`, awaiting publicatio
 | Home panels | `ui-dashboard-grid` uses a 1.8:1 split from 1200px; existing feature shortcuts and workspace tools remain real named links. |
 | Motion | Shared 160/240ms timing, subtle hover lift and press scale; `prefers-reduced-motion` suppresses transitions and smooth scrolling. Focus rings remain visible without relying on motion. |
 
-Use role tokens for new semantic colors. Slate utilities use the neutral Tailwind scale with readable muted/on-surface text overrides; emerald/rose/amber utilities retain shared primary/error/tertiary roles. Distinct status text remains required. For frontend work, load [campus-ui](../.agents/skills/campus-ui/SKILL.md), which routes agents through this canonical component table and actual source examples rather than maintaining a second design specification. T15 release/date/loan pages are implemented locally; pending T17/T18/T19 pages remain pending; home shortcuts link only to existing features. T20's complete cross-workflow acceptance still requires its original prerequisites. See [Module 14](manual-test-guide.md#module-14--shared-m3-layout-and-controls-ui-09) for actual UI checks and remaining limits.
+Use role tokens for new semantic colors. Slate utilities use the neutral Tailwind scale with readable muted/on-surface text overrides; emerald/rose/amber utilities retain shared primary/error/tertiary roles. Distinct status text remains required. For frontend work, load [campus-ui](../.agents/skills/campus-ui/SKILL.md), which routes agents through this canonical component table and actual source examples rather than maintaining a second design specification. T15 release/date/loan pages and T17 returns are integrated; T18/T19 pages remain pending; home shortcuts link only to existing features. T20's complete cross-workflow acceptance still requires its original prerequisites. See [Module 14](manual-test-guide.md#module-14--shared-m3-layout-and-controls-ui-09) for actual UI checks and remaining limits.
 
 ## Formatting ownership
 
