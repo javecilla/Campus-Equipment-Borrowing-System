@@ -2,7 +2,7 @@
 
 ## Purpose and scope
 
-This guide covers the T01-T13/T16 baseline in main `23c1ad9` plus the [verified T13 query fixes](../handoffs/t13-query-fixes-and-publication-10-19-2026.md) on `jerome`. Both functional defects are fixed on that branch and await main integration. Expected results below describe the corrected checkout. T14 concurrency proof, release and returns remain pending; T12/T13/T16 browser results remain Not run until supplied.
+This guide covers T01-T13/T16 integrated in main `cf50d0c` through PR #35, including both T13 query fixes, plus the local T14 PostgreSQL concurrency proof on `jerome` ([Module 13](#module-13--postgresql-competing-approvals-t14)). T14 is uncommitted and awaits publication/main integration. Release and returns remain pending; T12/T13/T16 browser results remain Not run until supplied.
 
 For the current borrower checks, go directly to [Module 9: request submission](#module-9--borrower-request-submission-t11) or [Module 10: request and loan tracking](#module-10--borrower-request-and-loan-tracking-t12). For equipment maintenance and reconciliation, see [Module 11: equipment maintenance](#module-11--equipment-maintenance-and-inventory-reconciliation-t16). Use the [result record](#recording-manual-results) to report what actually happened.
 
@@ -996,7 +996,7 @@ Before: Pending, null cancellation fields, zero matching audits. After: Cancelle
 
 ### 10.3 Cancel an Approved request and release its reservations
 
-**Case T12-03 — now available to prepare.** Use [T13 approval in Module 12](#module-12--administrator-request-review-and-decisions-t13) on a fresh fictional request. The October 19, 22:31 local snapshot has no Approved requests yet; prepare this prerequisite through the browser workflow, without editing database statuses. Corrected jerome detail excludes ended allocations from Reserved units while retaining their history. Main `23c1ad9` still has the original display defect until integration.
+**Case T12-03 — now available to prepare.** Use [T13 approval in Module 12](#module-12--administrator-request-review-and-decisions-t13) on a fresh fictional request. The October 19, 22:31 local snapshot has no Approved requests yet; prepare this prerequisite through the browser workflow, without editing database statuses. Corrected jerome detail excludes ended allocations from Reserved units while retaining their history. PR #35 integrates this display fix at main `cf50d0c`.
 
 1. After approving through T13, record the Approved request ID and the Reserved status of every unit assigned to it.
 2. As that same borrower, open the request details and confirm cancellation.
@@ -1154,7 +1154,7 @@ print(
   - ✅ Status badge: `Closed`; Outcome badge: `Retired` in slate.
   - ✅ Physical unit status is permanently set to `Retired`.
   - ✅ Summary count cards reconcile: `Retired: 1`, `Maintenance: 4`, `Available: 11`, `Serviceable: 11`, `Total: 16`.
-  - Retired unit cannot be selected for new maintenance. Borrowers choose catalog items, not physical units; availability falls by one. T13 now allocates eligible units; browser cases remain unrun and T14 competing-approval proof is still pending.
+  - Retired unit cannot be selected for new maintenance. Borrowers choose catalog items, not physical units; availability falls by one. T13 now allocates eligible units; browser cases remain unrun; Module 13 verifies the T14 approval races locally.
 
 ---
 
@@ -1201,7 +1201,7 @@ print(
   4. **CSRF protection:** Submitting POST to `/manage/maintenance/new/` or `/manage/maintenance/<id>/close/` without a valid CSRF token returns **403 Forbidden**.
   5. **Keyboard & Responsive navigation:** Use `Tab` / `Shift+Tab` to verify visible focus order across all filter inputs, action buttons, form controls, and table links. Verify clean grid stacking and no horizontal overflow on mobile viewports (375px).
 
-All 33 maintenance tests pass within the current 252-test PostgreSQL suite (the earlier T16 review passed 224 total tests). They include manual lifecycle/access/filter/count checks, seven new real integrity tests for the removed return-link argument, opening/repair audit rollback, changed-state 409, CSRF/protected fields, competing administrators and unit-before-maintenance closure locking. Browser, keyboard, mobile and pagination-boundary results remain **Not run**; these tests do not implement T17.
+All 33 maintenance tests pass within the current 254-test PostgreSQL suite (the earlier T16 review passed 224 total tests). They include manual lifecycle/access/filter/count checks, seven new real integrity tests for the removed return-link argument, opening/repair audit rollback, changed-state 409, CSRF/protected fields, competing administrators and unit-before-maintenance closure locking. Browser, keyboard, mobile and pagination-boundary results remain **Not run**; these tests do not implement T17.
 
 ---
 
@@ -1209,7 +1209,7 @@ The manual `open_maintenance` action accepts no `source_return_id` and always ap
 
 ## Module 12 — Administrator Request Review and Decisions (T13)
 
-**Owner:** Margareth Raine H. Ignacio (`marga`); Jerome with Codex for the authorized query fixes. **Revision:** PR #34 main baseline `23c1ad9`, preserving `c5cfe37`, plus [fixes on jerome](../handoffs/t13-query-fixes-and-publication-10-19-2026.md) awaiting main integration. **Status:** Done on corrected jerome; browser verification pending. **Role:** active ADMIN. **Entry:** `/manage/requests/`. T03/T11 are integrated; release/slips/returns remain pending. All browser cases below are **Not run**. Two automated HTTP/database regressions failed before the fixes and now pass.
+**Owner:** Margareth Raine H. Ignacio (`marga`); Jerome with Codex for the authorized query fixes. **Revision:** PR #34 baseline `23c1ad9`, preserving `c5cfe37`, plus [fixes `1d7a3c7`](../handoffs/t13-query-fixes-and-publication-10-19-2026.md) integrated through PR #35 at main `cf50d0c`. **Status:** Done and integrated; browser verification pending. **Role:** active ADMIN. **Entry:** `/manage/requests/`. T03/T11 are integrated; release/slips/returns remain pending. All browser cases below are **Not run**. Two automated HTTP/database regressions failed before the fixes and now pass.
 
 ### Preparation and verified local records
 
@@ -1293,7 +1293,7 @@ Expected: HTTP 409 with requested/available quantities and **Nothing was reserve
 
 Run [T12-03](#module-10--borrower-request-and-loan-tracking-t12) on the approved T13-02 request as its owning BASIC_USER. Expected: Cancelled, allocation `cancelled_at`/`ended_at` set, physical unit Available again, and a `REQUEST_CANCELLED` audit. Reopen administrator detail.
 
-Expected on corrected jerome: Reserved units shows None for the cancelled request, availability is restored and the ended allocation remains stored. The new integration regression verifies all three plus the cancellation audit. Main `23c1ad9` still shows the ended allocation as Reserved until the fix is integrated. Browser result remains Not run; do not edit historical rows to hide the original defect.
+Expected on corrected jerome: Reserved units shows None for the cancelled request, availability is restored and the ended allocation remains stored. The new integration regression verifies all three plus the cancellation audit. PR #35 integrates this fix into main `cf50d0c`; the earlier `23c1ad9` baseline showed ended allocations as Reserved. Browser result remains Not run; do not edit historical rows to hide the original defect.
 
 ### T13-07: Unicode numeric search succeeds without an exception
 
@@ -1301,7 +1301,7 @@ Expected on corrected jerome: Reserved units shows None for the cancelled reques
 | --- | --- |
 | Request ID or borrower username | `²` (superscript two) |
 
-Expected on corrected jerome: HTTP 200 with normal username matches or empty results. The query uses `isdecimal()` before converting an ID; `²` remains username search text. The new integration regression confirms a username containing `²` is found and Arabic-Indic decimal digits still match a request ID. Main `23c1ad9` raises `ValueError` for `²` until integration. Browser result remains Not run.
+Expected on corrected jerome: HTTP 200 with normal username matches or empty results. The query uses `isdecimal()` before converting an ID; `²` remains username search text. The new integration regression confirms a username containing `²` is found and Arabic-Indic decimal digits still match a request ID. PR #35 integrates this fix into main `cf50d0c`; the earlier `23c1ad9` baseline raised `ValueError` for `²`. Browser result remains Not run.
 
 ### T13-08: Access, eligibility and audit integrity
 
@@ -1309,7 +1309,7 @@ Expected on corrected jerome: HTTP 200 with normal username matches or empty res
 - Both decision POSTs require CSRF (403 without a valid token). Extra actor/owner/status/allocation fields must not control writes; use the real form for normal testing and retain any private tokens locally during direct HTTP tests.
 - Approval for an inactive borrower or archived item/category returns 409 without reservations. These browser cases need deliberately prepared fictional records through existing account/catalog interfaces; no such live changes were made for this guide.
 - Temporary PostgreSQL probes forced rejection of approval/rejection audit inserts and verified rollback of their business writes. These ran only in the test database; no live audit constraints were installed.
-- Desktop/mobile, keyboard focus, pagination boundaries and stale browser submissions still need actual results. **T14's separate-connection competing last-unit approvals are not implemented or verified by these cases or the T13 TestCase suite.**
+- Desktop/mobile, keyboard focus, pagination boundaries and stale browser submissions still need actual results. **Module 13 now verifies competing approvals separately with PostgreSQL TransactionTestCase; these browser cases and the T13 TestCase suite alone do not establish concurrency.**
 
 ### Read-only verification of your fictional request
 
@@ -1347,6 +1347,56 @@ Record actual browser outcomes and fictional IDs in the shared [result record](#
 
 ---
 
+## Module 13 — PostgreSQL Competing Approvals (T14)
+
+**Owner:** Jerome Avecilla (`jerome`), with Margareth's existing approval service. **Revision:** local uncommitted tests on main `cf50d0c` (PR #35). **Status:** Done locally; not integrated into main. **Entry:** terminal in the repository, with the project virtual environment and PostgreSQL configured. No browser/server session or live fixture preparation is required.
+
+### T14-01: Reproduce the last-unit race
+
+Run this command while no other process is running this checkout's test database:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_approval_concurrency --noinput --verbosity 2
+```
+
+The runner creates and removes `test_<DB_NAME>`; the configured database user needs test-database creation permission. Never point tests at a database containing retained data. Fixtures are generated in this separate database, with runtime IDs; do not seed or edit live equipment to run T14.
+
+| Field / setup | Exact fixture value |
+| --- | --- |
+| First ADMIN / borrower usernames | `fictional_admin` / `fictional_borrower` |
+| Second ADMIN / borrower usernames | `t14_second_admin` / `t14_second_borrower` |
+| Account eligibility | Active; distinct ADMIN and BASIC_USER accounts respectively |
+| Category / shared catalog item | `Test cameras` / `Test camera`, both active |
+| Last physical unit | `TEST-CAM-001`, GOOD, AVAILABLE |
+| Each Pending request | One shared item, quantity `1`; purpose `Fictional classroom activity` |
+| Due date / request limit snapshots | Test run's local date + 3 days; 7 days / 3 units per item |
+| Decision reason | `T14 competing approval for request <generated request ID>` |
+
+The test holds the category lock in a third connection until PostgreSQL reports that both worker connections are waiting in its blocking chain. All three backend PIDs must differ. Releasing that lock lets the real `approve_request` services compete. The expected loser is specifically `WorkflowConflict` from stock shortage; a database timeout, deadlock, integrity error or unexpected exception fails the test. The winner is intentionally unspecified.
+
+Expected: `test_last_unit_has_one_approval_and_one_workflow_conflict ... ok`. Exactly one request is Approved with its actor, timestamp, reason and active allocation; the unit is Reserved. The loser remains Pending with no decision metadata, allocation or audit. Exactly one `REQUEST_APPROVED` audit belongs to the winner; no loan exists. Existing T13 HTTP tests establish the conflict's 409 mapping; this scenario tests the service transactions directly.
+
+### T14-02: Multi-item atomicity under the same contention
+
+The same command also runs `test_multi_item_loser_keeps_other_stock_available_without_partial_allocations`. Each request gets an additional uncontested item before its shared item in request-line order:
+
+| Field / setup | Exact fixture value |
+| --- | --- |
+| Additional item for each request | `T14 extra item <generated request ID>` |
+| Additional unit for each request | `T14-EXTRA-<generated request ID>`, GOOD, AVAILABLE |
+| Requested quantity per item | `1` (two distinct items per request) |
+| Shared item / unit | Same `Test camera` / `TEST-CAM-001` last-unit competition |
+
+Expected: one complete approval with exactly two allocations and two Reserved units. The loser stays Pending without decision metadata, allocations or audit, and its additional unit stays Available. This tests actual overlapping multi-item approvals, including an otherwise available item preceding the shortage; it does not implement issue/return or establish cancellation/issue concurrency.
+
+### Actual verification and limits
+
+On October 20, 2026, a **read-only local inspection at 07:55 Asia/Manila** verified PostgreSQL 17.5, Read Committed isolation and limits 7 days / 3 per item. The fixture snapshots above match those limits but do not read or modify live settings, accounts or stock. Actual automated results: **2 focused tests passed in 0.894s; 254 full-suite tests passed in 42.576s**. Both runs created and destroyed the separate PostgreSQL test database. All required configured checks pass; see [T14 handoff](../handoffs/t14-postgresql-competing-approval-proof-10-20-2026.md).
+
+Manual/browser simultaneous submissions are **Not run**. To record a fresh terminal reproduction, retain its command, revision, Asia/Manila timestamp, count and actual outcome in the result record below. T14 must reach main before Margareth starts T15.
+
+---
+
 ## Recording manual results
 
 Use one row per actual test run. Expected outcomes in this guide do not count as passes. Keep evidence fictional and do not include passwords, session/CSRF tokens or private environment values.
@@ -1354,7 +1404,7 @@ Use one row per actual test run. Expected outcomes in this guide do not count as
 | Case | Revision / browser / date | Actual result | Pass / Fail / Not run | Evidence / issue |
 | --- | --- | --- | --- | --- |
 | Example: T11-15 | `6c5ea8f`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Screenshot or request marker/ID, without private data |
-| Example: T13-02 | corrected jerome, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request ID; corrections awaiting main integration |
+| Example: T13-02 | corrected jerome, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request ID; corrections integrated through PR #35 |
 | Example: T12-01 | `170cc38`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request/loan ID; no private data |
 | Example: T16-01 | `23c1ad9` including integrated T16 fixes, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional asset code/maintenance ID; no private data |
 
@@ -1364,11 +1414,10 @@ Report the purpose marker/request ID and the smallest reproduction steps for a f
 
 ## What is not testable yet
 
-T13 is available on corrected jerome with both functional findings resolved (Module 12); main integration is pending. The following tasks are **Not started**; T14 requires separate-connection integration testing and the other feature workflows have no browser implementation:
+T13 including both query fixes is integrated (Module 12); T14 concurrency tests pass locally (Module 13) and await publication/main integration. The following tasks remain **Not started**; their full workflows are not implemented:
 
 | Task | Feature | Owner |
 | --- | --- | --- |
-| T14 | Competing-approval concurrency test | Jerome + Margareth |
 | T15 | Equipment release and printable borrowing slip | Margareth |
 | T17 | Per-unit returns, partial returns, damaged-return maintenance | Margareth + Kenneth |
 | T18 | Live dashboard cards and charts | Alex |
@@ -1379,7 +1428,7 @@ T13 is available on corrected jerome with both functional findings resolved (Mod
 
 ## Running the automated test suite
 
-The corrected jerome checkout passed **252 PostgreSQL tests in 42.541s**, including 28 T13 and 33 maintenance tests. The focused T13 suite passed 28 tests in 0.809s. Both added regressions failed against main baseline `23c1ad9` and pass with the query fixes. Earlier 250-test/five-probe review results remain historical in the dated review; those temporary probes were not committed. To run the current suite yourself:
+The local T14 checkout passed **254 PostgreSQL tests in 42.576s**, including 2 T14, 28 T13 and 33 maintenance tests. The focused T14 suite passed 2 tests in 0.894s. T13 query regressions remain passing after their PR #35 integration. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput
@@ -1388,6 +1437,9 @@ The corrected jerome checkout passed **252 PostgreSQL tests in 42.541s**, includ
 Run a specific module's tests:
 
 ```powershell
+# PostgreSQL separate-connection competing approvals (T14)
+.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_approval_concurrency --noinput --verbosity 2
+
 # Administrator queue, review, approval and rejection (T13)
 .\.venv\Scripts\python.exe manage.py test borrowing.tests.test_requests --noinput
 
@@ -1419,8 +1471,8 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests --noinput
 ```
 
-All tests must pass before handover; 252 is the verified count on corrected jerome. Corrections must be integrated before dependent tasks consume accepted T13 from main. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
+All tests must pass before handover; 254 is the verified count on local T14 jerome. T13 corrections are integrated; T14 must also be published/integrated before T15 starts. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
 
 ---
 
-*Manual testing guide - scope: T01-T13/T16 baseline integrated, plus verified T13 query fixes on jerome awaiting main integration. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
+*Manual testing guide - scope: T01-T13/T16 including T13 query fixes integrated; T14 verified locally on jerome, awaiting publication/main integration. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
