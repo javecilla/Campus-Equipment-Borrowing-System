@@ -6,7 +6,7 @@ The shared schema is implemented in [accounts/models.py](../accounts/models.py),
 
 Use PostgreSQL, `BigAutoField`/bigint primary keys, timezone-aware `DateTimeField`/timestamptz, and `DateField`/date for calendar dates. All fields are required and NOT NULL unless marked nullable. Text may be blank only when explicitly allowed. Every foreign key is indexed. Transactional references use `PROTECT` deletion behavior; the application has no hard-delete workflow for users, catalog, units, or historical transactions. Profile's one-to-one user relation may use CASCADE but accounts are deactivated, not deleted.
 
-Text lengths and the extra LoanUnit entity below are proposed normalization decisions. Display labels may use spaces/title case; persisted enum values use uppercase snake case. Add database CHECK constraints for enum domains, positive quantities, and same-row temporal invariants; Django choices alone do not create those checks.
+Text lengths and the LoanUnit entity below follow the implemented shared schema; later workflow services remain planned until their task acceptance is verified. Display labels may use spaces/title case; persisted enum values use uppercase snake case. Add database CHECK constraints for enum domains, positive quantities, and same-row temporal invariants; Django choices alone do not create those checks.
 
 ## Relationships
 
