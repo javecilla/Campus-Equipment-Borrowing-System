@@ -500,7 +500,7 @@ def issue_request(actor_id: int, request_id: int) -> Loan:
             alloc.save(update_fields=["released_at"])
 
         for unit in locked_units:
-            unit.status = UnitStatus.ON_LOAN
+            unit.status = UnitStatus.ISSUED
             unit.save(update_fields=["status", "updated_at"])
 
         borrow_request.status = RequestStatus.ISSUED

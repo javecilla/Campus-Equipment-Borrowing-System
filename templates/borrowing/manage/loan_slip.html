@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Borrowing Slip - Loan #{{ loan.pk }}</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #0f172a;
+            margin: 2rem;
+            line-height: 1.5;
+        }
+        .header {
+            border-bottom: 2px solid #0f172a;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .header p {
+            margin: 0.25rem 0 0;
+            font-size: 0.875rem;
+            color: #475569;
+        }
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+        }
+        .meta-block {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2.5rem;
+            font-size: 0.875rem;
+        }
+        th, td {
+            border: 1px solid #cbd5e1;
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+        }
+        th {
+            background-color: #f1f5f9;
+        }
+        .signatures {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin-top: 3rem;
+            font-size: 0.875rem;
+        }
+        .sig-line {
+            border-top: 1px solid #0f172a;
+            padding-top: 0.5rem;
+            text-align: center;
+        }
+        @media print {
+            body { margin: 0; font-size: 12pt; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body data-testid="loan-slip">
+    <div class="no-print" style="margin-bottom: 1.5rem;">
+        <button onclick="window.print()" style="padding: 0.5rem 1rem; font-weight: bold; cursor: pointer;">Print Slip</button>
+    </div>
+
+    <div class="header">
+        <h1>Equipment Borrowing Slip</h1>
+        <p>Campus Equipment Borrowing System · Transaction Audit Document</p>
+    </div>
+
+    <div class="meta-grid">
+        <div class="meta-block">
+            <strong>Borrower:</strong> {{ loan.request.owner.full_name|default:loan.request.owner.username }}<br>
+            <strong>Email:</strong> {{ loan.request.owner.email }}<br>
+            <strong>Request ID:</strong> #{{ loan.request.pk }}
+        </div>
+        <div class="meta-block">
+            <strong>Loan ID:</strong> #{{ loan.pk }}<br>
+            <strong>Date Issued:</strong> {{ loan.issued_at|date:"F j, Y H:i" }}<br>
+            <strong>Agreed Return Due Date:</strong> {{ loan.request.agreed_due_date|date:"F j, Y" }}
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Asset Code</th>
+                <th>Item Description</th>
+                <th>Returned Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for unit in units %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td style="font-family: monospace;">{{ unit.allocation.unit.asset_code }}</td>
+                    <td>{{ unit.allocation.unit.catalog_item.name }}</td>
+                    <td></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="signatures">
+        <div>
+            <div style="height: 3rem;"></div>
+            <div class="sig-line">Borrower Signature &amp; Date</div>
+        </div>
+        <div>
+            <div style="height: 3rem;"></div>
+            <div class="sig-line">Issuing Staff ({{ loan.issued_by.full_name|default:loan.issued_by.username }})</div>
+        </div>
+    </div>
+</body>
+</html>

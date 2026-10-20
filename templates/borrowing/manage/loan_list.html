@@ -1,0 +1,105 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}Loans · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section data-testid="loan-list" class="ui-page space-y-8">
+        <header class="ui-page-header">
+            <a href="{% url 'borrowing_manage:request-list' %}"
+               class="text-sm font-semibold text-accent underline underline-offset-4">← Back to requests</a>
+            <p class="mt-4 text-xs font-semibold tracking-widest text-accent uppercase">Administrator workspace</p>
+            <h1 class="font-heading font-semibold">Active and past loans</h1>
+            <p class="mt-3 text-sm text-slate-600">Track issued equipment, print borrowing slips, and inspect loan records.</p>
+        </header>
+
+        <form method="get"
+              action="{% url 'borrowing_manage:loan-list' %}"
+              data-testid="loan-search"
+              class="space-y-4 border-t border-slate-200 pt-6 mb-6">
+            {% if form.errors %}
+                <div role="alert"
+                     data-testid="loan-errors"
+                     class="text-sm text-rose-700">
+                    <p>Correct the filters to view matching loans.</p>
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+            <div class="ui-filter-grid">
+                {% for field in form %}
+                    {% include "operations/manage/form_field.html" with field=field only %}
+                {% endfor %}
+            </div>
+            <div class="flex items-center justify-end gap-4 pb-2">
+                <button type="submit"
+                        data-testid="loan-search-submit"
+                        class="ui-button ui-button--tonal">Search loans</button>
+                <a href="{% url 'borrowing_manage:loan-list' %}"
+                   data-testid="loan-reset"
+                   class="text-sm font-semibold text-accent underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Clear filters</a>
+            </div>
+        </form>
+
+        <section class="ui-table-surface">
+            <div class="overflow-x-auto"
+                 role="region"
+                 aria-label="Loans list"
+                 tabindex="0"
+                 data-testid="table-scroll-loans">
+                <table data-testid="loan-table"
+                       class="ui-data-table min-w-full divide-y divide-slate-200 text-sm">
+                    <caption class="sr-only">Issued loans, newest first</caption>
+                    <thead class="bg-slate-50 text-left text-slate-600">
+                        <tr>
+                            <th scope="col">Loan</th>
+                            <th scope="col">Borrower</th>
+                            <th scope="col">Units</th>
+                            <th scope="col">Issued</th>
+                            <th scope="col">Agreed Due Date</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                        {% for loan in loans %}
+                            <tr data-testid="loan-row-{{ loan.pk }}">
+                                <td class="font-medium">#{{ loan.pk }}</td>
+                                <td>{{ loan.request.owner.full_name|default:loan.request.owner.username }}</td>
+                                <td>{{ loan.units.count }} unit{{ loan.units.count|pluralize }}</td>
+                                <td>{{ loan.issued_at|date:"M j, Y H:i" }}</td>
+                                <td>{{ loan.request.agreed_due_date|date:"M j, Y" }}</td>
+                                <td class="space-x-3">
+                                    <a href="{% url 'borrowing_manage:loan-detail' loan.pk %}"
+                                       class="font-semibold text-accent underline underline-offset-4">View</a>
+                                    <a href="{% url 'borrowing_manage:loan-slip' loan.pk %}"
+                                       target="_blank"
+                                       class="text-slate-600 underline underline-offset-4 hover:text-slate-900">Slip</a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="py-8 text-center text-slate-500" data-testid="empty-loans">
+                                    No loans found matching your criteria.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if page_obj.has_other_pages %}
+                <nav class="flex items-center justify-between border-t border-slate-200 px-4 py-3 sm:px-6" aria-label="Pagination">
+                    <div class="text-sm text-slate-600">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </div>
+                    <div class="flex gap-2">
+                        {% if page_obj.has_previous %}
+                            <a href="?page={{ page_obj.previous_page_number }}{% if form.q.value %}&q={{ form.q.value }}{% endif %}"
+                               class="ui-button ui-button--tonal text-xs">Previous</a>
+                        {% endif %}
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}{% if form.q.value %}&q={{ form.q.value }}{% endif %}"
+                               class="ui-button ui-button--tonal text-xs">Next</a>
+                        {% endif %}
+                    </div>
+                </nav>
+            {% endif %}
+        </section>
+    </section>
+{% endblock %}

@@ -42,13 +42,28 @@
             </div>
         </dl>
         {% if borrow_request.status == "PENDING" %}
-            <div class="flex gap-4" data-testid="request-actions">
-                <a href="{% url 'borrowing_manage:request-approve' borrow_request.pk %}"
-                   class="ui-button ui-button--primary">Approve</a>
-                <a href="{% url 'borrowing_manage:request-reject' borrow_request.pk %}"
-                   class="ui-button ui-button--outline">Reject</a>
-            </div>
-        {% endif %}
+              <div class="flex gap-4" data-testid="request-actions">
+                  <a href="{% url 'borrowing_manage:request-approve' borrow_request.pk %}"
+                     class="h-11 rounded-md bg-accent px-4 text-sm font-semibold leading-[2.75rem] text-white hover:bg-emerald-800">Approve</a>
+                  <a href="{% url 'borrowing_manage:request-reject' borrow_request.pk %}"
+                     class="h-11 rounded-md border border-slate-300 px-4 text-sm font-semibold leading-[2.75rem] hover:bg-slate-50">Reject</a>
+              </div>
+          {% endif %}
+        {% if borrow_request.status == "APPROVED" %}
+              <div class="flex gap-4" data-testid="request-actions">
+                  <a href="{% url 'borrowing_manage:request-release' borrow_request.pk %}"
+                     class="h-11 rounded-md bg-accent px-4 text-sm font-semibold leading-[2.75rem] text-white hover:bg-emerald-800">Release Equipment</a>
+                  <a href="{% url 'borrowing_manage:request-due-date' borrow_request.pk %}"
+                     class="h-11 rounded-md border border-slate-300 px-4 text-sm font-semibold leading-[2.75rem] hover:bg-slate-50">Revise Due Date</a>
+              </div>
+          {% elif borrow_request.status == "ISSUED" and borrow_request.loan %}
+              <div class="flex gap-4" data-testid="request-actions">
+                  <a href="{% url 'borrowing_manage:loan-detail' borrow_request.loan.pk %}"
+                     class="h-11 rounded-md bg-accent px-4 text-sm font-semibold leading-[2.75rem] text-white hover:bg-emerald-800">View Loan</a>
+                  <a href="{% url 'borrowing_manage:loan-slip' borrow_request.loan.pk %}"
+                     class="h-11 rounded-md border border-slate-300 px-4 text-sm font-semibold leading-[2.75rem] hover:bg-slate-50" target="_blank">Print Borrowing Slip</a>
+              </div>
+          {% endif %}
         <section class="border-t border-slate-200 pt-6">
             <h2 class="font-heading text-xl font-semibold">Requested items</h2>
             <div class="mt-4 overflow-x-auto"

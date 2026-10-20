@@ -233,6 +233,7 @@ class LoanFilterForm(forms.Form):
     """Admin loan list search and filter form."""
 
     q = forms.CharField(
+        label="Search loans",  
         required=False,
         max_length=200,
         strip=True,

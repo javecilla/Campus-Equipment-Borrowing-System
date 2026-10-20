@@ -1,0 +1,35 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}Revise Due Date #{{ borrow_request.pk }} · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section data-testid="request-due-date" class="ui-page max-w-xl space-y-6">
+        <header class="ui-page-header">
+            <a href="{% url 'borrowing_manage:request-detail' borrow_request.pk %}"
+               class="text-sm font-semibold text-accent underline underline-offset-4">Back to request #{{ borrow_request.pk }}</a>
+            <p class="mt-4 text-xs font-semibold tracking-widest text-accent uppercase">Administrator workspace</p>
+            <h1 class="font-heading font-semibold">Revise agreed due date #{{ borrow_request.pk }}</h1>
+            <p class="mt-3 text-sm text-slate-600">Borrower: {{ borrow_request.owner.username }} · Status: {{ borrow_request.get_status_display }}</p>
+        </header>
+        {% if conflict %}
+            <div role="alert"
+                 data-testid="request-conflict"
+                 class="border-l-4 border-rose-600 bg-rose-50 p-4 text-sm text-rose-800">
+                <strong>Conflict:</strong> {{ conflict }}
+            </div>
+        {% endif %}
+        {% if borrow_request.status == "APPROVED" %}
+            <form method="post" class="space-y-4" data-testid="request-due-date-form">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div role="alert"
+                         class="text-sm text-rose-700">{{ form.non_field_errors }}</div>
+                {% endif %}
+                {% for field in form %}
+                    {% include "operations/manage/form_field.html" with field=field only %}
+                {% endfor %}
+                <button type="submit" class="ui-button ui-button--primary">Save revised due date</button>
+            </form>
+        {% else %}
+            <p class="text-sm text-slate-600" data-testid="request-not-approved">Due dates can only be revised for approved requests awaiting release.</p>
+        {% endif %}
+    </section>
+{% endblock %}

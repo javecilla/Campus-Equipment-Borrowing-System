@@ -57,7 +57,6 @@ class CompetingApprovalTests(TransactionTestCase):
         )
         Profile.objects.create(user=self.user_two, contact_number="")
 
-        # Use the single available unit from create_catalog_records
         self.unit = self.records.unit
         self.assertEqual(
             EquipmentUnit.objects.filter(

@@ -1,0 +1,42 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}Release Equipment #{{ borrow_request.pk }} · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section data-testid="request-release" class="ui-page max-w-2xl space-y-6">
+        <header class="ui-page-header">
+            <a href="{% url 'borrowing_manage:request-detail' borrow_request.pk %}"
+               class="text-sm font-semibold text-accent underline underline-offset-4">Back to request #{{ borrow_request.pk }}</a>
+            <p class="mt-4 text-xs font-semibold tracking-widest text-accent uppercase">Administrator workspace</p>
+            <h1 class="font-heading font-semibold">Release equipment for request #{{ borrow_request.pk }}</h1>
+            <p class="mt-3 text-sm text-slate-600">Borrower: {{ borrow_request.owner.username }} ({{ borrow_request.owner.email }}) · Agreed due date: {{ borrow_request.agreed_due_date }}</p>
+        </header>
+        {% if conflict %}
+            <div role="alert"
+                 data-testid="request-conflict"
+                 class="border-l-4 border-rose-600 bg-rose-50 p-4 text-sm text-rose-800">
+                <strong>Conflict:</strong> {{ conflict }}
+            </div>
+        {% endif %}
+        {% if borrow_request.status == "APPROVED" %}
+            <div class="space-y-4 rounded-md border border-slate-200 bg-slate-50 p-4">
+                <h2 class="font-heading text-base font-semibold">Allocated units ready for handover</h2>
+                <ul class="divide-y divide-slate-200 text-sm">
+                    {% for line in lines %}
+                        <li class="py-2">
+                            <span class="font-medium text-slate-800">{{ line.item.name }}</span>
+                            <span class="text-slate-500">({{ line.quantity }} unit{{ line.quantity|pluralize }})</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <form method="post" class="space-y-4" data-testid="request-release-form">
+                {% csrf_token %}
+                <p class="text-sm text-slate-600">
+                    Confirming will transition the allocated physical units to <strong>ON_LOAN</strong>, create the formal <strong>Loan</strong> record, and generate the borrowing slip.
+                </p>
+                <button type="submit" class="ui-button ui-button--primary">Confirm handover &amp; issue loan</button>
+            </form>
+        {% else %}
+            <p class="text-sm text-slate-600" data-testid="request-not-approved">Only approved requests can be released.</p>
+        {% endif %}
+    </section>
+{% endblock %}
