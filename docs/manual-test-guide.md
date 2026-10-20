@@ -1639,7 +1639,7 @@ For an actual loan ID, inspect its ReturnRecord `loan_unit_id`, `received_by_id`
 
 **Entry URL:** `/manage/`
 
-**UI-11/UI-12 follow-up:** The Chart.js dashboard and Kiro-assisted workspace improvements are Done on `jerome`, not integrated into main. The user authorized combined commit/push with Codex/Kiro co-author credit. Install the locked npm packages and rebuild assets before reviewing. T18's integrated baseline and Alex's credit remain intact; see [publication review](../handoffs/dashboard-and-workspace-publication-review-10-20-2026.md).
+**UI-11/UI-12 follow-up:** The Chart.js dashboard and Kiro-assisted workspace improvements are Done on `jerome`, not integrated into main. Combined source `f3d42ba` is committed/pushed on `origin/jerome` with Codex/Kiro credit recorded; main integration remains separate. Install the locked npm packages and rebuild assets before reviewing. T18's integrated baseline and Alex's credit remain intact; see [publication review](../handoffs/dashboard-and-workspace-publication-review-10-20-2026.md).
 
 **Required role:** Active `ADMIN`. Use fictional/disposable workflow records only. Do not change production-like records merely to make a chart look populated.
 
