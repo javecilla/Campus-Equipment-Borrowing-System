@@ -265,7 +265,11 @@ def manage_request_detail(request: HttpRequest, request_id: int) -> HttpResponse
     return render(
         request,
         "borrowing/manage/request_detail.html",
-        {"borrow_request": borrow_request, "lines": request_lines(borrow_request)},
+        {
+            "borrow_request": borrow_request,
+            "lines": request_lines(borrow_request),
+            "loan": loan_for_request(borrow_request.owner_id, request_id),
+        },
     )
 
 
@@ -308,19 +312,3 @@ def request_approve(request: HttpRequest, request_id: int) -> HttpResponse:
 @admin_required
 def request_reject(request: HttpRequest, request_id: int) -> HttpResponse:
     return _decide(request, request_id, reject_request, "Reject request", "Reject request")
-
-
-@require_safe
-@admin_required
-def loan_list(request: HttpRequest) -> HttpResponse:
-    """Display the pending T15 / T17 · Margareth with Kenneth module without reading or changing domain records."""
-    return render(
-        request,
-        "operations/manage/pending.html",
-        {
-            "heading": "Releases and returns",
-            "module": "T15 / T17 · Margareth with Kenneth",
-            "description": "Issued equipment, borrowing slips, due dates, and per-unit returns will appear here.",
-            "next_work": "Implement audited one-time release and partial or damaged returns after their prerequisite workflows are integrated.",
-        },
-    )

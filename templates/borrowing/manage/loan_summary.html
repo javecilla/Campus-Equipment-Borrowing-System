@@ -1,0 +1,66 @@
+<dl class="grid gap-4 border-t border-slate-200 pt-6 text-sm sm:grid-cols-2">
+    <div>
+        <dt class="text-slate-500">Borrower</dt>
+        <dd class="font-semibold" data-testid="loan-borrower">
+            {{ loan.request.owner.get_full_name }} ({{ loan.request.owner.username }})
+        </dd>
+    </div>
+    <div>
+        <dt class="text-slate-500">Request</dt>
+        <dd>
+            #{{ loan.request_id }}
+        </dd>
+    </div>
+    <div>
+        <dt class="text-slate-500">Released</dt>
+        <dd>
+            {{ loan.issued_at|date:"M j, Y, g:i a" }} (Asia/Manila)
+        </dd>
+    </div>
+    <div>
+        <dt class="text-slate-500">Issued by</dt>
+        <dd>
+            {{ loan.issued_by.username }}
+        </dd>
+    </div>
+    <div>
+        <dt class="text-slate-500">Due date</dt>
+        <dd class="font-semibold" data-testid="loan-due-date">
+            {{ loan.due_date|date:"M j, Y" }}
+        </dd>
+    </div>
+    <div>
+        <dt class="text-slate-500">Issued / returned / outstanding</dt>
+        <dd data-testid="loan-quantities">
+            {{ loan.issued_quantity }} / {{ loan.returned_quantity }} / {{ loan.outstanding_quantity }}
+        </dd>
+    </div>
+</dl>
+<section class="mt-6">
+    <h2 class="font-heading text-xl font-semibold">Issued units</h2>
+    <div class="mt-4 overflow-x-auto"
+         role="region"
+         aria-label="Issued asset codes"
+         tabindex="0"
+         data-testid="loan-units-scroll">
+        <table class="ui-data-table min-w-full text-sm" data-testid="loan-units">
+            <caption class="sr-only">Every asset issued on loan #{{ loan.pk }}</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Asset code</th>
+                    <th scope="col">Equipment</th>
+                    <th scope="col">Return</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for loan_unit in loan.units.all %}
+                    <tr class="break-inside-avoid" data-testid="manage-loan-unit">
+                        <td class="font-semibold">{{ loan_unit.allocation.unit.asset_code }}</td>
+                        <td>{{ loan_unit.allocation.unit.catalog_item.name }}</td>
+                        <td>{% if loan_unit.return_record %}{{ loan_unit.return_record.returned_at|date:"M j, Y" }} · {{ loan_unit.return_record.get_returned_condition_display }}{% else %}Awaiting return{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>

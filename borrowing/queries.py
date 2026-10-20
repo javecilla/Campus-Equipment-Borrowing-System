@@ -114,3 +114,34 @@ def loan_for_request(owner_id: int, request_id: int) -> Loan | None:
         .prefetch_related(Prefetch("units", queryset=loan_units))
         .first()
     )
+
+
+def manage_loan_history(search_query: str) -> QuerySet[Loan]:
+    """List issued loans with counts that do not multiply across return joins."""
+    loans: QuerySet[Loan] = (
+        Loan.objects.select_related("request__owner", "issued_by")
+        .annotate(
+            issued_quantity=Count("units"),
+            returned_quantity=Count("units__return_record"),
+            outstanding_quantity=Count("units", filter=Q(units__return_record__isnull=True)),
+        )
+        .order_by("-issued_at", "-pk")
+    )
+    if search_query:
+        condition: Q = Q(request__owner__username__icontains=search_query)
+        if search_query.isdecimal() and len(search_query) <= 18:
+            condition |= Q(pk=int(search_query))
+        loans = loans.filter(condition)
+    return loans
+
+
+def manage_loan_details() -> QuerySet[Loan]:
+    """Load the same authoritative loan and asset relationships for detail and print views."""
+    return manage_loan_history("").prefetch_related(
+        Prefetch(
+            "units",
+            queryset=LoanUnit.objects.select_related(
+                "allocation__unit__catalog_item", "return_record"
+            ).order_by("allocation__unit__asset_code", "pk"),
+        )
+    )

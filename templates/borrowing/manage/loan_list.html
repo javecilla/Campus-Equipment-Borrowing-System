@@ -1,0 +1,85 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}Issued loans · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section class="ui-page" data-testid="manage-loan-list">
+        <header class="ui-page-header">
+            <a href="{% url 'borrowing_manage:request-list' %}"
+               data-testid="loans-requests"
+               class="text-sm font-semibold text-accent underline underline-offset-4">Borrowing requests</a>
+            <h1 class="mt-4 font-heading font-semibold">Issued loans</h1>
+            <p class="mt-3 text-sm text-slate-600">Review released assets, due dates and borrowing slips.</p>
+        </header>
+        <section class="mt-8 border-t border-slate-200 py-6">
+            <form method="get"
+                  action="{% url 'borrowing_manage:loan-list' %}"
+                  data-testid="loan-search-form"
+                  class="space-y-4">
+                <div class="ui-filter-grid">
+                    {% include "operations/manage/form_field.html" with field=form.q only %}
+                </div>
+                <div class="flex items-center justify-end gap-4">
+                    <a href="{% url 'borrowing_manage:loan-list' %}"
+                       data-testid="loan-search-clear"
+                       class="text-sm font-semibold text-accent underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Clear filters</a>
+                    <button type="submit"
+                            data-testid="loan-search-submit"
+                            class="ui-button ui-button--tonal">Search loans</button>
+                </div>
+            </form>
+        </section>
+        <div class="overflow-x-auto"
+             role="region"
+             aria-label="Issued loans"
+             tabindex="0"
+             data-testid="loan-table-scroll">
+            <table class="ui-data-table min-w-full text-sm" data-testid="loan-table">
+                <caption class="sr-only">Issued loans and return progress</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Loan</th>
+                        <th scope="col">Borrower</th>
+                        <th scope="col">Released</th>
+                        <th scope="col">Due</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Outstanding / issued</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for loan in page %}
+                        <tr data-testid="manage-loan-row">
+                            <td>#{{ loan.pk }}</td>
+                            <td>{{ loan.request.owner.username }}</td>
+                            <td>{{ loan.issued_on|date:"M j, Y" }}</td>
+                            <td>{{ loan.due_date|date:"M j, Y" }}</td>
+                            <td>{% if loan.closed_at %}Closed{% else %}Active{% endif %}</td>
+                            <td>{{ loan.outstanding_quantity }} / {{ loan.issued_quantity }}</td>
+                            <td><a href="{% url 'borrowing_manage:loan-detail' loan.pk %}"
+   data-testid="manage-loan-view-{{ loan.pk }}"
+   class="text-accent underline">View</a></td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7"
+                                class="py-6 text-slate-600"
+                                data-testid="loan-empty">No issued loans match these filters.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <nav class="mt-6 flex items-center justify-between gap-4 text-sm"
+             aria-label="Loan pages"
+             data-testid="loan-pagination">
+            <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+            <div class="flex gap-4">
+                {% if page.has_previous %}<a href="{% querystring page=page.previous_page_number %}"
+   data-testid="loan-page-previous"
+   class="text-accent underline">Previous</a>{% endif %}
+                {% if page.has_next %}<a href="{% querystring page=page.next_page_number %}"
+   data-testid="loan-page-next"
+   class="text-accent underline">Next</a>{% endif %}
+            </div>
+        </nav>
+    </section>
+{% endblock %}

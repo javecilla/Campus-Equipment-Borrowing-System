@@ -6,6 +6,9 @@
             <p class="text-xs font-semibold tracking-widest text-accent uppercase">Administrator workspace</p>
             <h1 class="font-heading font-semibold">Requests and approvals</h1>
             <p class="mt-3 text-sm text-slate-600">Search and filter borrowing requests. Dates use Asia/Manila.</p>
+            <a href="{% url 'borrowing_manage:loan-list' %}"
+               data-testid="request-issued-loans"
+               class="mt-4 ui-button ui-button--outline">Issued loans</a>
         </header>
         <form method="get"
               action="{% url 'borrowing_manage:request-list' %}"

@@ -138,9 +138,11 @@ The shared design system is implemented locally on `jerome`, awaiting publicatio
 | Home panels | `ui-dashboard-grid` uses a 1.8:1 split from 1200px; existing feature shortcuts and workspace tools remain real named links. |
 | Motion | Shared 160/240ms timing, subtle hover lift and press scale; `prefers-reduced-motion` suppresses transitions and smooth scrolling. Focus rings remain visible without relying on motion. |
 
-Use role tokens for new semantic colors. Slate utilities use the neutral Tailwind scale with readable muted/on-surface text overrides; emerald/rose/amber utilities retain shared primary/error/tertiary roles. Distinct status text remains required. For frontend work, load [campus-ui](../.agents/skills/campus-ui/SKILL.md), which routes agents through this canonical component table and actual source examples rather than maintaining a second design specification. Pending T15/T17/T18/T19 pages remain pending; home shortcuts link only to existing features. T20's complete cross-workflow acceptance still requires its original prerequisites. See [Module 14](manual-test-guide.md#module-14--shared-m3-layout-and-controls-ui-09) for actual UI checks and remaining limits.
+Use role tokens for new semantic colors. Slate utilities use the neutral Tailwind scale with readable muted/on-surface text overrides; emerald/rose/amber utilities retain shared primary/error/tertiary roles. Distinct status text remains required. For frontend work, load [campus-ui](../.agents/skills/campus-ui/SKILL.md), which routes agents through this canonical component table and actual source examples rather than maintaining a second design specification. T15 release/date/loan pages are implemented locally; pending T17/T18/T19 pages remain pending; home shortcuts link only to existing features. T20's complete cross-workflow acceptance still requires its original prerequisites. See [Module 14](manual-test-guide.md#module-14--shared-m3-layout-and-controls-ui-09) for actual UI checks and remaining limits.
 
 ## Formatting ownership
+
+T15's standalone printable borrowing slip extends `base.html`, reuses the loan summary/assets partial and hides its controls for printing. Its active-admin access is checked directly by the print view. Ordinary release/date/loan pages extend the management role shell; this print document does not introduce a second navigation layout or palette.
 
 | Files | Configured formatter | Team rule |
 | --- | --- | --- |
