@@ -156,7 +156,7 @@ The service verifies that unit.catalog_item_id equals request_item.catalog_item_
 
 ## Issue and return
 
-T15's issue services are implemented on `jerome`; current acceptance/publication/integration evidence belongs in [the backlog](tasks.md#verified-task-evidence). T15 is integrated through PR #42 at `744bc39`. T17 uses the existing ReturnRecord and damaged-return maintenance schema without a migration. Its return endpoint/service is implemented locally on `ralph`, uncommitted and not integrated; see [the consumer handoff](../DEV.md#t17-readiness-and-consumer-handoff).
+T15's issue services are implemented on `jerome`; current acceptance/publication/integration evidence belongs in [the backlog](tasks.md#verified-task-evidence). T15 is integrated through PR #42 at `744bc39`. T17 uses the existing ReturnRecord and damaged-return maintenance schema without a migration. Its return endpoint/service is integrated through PR #43 at `55899d0`, source `bd62ed7`; see [the consumer handoff](../DEV.md#t17-readiness-and-consumer-handoff).
 
 ### Loan
 

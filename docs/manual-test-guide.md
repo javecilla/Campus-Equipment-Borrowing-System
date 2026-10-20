@@ -4,7 +4,7 @@
 
 Kenneth, Margareth and Ellyssa now focus on validation, documentation and manual testing under the [current responsibilities](tasks.md#current-ownership-and-support-responsibilities). Run available cases and record actual outcomes; unimplemented flows remain Not run. Report T15/T16 defects to Jerome, T17/T20 defects to Ralph and T18/T19 defects to Alex. Diagram preparation stays on standby until Jerome's go signal after system completion, subject to T25 prerequisites.
 
-This guide covers T01-T14/T16 integrated in main, including T13 query fixes through PR #35 and T14 concurrency proof through PR #37 at `5381c83` ([Module 13](#module-13--postgresql-competing-approvals-t14)). T15 is integrated through PR #42 at `744bc39`; [Module 15](#module-15--release-due-date-revision-and-borrowing-slip-t15) records release/date/slip checks. T17 returns are implemented locally on ralph, uncommitted and not integrated; [Module 16](#module-16--per-unit-returns-and-overdue-t17) records the isolated browser checks. Broader T12/T13/T16 browser results remain Not run until supplied.
+This guide covers T01-T14/T16 integrated in main, including T13 query fixes through PR #35 and T14 concurrency proof through PR #37 at `5381c83` ([Module 13](#module-13--postgresql-competing-approvals-t14)). T15 is integrated through PR #42 at `744bc39`; [Module 15](#module-15--release-due-date-revision-and-borrowing-slip-t15) records release/date/slip checks. T17 returns are integrated through PR #43 at `55899d0`, source `bd62ed7`; [Module 16](#module-16--per-unit-returns-and-overdue-t17) records the isolated browser checks. Broader T12/T13/T16 browser results remain Not run until supplied.
 
 The shared M3 UI refresh (UI-09) is integrated through PR #39 at `a35e0f1`, source `043822e`, preserved in main `866eb7e`; [Module 14](#module-14--shared-m3-layout-and-controls-ui-09) records its actual layout/accessibility smoke checks separately from the workflow cases below.
 
@@ -936,7 +936,7 @@ T12 supplies the request/loan history pages and highlights the corresponding nav
 **Entry:** `/portal/requests/` and `/portal/loans/`\
 **Login required:** active BASIC_USER\
 **Implemented revision:** PR #29, main `170cc38`, preserving Ralph source `eb04470`\
-**Prerequisite:** T11 is integrated through PR #27; T13 approval and query corrections are integrated through PR #34/#35. T15 issue is integrated through PR #42; T17 returns are implemented locally on ralph, not integrated.
+**Prerequisite:** T11 is integrated through PR #27; T13 approval and query corrections are integrated through PR #34/#35. T15 issue is integrated through PR #42; T17 returns are integrated through PR #43 at `55899d0`.
 
 These are expected outcomes, not tests claimed as run. Use a borrower request created through T11. For foreign-record checks, use a second fictional BASIC_USER account and its own request/loan ID. Do not expose or copy another borrower's fields in screenshots.
 
@@ -1016,7 +1016,7 @@ The populated loan/return browser scenarios below require the separate T15 relea
 1. After T15 is integrated, release an Approved request for a fictional borrower. Sign in as that borrower and open `/portal/requests/`, the request detail, and `/portal/loans/`.
 2. Verify only that borrower's loan is listed, with issue/due dates and a link to its detail. The request detail should also show issued asset codes.
 3. Open the loan detail. Verify each issued unit and its asset code is listed as awaiting return. Substitute another borrower's loan ID; the response should be 404.
-4. After T17 is integrated and one unit is returned, reload the request and loan details.
+4. After one unit is returned through T17, reload the request and loan details.
 
 ✅ The returned unit shows its return timestamp and recorded condition while outstanding units remain marked as not returned. Return notes, internal unit notes, other borrowers' data and admin-only maintenance details are not shown. After final return, loan/request status reflects the stored workflow outcome.
 
@@ -1213,7 +1213,7 @@ The manual `open_maintenance` action accepts no `source_return_id` and always ap
 
 ## Module 12 — Administrator Request Review and Decisions (T13)
 
-**Owner:** Margareth Raine H. Ignacio (`marga`); Jerome with Codex for the authorized query fixes. **Revision:** PR #34 baseline `23c1ad9`, preserving `c5cfe37`, plus [fixes `1d7a3c7`](../handoffs/t13-query-fixes-and-publication-10-19-2026.md) integrated through PR #35 at main `cf50d0c`. **Status:** Done and integrated; browser verification pending. **Role:** active ADMIN. **Entry:** `/manage/requests/`. T03/T11 are integrated; release/slips are integrated under T15; T17 returns are local on ralph. Decision/lifecycle browser cases below remain **Not run**; focused UI-10 row-navigation results are recorded in T13-01. Two automated HTTP/database regressions failed before the fixes and now pass.
+**Owner:** Margareth Raine H. Ignacio (`marga`); Jerome with Codex for the authorized query fixes. **Revision:** PR #34 baseline `23c1ad9`, preserving `c5cfe37`, plus [fixes `1d7a3c7`](../handoffs/t13-query-fixes-and-publication-10-19-2026.md) integrated through PR #35 at main `cf50d0c`. **Status:** Done and integrated; browser verification pending. **Role:** active ADMIN. **Entry:** `/manage/requests/`. T03/T11 are integrated; release/slips are integrated under T15; T17 returns are integrated through PR #43. Decision/lifecycle browser cases below remain **Not run**; focused UI-10 row-navigation results are recorded in T13-01. Two automated HTTP/database regressions failed before the fixes and now pass.
 
 ### Preparation and verified local records
 
@@ -1256,7 +1256,7 @@ Use a new purpose/run suffix for every new request. On October 19, valid desired
 
 Open detail and verify borrower, purpose, requested/agreed dates, quantities and current availability. Detail and decision confirmation GETs must not change status, allocations or audits. Pagination holds 25 rows and retains filters. With only 3 local requests, **multi-page traversal is Not run / insufficient records**; invalid-page checks do not prove that traversal.
 
-**UI-10 actual check, October 20, 2026:** local uncommitted changes on `ralph`. Isolated Chrome 155 checks passed for all six cell-padding targets, native ID click, keyboard Enter, Ctrl-click/new tab, selected-text preservation, pointer cursor, 320px page bounds/row navigation and the ID link with JavaScript disabled. These focused checks do not establish the remaining T13 decision/lifecycle browser cases. See the [row-navigation handoff](../handoffs/request-queue-clickable-rows-10-20-2026.md). Use an actual request shown in your current queue; fixture IDs are not live records.
+**UI-10 actual check, October 20, 2026:** original local run on `ralph`; source `bd62ed7` is now integrated through PR #43 at `55899d0`. Isolated Chrome 155 checks passed for all six cell-padding targets, native ID click, keyboard Enter, Ctrl-click/new tab, selected-text preservation, pointer cursor, 320px page bounds/row navigation and the ID link with JavaScript disabled. These focused checks do not establish the remaining T13 decision/lifecycle browser cases. See the [row-navigation handoff](../handoffs/request-queue-clickable-rows-10-20-2026.md). Use an actual request shown in your current queue; fixture IDs are not live records.
 
 The [alignment follow-up](../handoffs/request-queue-text-alignment-10-20-2026.md) measured **0px vertical text-position spread** across all six columns at 1440px and 320px after centering cells and preventing count/status wrapping. Screenshots and the existing row-navigation interactions were checked again in the isolated database.
 
@@ -1544,15 +1544,15 @@ Use the automated checks below for expired/inconsistent records and database-ind
 - Full PostgreSQL suite: **273 tests passed in 45.268s**, including 19 T15 tests and all 33 T16 maintenance tests. The focused T15/cancellation/T16 run passed 62 tests in 8.722s. Both race tests prove overlapping separate-connection lock waits before checking complete stored outcomes. Audit rollback uses real temporary PostgreSQL check constraints, with no mocked audit writer.
 - Playwright CLI 0.1.22 / Chrome, October 20, 2026: an **isolated test database** supplied request #1 with `TEST-CAM-001` and `T15-BROWSER-002`. Browser revision changed October 23 to October 24; blank reason was rejected; keyboard Tab reached Save; release Cancel returned without issuing; Confirm created loan #1 with both assets and counts `2 / 0 / 2`. Search, detail, slip, native print invocation and hidden print controls passed. Screenshots at desktop 1440px and compact 390/320px were inspected; tested pages stayed within the viewport, with local table scrolling. Browser console had no errors or warnings. These fixture IDs are **not live records**.
 - Initial focused run failed because the new print module had not been built; `npm.cmd run build` fixed that prerequisite and the rerun passed. Configured checks are recorded in the handoff. Repository-wide Ruff formatting reports three untouched files; changed Python files pass formatting. No T16 lifecycle browser result is inferred from T15 checks.
-- Actual live release/revision examples above, more-than-25-loan pagination, Firefox/Safari, physical printer output and complete screen-reader testing are **Not run**. Record new outcomes in the shared result table. T15 is now integrated through PR #42 at `744bc39`; T17's local return checks are recorded in Module 16.
+- Actual live release/revision examples above, more-than-25-loan pagination, Firefox/Safari, physical printer output and complete screen-reader testing are **Not run**. Record new outcomes in the shared result table. T15 is now integrated through PR #42 at `744bc39`; T17's return checks are recorded in Module 16.
 
 ## Module 16 — Per-unit returns and overdue (T17)
 
-**Owner:** Ralph Andre F. Giga (`ralph`) with Codex assistance. **Revision:** uncommitted T17 changes based on fetched main `744bc39`; T15 source `74924dd` is integrated through PR #42 and T16 corrections `d68d7f7` through PR #33. T17 is **Done locally, not integrated into main**. **Role:** active ADMIN for returns; active BASIC_USER for own tracking. **Entry:** `/manage/loans/` → loan → **Return units** (`/manage/loans/<loan_id>/returns/new/`). Build assets first using `npm.cmd run build`.
+**Owner:** Ralph Andre F. Giga (`ralph`) with Codex assistance. **Revision:** source `bd62ed7`, integrated through PR #43 at main `55899d0`; T15 source `74924dd` is integrated through PR #42 and T16 corrections `d68d7f7` through PR #33. T17 is **Done and integrated**; the merged source passed 294 PostgreSQL tests in 107.414s during Jerome's review. **Role:** active ADMIN for returns; active BASIC_USER for own tracking. **Entry:** `/manage/loans/` → loan → **Return units** (`/manage/loans/<loan_id>/returns/new/`). Build assets first using `npm.cmd run build`.
 
 ### Setup and dated data check
 
-The read-only local check on October 20, 2026, Asia/Manila, found **0 loans and 0 outstanding loan units**, with limits of **7 calendar days / 3 units per item**. No live records were created to write this guide. Prepare an eligible loan through the existing submission, approval and [release workflow](#module-15--release-due-date-revision-and-borrowing-slip-t15), using fictional identities and currently Available units. Recheck limits, current date and asset eligibility before doing so. A two-unit loan permits partial and final returns; a one-unit loan closes on its first return.
+Ralph's earlier October 20 read-only check found no loans. The reviewer's read-only check at **18:23 Asia/Manila, October 20, 2026**, found **1 loan, 1 outstanding loan unit and 0 returns**, with limits of **7 calendar days / 3 units per item**. A one-unit loan supports final-return testing; the two-unit examples below remain disposable fixtures. No live records were created to write this guide. Prepare an eligible loan through the existing submission, approval and [release workflow](#module-15--release-due-date-revision-and-borrowing-slip-t15), using fictional identities and currently Available units. Recheck limits, current date and asset eligibility before doing so. A two-unit loan permits partial and final returns; a one-unit loan closes on its first return.
 
 The concrete examples below were executed in a disposable browser-test database: loan #1, unit `TEST-CAM-001` (first LoanUnit) and `T17-CAM-002` (second LoanUnit), both from `Test camera`. These IDs/assets **are not current live loan records**. In another database, use the actual loan ID and issued-unit choices shown on the page. The temporary database was removed after checking the flow.
 
@@ -1630,7 +1630,8 @@ For an actual loan ID, inspect its ReturnRecord `loan_unit_id`, `received_by_id`
 
 - **Automated:** 21 T17 tests passed in 6.283s; the complete 294-test PostgreSQL suite passed in 109.763s. Tests use the real approval/release/return services, PostgreSQL audit check constraints, and separate backend connections with observed lock waits. Duplicate returns produce one success/one conflict and one return/maintenance/audit pair; different units on the same loan both return and the second closes the loan.
 - **Browser:** Chrome 155.0.8059.84, October 20, 2026, isolated database. Passed form/labels, keyboard focus from Confirm to Cancel, cancellation without writes, blank damaged-problem error, Fair partial return, damaged final return, closed-loan 409 and owner portal privacy. Layout bounds passed at 1440/390/320px; desktop and compact screenshots were inspected. No unexpected console or JavaScript errors. Disposable database/session files were removed; no live business records were changed.
-- **Not run:** Firefox/Safari, complete screen-reader evaluation, live populated loan examples, full T16 maintenance lifecycle in a browser, full T20 acceptance or system-wide user acceptance. Existing manual results from other modules remain separate.
+- **Merged-source review:** all 294 PostgreSQL tests passed in 107.414s on `55899d0`; the browser results above are Ralph's earlier checks, not a fresh browser run. Live records were inspected read-only and were not returned or otherwise modified.
+- **Not run:** Firefox/Safari, complete screen-reader evaluation, live populated loan execution, full T16 maintenance lifecycle in a browser, full T20 acceptance or system-wide user acceptance. Existing manual results from other modules remain separate.
 
 ## Recording manual results
 
@@ -1649,7 +1650,7 @@ Report the purpose marker/request ID and the smallest reproduction steps for a f
 
 ## What is not testable yet
 
-T13 including both query fixes is integrated (Module 12); T14 concurrency tests are integrated through PR #37 (Module 13). T15 release/date/slip pages are integrated through PR #42 at `744bc39` (Module 15). T17 is Done locally on ralph, uncommitted and not integrated (Module 16). The following tasks remain **Not started**; their full workflows are not implemented:
+T13 including both query fixes is integrated (Module 12); T14 concurrency tests are integrated through PR #37 (Module 13). T15 release/date/slip pages are integrated through PR #42 at `744bc39` (Module 15). T17 is Done and integrated through PR #43 at `55899d0` (Module 16). The following tasks remain **Not started**; their full workflows are not implemented:
 
 | Task | Feature | Owner |
 | --- | --- | --- |
@@ -1708,8 +1709,8 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests --noinput
 ```
 
-All tests must pass before handover; the local T17 source passed 294 PostgreSQL tests in 109.763s. T01–T16 are integrated; T17 is Done locally, uncommitted and not integrated. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
+All tests must pass before handover; the merged T17 source passed 294 PostgreSQL tests in 107.414s in the October 20 review. T01–T17 are integrated. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
 
 ---
 
-*Manual testing guide - scope: T01–T16 integrated; T17 Done locally on ralph, uncommitted and not integrated; Modules 15/16 record actual checks. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
+*Manual testing guide - scope: T01–T17 integrated; Modules 15/16 record actual checks. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*

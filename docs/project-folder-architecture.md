@@ -57,7 +57,7 @@ Campus-Equipment-Borrowing-System/
 │   ├── release_services.py                      [existing; T15 integrated] audited pre-issue date revision and one-time release
 │   ├── release_views.py                         [existing; T15 integrated] administrator date/release forms and loan/slip pages
 │   ├── reservations.py                          [existing; T15 integrated] complete reservation checks/locks shared with cancellation
-│   ├── return_services.py / return_forms.py / return_views.py [existing; T17 local on ralph] per-unit returns and damaged-return maintenance
+│   ├── return_services.py / return_forms.py / return_views.py [existing; T17 integrated] per-unit returns and damaged-return maintenance
 │   ├── queries.py                               [existing] owner-scoped history and administrator request queue/detail reads
 │   ├── tests/                                   [existing] submission/tracking/decisions/release/returns and PostgreSQL concurrency proofs
 │   └── management/commands/                     [planned] controlled demonstration seed
@@ -93,7 +93,7 @@ Campus-Equipment-Borrowing-System/
 │   │   ├── manage/                              [existing] catalog/photo/restore/unit and maintenance pages
 │   │   └── portal/                              [existing] equipment browsing list/detail pages
 │   ├── borrowing/                               [existing] submission and administrator request review/decision pages
-│   │   ├── manage/                              [existing/planned] request/decision, integrated T15 pages and local T17 returns present
+│   │   ├── manage/                              [existing/planned] request/decision, integrated T15 pages and integrated T17 returns present
 │   │   └── portal/                              [existing] borrower request/loan history and cancellation
 │   └── operations/manage/                       [existing/planned] settings/audit pages; live dashboard/reports planned
 │
@@ -122,7 +122,7 @@ A **view** is a Python request handler in the relevant app's `views.py`. The pag
 
 The role prefix selects the audience; the feature app selects the Python module. Real basic-user equipment handlers belong in `inventory/`, and borrowing handlers in `borrowing/`. T10 equipment handlers are in `inventory/portal_views.py`, mounted through `accounts/portal_urls.py`. T11 request creation and T12 borrower request/loan history, detail and cancellation handlers live in `borrowing/views.py`; owner-scoped read helpers live in `borrowing/queries.py` and the atomic cancellation workflow in `borrowing/services.py`. The portal URLs are mounted through `accounts/portal_urls.py`. Feature pages extend the existing `operations/manage/base.html` or `accounts/portal/base.html` and fill `workspace_content`; both inherit `components/workspace.html` and the `base.html` document/asset shell. The [coding guide](coding-standards.md#tailwind-styling-pattern) defines the shared layout pattern.
 
-T13 request review/decisions and corrected T16 are integrated. T13's subsequent Unicode-search and reservation-display fixes are integrated through PR #35 at `cf50d0c`; smaller coding-convention follow-ups remain. PR #37 at `5381c83` integrates T14 [separate-connection approval tests](../borrowing/tests/test_approval_concurrency.py). T15 / Jerome is integrated through PR #42 at `744bc39`; its release/date/loan/slip paths below exist. T17 returns are implemented locally on ralph, uncommitted and not integrated. The standalone printable slip extends `base.html` and reuses `loan_summary.html`; ordinary feature pages retain their role shell. See [current evidence](tasks.md#verified-task-evidence). These page placements include existing pages and explicitly planned borrowing examples; route names come from the HTTP contract:
+T13 request review/decisions and corrected T16 are integrated. T13's subsequent Unicode-search and reservation-display fixes are integrated through PR #35 at `cf50d0c`; smaller coding-convention follow-ups remain. PR #37 at `5381c83` integrates T14 [separate-connection approval tests](../borrowing/tests/test_approval_concurrency.py). T15 / Jerome is integrated through PR #42 at `744bc39`; its release/date/loan/slip paths below exist. T17 returns are integrated through PR #43 at `55899d0`, source `bd62ed7`. The standalone printable slip extends `base.html` and reuses `loan_summary.html`; ordinary feature pages retain their role shell. See [current evidence](tasks.md#verified-task-evidence). These page placements include existing pages and explicitly planned borrowing examples; route names come from the HTTP contract:
 
 | Page | Python view location | Template location | Contracted URL name |
 | --- | --- | --- | --- |
@@ -139,7 +139,7 @@ T13 request review/decisions and corrected T16 are integrated. T13's subsequent 
 | Approve/reject a request | `borrowing/views.py` | `templates/borrowing/manage/request_decision.html` | `borrowing_manage:request-approve`, `request-reject` |
 | Revise/release an Approved request (T15) | `borrowing/release_views.py` | `templates/borrowing/manage/request_due_date.html` and `request_release.html` | `borrowing_manage:request-due-date`, `request-release` |
 | View issued loans/slip (T15) | `borrowing/release_views.py` | `templates/borrowing/manage/loan_list.html`, `loan_detail.html`, `loan_summary.html` and `loan_slip.html` | `borrowing_manage:loan-list`, `loan-detail`, `loan-slip` |
-| Record returns (local T17) | `borrowing/return_views.py` | `templates/borrowing/manage/return_form.html` | `borrowing_manage:return-create` |
+| Record returns (T17) | `borrowing/return_views.py` | `templates/borrowing/manage/return_form.html` | `borrowing_manage:return-create` |
 | Edit operational settings | `operations/views.py` | `templates/operations/manage/settings_form.html` | `operations:settings` |
 | View audit history | `operations/views.py` | `templates/operations/manage/audit_list.html` | `operations:audit-list` |
 | View the admin dashboard | `operations/views.py` | `templates/operations/manage/dashboard.html` | `operations:dashboard` |
