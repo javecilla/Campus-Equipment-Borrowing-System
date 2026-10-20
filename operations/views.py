@@ -1,4 +1,4 @@
-"""Custom settings and audit views; live dashboard data belongs to T18."""
+"""Custom dashboard, settings, profile, and audit views."""
 
 from typing import cast
 
@@ -8,28 +8,34 @@ from django.core.paginator import EmptyPage, Page, PageNotAnInteger, Paginator
 from django.db.models import QuerySet
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_safe
 
 from accounts.access import admin_required
 from accounts.models import User
 from operations.forms import AuditSearchForm, SettingsForm
 from operations.models import AuditLog, SystemSetting
-from operations.queries import audit_history, get_system_setting
+from operations.queries import ChartPoint, audit_history, dashboard_snapshot, get_system_setting
 from operations.services import update_settings
+
+
+def _chart_data(points: tuple[ChartPoint, ...]) -> list[dict[str, str | int]]:
+    """Convert typed query results to the JSON-safe template presentation shape."""
+    return [{"label": point.label, "value": point.value} for point in points]
 
 
 @require_safe
 @admin_required
 def dashboard(request: HttpRequest) -> HttpResponse:
-    """Pending T18 destination; live dashboard data and charts belong to Alex."""
+    """Display current inventory, request, loan, and issued-unit summaries."""
+    snapshot = dashboard_snapshot(timezone.localdate())
     return render(
         request,
-        "operations/manage/pending.html",
+        "operations/manage/dashboard.html",
         {
-            "heading": "Administrator dashboard",
-            "module": "T18 · Alex",
-            "description": "Live cards for available units, pending requests, active loans, and overdue loans; a monthly issued-loan chart and an equipment-category usage chart will appear here.",
-            "next_work": "Implement ORM-backed live cards and charts after T15 and T17 are integrated. All values must update when database transactions change; no static demonstration data.",
+            "snapshot": snapshot,
+            "monthly_chart_data": _chart_data(snapshot.monthly_issued_loans),
+            "category_chart_data": _chart_data(snapshot.category_issued_units),
         },
     )
 

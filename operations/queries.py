@@ -1,13 +1,70 @@
-"""Read operational settings and filtered, ordered audit history without writes."""
+"""Read operational settings, audit history, and live dashboard summaries."""
 
+from dataclasses import dataclass
 from datetime import date
 
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import CharField, QuerySet, Value
-from django.db.models.functions import Cast, Concat
+from django.db.models import CharField, Count, F, QuerySet, Value
+from django.db.models.functions import Cast, Concat, TruncMonth
 
+from borrowing.models import BorrowRequest, Loan, LoanUnit, RequestStatus
+from borrowing.queries import with_loan_progress
+from inventory.models import EquipmentUnit, UnitStatus
 from operations.models import AuditLog, SystemSetting
 from operations.validation import LoanLimits, validate_loan_limits
+
+
+@dataclass(frozen=True)
+class DashboardCards:
+    available_units: int
+    pending_requests: int
+    active_loans: int
+    overdue_loans: int
+
+
+@dataclass(frozen=True)
+class ChartPoint:
+    label: str
+    value: int
+
+
+@dataclass(frozen=True)
+class DashboardSnapshot:
+    cards: DashboardCards
+    monthly_issued_loans: tuple[ChartPoint, ...]
+    category_issued_units: tuple[ChartPoint, ...]
+
+
+def dashboard_snapshot(today: date) -> DashboardSnapshot:
+    """Return current cards and charts from committed inventory and loan records."""
+    active_loans: QuerySet[Loan] = with_loan_progress(Loan.objects.all(), today).filter(
+        outstanding_quantity__gt=0
+    )
+    monthly_issued_loans: tuple[ChartPoint, ...] = tuple(
+        ChartPoint(label=row["month"].strftime("%b %Y"), value=row["value"])
+        for row in Loan.objects.annotate(month=TruncMonth("issued_on"))
+        .values("month")
+        .annotate(value=Count("pk"))
+        .order_by("month")
+    )
+    category_issued_units: tuple[ChartPoint, ...] = tuple(
+        ChartPoint(label=row["category"], value=row["value"])
+        for row in LoanUnit.objects.values(
+            category=F("allocation__unit__catalog_item__category__name")
+        )
+        .annotate(value=Count("pk"))
+        .order_by("category")
+    )
+    return DashboardSnapshot(
+        cards=DashboardCards(
+            available_units=EquipmentUnit.objects.filter(status=UnitStatus.AVAILABLE).count(),
+            pending_requests=BorrowRequest.objects.filter(status=RequestStatus.PENDING).count(),
+            active_loans=active_loans.count(),
+            overdue_loans=active_loans.filter(due_date__lt=today).count(),
+        ),
+        monthly_issued_loans=monthly_issued_loans,
+        category_issued_units=category_issued_units,
+    )
 
 
 def get_system_setting() -> SystemSetting:
