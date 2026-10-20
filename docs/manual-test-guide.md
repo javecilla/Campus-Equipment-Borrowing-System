@@ -1633,25 +1633,25 @@ For an actual loan ID, inspect its ReturnRecord `loan_unit_id`, `received_by_id`
 - **Merged-source review:** all 294 PostgreSQL tests passed in 107.414s on `55899d0`; the browser results above are Ralph's earlier checks, not a fresh browser run. Live records were inspected read-only and were not returned or otherwise modified.
 - **Not run:** Firefox/Safari, complete screen-reader evaluation, live populated loan execution, full T16 maintenance lifecycle in a browser, full T20 acceptance or system-wide user acceptance. Existing manual results from other modules remain separate.
 
-## Module 17 - Live administration dashboard (T18)
+## Module 17 — Live administration dashboard (T18)
 
-**Status:** Implemented and verified on Alex's `alex` branch; not integrated into `main`. T19 reports remain unavailable until T18 is accepted and integrated.
+**Status:** Done and integrated through PR #45 at `26b1ee5`, source `54380fd`. Fresh merged-source review passes all 298 PostgreSQL tests in 56.385s; see the [review receipt](../handoffs/t18-main-integration-review-and-t19-readiness-10-20-2026.md). Alex / T19 has accepted, integrated T17/T18 prerequisites; T19 reports remain Not started and unavailable.
 
 **Entry URL:** `/manage/`
 
 **Required role:** Active `ADMIN`. Use fictional/disposable workflow records only. Do not change production-like records merely to make a chart look populated.
 
-**Read-only local snapshot:** On October 20, 2026 Asia/Manila at base revision `2258364` plus the completed T18 implementation, the local development database reported the following values through `dashboard_snapshot(timezone.localdate())`:
+**Read-only local snapshot:** On October 20, 2026 Asia/Manila at merged revision `26b1ee5`, the local development database reported the following values through `dashboard_snapshot(timezone.localdate())`, inside a transaction verified as `transaction_read_only = on`:
 
 | Field | Value |
 | --- | ---: |
 | Campus date | `2026-10-20` |
-| Available units | `0` |
-| Pending requests | `0` |
+| Available units | `11` |
+| Pending requests | `2` |
 | Active loans | `0` |
 | Overdue loans | `0` |
-| Monthly chart points | `0` |
-| Category chart points | `0` |
+| Monthly chart points | `1`: `Oct 2026`, `1` loan |
+| Category chart points | `1`: `Photography & Video`, `1` issued unit |
 
 Recheck these values before every manual run; they are a dated local snapshot, not demonstration data or a permanent expected total.
 
@@ -1670,7 +1670,7 @@ Expected results:
 - Anonymous access redirects to login with a safe `next=/manage/`; BASIC_USER access returns 403.
 - Active ADMIN GET/HEAD returns the shared administrator shell and current database values; POST returns 405 and changes nothing.
 - An inactive administrator receives 403 and the existing session is invalidated.
-- With the dated zero-record snapshot above, all four cards show `0`, and the two useful empty messages read `No issued loans yet.` and `No issued equipment usage yet.`
+- With the dated snapshot above, cards show `11`, `2`, `0`, `0`, and both charts contain one point. In a disposable database with no business records, all four cards show `0`, and the two useful empty messages read `No issued loans yet.` and `No issued equipment usage yet.`
 
 ### T18-02 - Cards and charts follow committed workflows
 
@@ -1704,12 +1704,12 @@ Use this read-only command to recheck card and series sizes without exposing bor
 .\.venv\Scripts\python.exe manage.py shell -c "from django.utils import timezone; from operations.queries import dashboard_snapshot; snapshot=dashboard_snapshot(timezone.localdate()); print(timezone.localdate(), snapshot.cards, len(snapshot.monthly_issued_loans), len(snapshot.category_issued_units))"
 ```
 
-### T18 verification recorded for this handoff
+### T18 verification
 
-- **Automated:** 4 focused T18 PostgreSQL tests passed in 0.304s; the full `operations.tests` module passed 32 tests in 3.864s; the complete suite passed **298 tests in 54.443s**. Coverage includes actual approval/release/partial/final-return services, returned-unit category totals, one-loan monthly counts, active/overdue changes, empty states, safe JSON embedding, active-admin access, inactive-session denial and 405 POST behavior.
-- **Frontend build:** Theme contrast check and Tailwind build passed; the complete JavaScript build generated `dashboard-charts.js` after running outside the restricted sandbox.
-- **Required checks:** Django database/schema/migration checks, Ruff lint, changed-Python formatting, npm formatting, npm audit with zero vulnerabilities, pip consistency and `git diff --check` passed. Repository-wide Ruff format and djLint checks still flag one untouched archived handoff code block and one untouched equipment-list template line respectively; neither finding is in T18 files.
-- **Read-only local data:** The dated zero-value snapshot above was executed against the configured development database without writes.
+- **Implementation verification:** Alex's original run passed 4 focused T18 PostgreSQL tests in 0.304s, 32 operations tests in 3.864s and the complete 298-test suite in 54.443s; see [his snapshot](../handoffs/alex-t18-live-administration-dashboard-10-20-2026.md). Coverage includes actual approval/release/partial/final-return services, returned-unit category totals, one-loan monthly counts, active/overdue changes, empty states, safe JSON embedding, active-admin access, inactive-session denial and 405 POST behavior.
+- **Frontend build:** Fresh theme contrast, Tailwind and JavaScript builds pass, including `dashboard-charts.js`.
+- **Merged-source review:** All **298 PostgreSQL tests passed in 56.385s** on `26b1ee5`, including the four T18 tests. Build/contrast, npm formatting/audit (zero vulnerabilities), Django database/schema/migration checks, Ruff lint, T18 Python/template formatting and pip consistency pass. Repository-wide Ruff formatting flags untouched `accounts/views.py`, `inventory/tests/test_portal_equipment.py` (line endings) and `handoffs/borrower-portal-ui-improvements-10-20-2026.md` (Python example); djLint flags untouched `templates/inventory/portal/equipment_list.html`. These remain separate cleanup findings; no application files were changed by this review.
+- **Read-only local data:** The dated snapshot above was executed against the configured development database with `transaction_read_only = on`; no live records were changed.
 - **Not run:** Manual browser workflow, keyboard/compact-width screenshots, JavaScript-disabled browser review, Firefox/Safari, screen-reader evaluation, performance measurement and system-wide acceptance.
 
 ## Recording manual results
@@ -1722,7 +1722,7 @@ Use one row per actual test run. Expected outcomes in this guide do not count as
 | Example: T13-02 | corrected jerome, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request ID; corrections integrated through PR #35 |
 | Example: T12-01 | `170cc38`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request/loan ID; no private data |
 | Example: T16-01 | `23c1ad9` including integrated T16 fixes, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional asset code/maintenance ID; no private data |
-| Example: T18-02 | `alex` T18, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request/loan/category markers; no private data |
+| Example: T18-02 | `26b1ee5`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request/loan/category markers; no private data |
 
 Report the purpose marker/request ID and the smallest reproduction steps for a failure. Retain test records rather than deleting history to make counts match. Save real findings in the current handoff or the team's review record when supplied.
 
@@ -1730,7 +1730,7 @@ Report the purpose marker/request ID and the smallest reproduction steps for a f
 
 ## What is not testable yet
 
-T13 including both query fixes is integrated (Module 12); T14 concurrency tests are integrated through PR #37 (Module 13). T15 release/date/slip pages are integrated through PR #42 at `744bc39` (Module 15). T17 is Done and integrated through PR #43 at `55899d0` (Module 16). T18 is implemented on `alex` (Module 17) but is not integrated into main. The following tasks remain **Not started**; their full workflows are not implemented:
+T13 including both query fixes is integrated (Module 12); T14 concurrency tests are integrated through PR #37 (Module 13). T15 release/date/slip pages are integrated through PR #42 at `744bc39` (Module 15). T17 is Done and integrated through PR #43 at `55899d0` (Module 16). T18 is Done and integrated through PR #45 at `26b1ee5` (Module 17). The following tasks remain **Not started**; their full workflows are not implemented:
 
 | Task | Feature | Owner |
 | --- | --- | --- |
@@ -1741,7 +1741,7 @@ T13 including both query fixes is integrated (Module 12); T14 concurrency tests 
 
 ## Running the automated test suite
 
-The T18 implementation on `alex` passed **298 PostgreSQL tests in 54.443s**, including four T18 dashboard checks. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
+The merged T18 source at `26b1ee5` passed **298 PostgreSQL tests in 56.385s**, including four T18 dashboard checks. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput
@@ -1790,8 +1790,8 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests.test_dashboard --noinput
 ```
 
-All tests must pass before handover; the merged T17 source passed 294 PostgreSQL tests in 107.414s in the October 20 review. T01–T17 are integrated. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
+All tests must pass before handover; the merged T18 source passed 298 PostgreSQL tests in 56.385s in the October 20 review. T01–T18 are integrated. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
 
 ---
 
-*Manual testing guide - scope: T01–T17 integrated; T18 implemented locally and not integrated; Modules 15–17 record actual checks. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
+*Manual testing guide - scope: T01–T18 integrated; Modules 15–17 record actual checks. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
