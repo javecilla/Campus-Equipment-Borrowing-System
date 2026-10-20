@@ -5,9 +5,11 @@ from html.parser import HTMLParser
 from django.contrib.auth import SESSION_KEY
 from django.test import Client, TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from accounts.models import User
-from operations.tests.records import CatalogRecords, create_catalog_records
+from borrowing.services import approve_request, reject_request
+from operations.tests.records import CatalogRecords, create_catalog_records, create_request
 
 ADMIN_READ_ONLY: tuple[str, ...] = (
     "inventory_manage:item-list",
@@ -144,3 +146,46 @@ class WorkspaceNavigationTests(TestCase):
         self.assertEqual(portal_response.context["profile"].user_id, self.records.borrower.pk)
         self.assertNotContains(portal_response, self.records.admin.email)
         self.assertNotContains(portal_response, self.records.admin.username)
+
+    def test_pending_badge_tracks_committed_decisions_and_hides_when_queue_is_empty(self) -> None:
+        self.client.force_login(self.records.admin)
+        url: str = reverse("operations:dashboard")
+        empty = self.client.get(url)
+        self.assertEqual(empty.context["nav_pending_requests"], 0)
+        self.assertNotContains(empty, 'data-testid="nav-manage-borrowing-badge"')
+        first = create_request(self.records.borrower.pk, self.records.item.pk, timezone.now())
+        second = create_request(self.records.borrower.pk, self.records.item.pk, timezone.now())
+
+        pending = self.client.get(url)
+        self.assertEqual(pending.context["nav_pending_requests"], 2)
+        self.assertEqual(pending.context["snapshot"].cards.pending_requests, 2)
+        self.assertContains(pending, 'data-testid="nav-manage-borrowing-badge"')
+
+        approve_request(self.records.admin.pk, first.request_id, "Fictional badge approval")
+        approved = self.client.get(url)
+        self.assertEqual(approved.context["nav_pending_requests"], 1)
+        reject_request(self.records.admin.pk, second.request_id, "Fictional badge rejection")
+        decided = self.client.get(url)
+        self.assertEqual(decided.context["nav_pending_requests"], 0)
+        self.assertNotContains(decided, 'data-testid="nav-manage-borrowing-badge"')
+
+    def test_pending_badge_caps_display_and_is_not_supplied_to_other_roles(self) -> None:
+        for _ in range(100):
+            create_request(self.records.borrower.pk, self.records.item.pk, timezone.now())
+        self.client.force_login(self.records.admin)
+        administrator = self.client.get(reverse("operations:dashboard"))
+        self.assertEqual(administrator.context["nav_pending_requests"], 100)
+        self.assertContains(administrator, "99+")
+        self.assertContains(administrator, 'aria-label="100 pending requests"')
+
+        self.client.force_login(self.records.borrower)
+        borrower = self.client.get(reverse("portal:home"))
+        self.assertIsNone(borrower.context.get("nav_pending_requests"))
+        self.assertNotContains(borrower, 'data-testid="nav-manage-borrowing-badge"')
+        anonymous = Client().get(reverse("accounts:login"))
+        self.assertIsNone(anonymous.context.get("nav_pending_requests"))
+        self.client.force_login(self.records.admin)
+        User.objects.filter(pk=self.records.admin.pk).update(is_active=False)
+        inactive = self.client.get(reverse("operations:dashboard"))
+        self.assertEqual(inactive.status_code, 403)
+        self.assertIsNone(inactive.context.get("nav_pending_requests"))

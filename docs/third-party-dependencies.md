@@ -31,7 +31,7 @@ Pins: [requirements.txt](../requirements.txt) and [requirements-dev.txt](../requ
 
 ## npm runtime, build, and optional packages
 
-Every package entry in [package-lock.json](../package-lock.json) is listed below, including native binaries for other platforms. Optional entries may not be installed locally. All current npm packages support build/development tooling; page JavaScript bundles no third-party runtime package. Build/dev tools do not implement application HTTP endpoints or generate administration pages.
+Every package entry in [package-lock.json](../package-lock.json) is listed below, including native binaries for other platforms. Optional entries may not be installed locally. Chart.js 4.5.1 and its indirect `@kurkle/color` 0.3.4 dependency are browser runtime packages bundled locally for UI-11. Other npm packages support build/development tooling. Build/dev tools do not implement application HTTP endpoints or generate administration pages.
 
 | Lockfile package path                                                            | Version | Role                | Introduced by                                                                                                   | Declared license |
 | -------------------------------------------------------------------------------- | ------- | ------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------- |
@@ -66,6 +66,7 @@ Every package entry in [package-lock.json](../package-lock.json) is listed below
 | `node_modules/@jridgewell/resolve-uri`                                           | 3.1.2   | Build/dev           | `@jridgewell/trace-mapping`                                                                                     | MIT              |
 | `node_modules/@jridgewell/sourcemap-codec`                                       | 1.6.0   | Build/dev           | `@jridgewell/gen-mapping`, `@jridgewell/trace-mapping`, `magic-string`                                          | MIT              |
 | `node_modules/@jridgewell/trace-mapping`                                         | 0.3.31  | Build/dev           | `@jridgewell/gen-mapping`, `@jridgewell/remapping`                                                              | MIT              |
+| `node_modules/@kurkle/color` | 0.3.4 | Browser runtime | `chart.js` | MIT |
 | `node_modules/@parcel/watcher`                                                   | 2.6.0   | Build/dev           | `@tailwindcss/cli`                                                                                              | MIT              |
 | `node_modules/@parcel/watcher-android-arm64`                                     | 2.6.0   | Build/dev; optional | `@parcel/watcher`                                                                                               | MIT              |
 | `node_modules/@parcel/watcher-darwin-arm64`                                      | 2.6.0   | Build/dev; optional | `@parcel/watcher`                                                                                               | MIT              |
@@ -103,6 +104,7 @@ Every package entry in [package-lock.json](../package-lock.json) is listed below
 | `node_modules/ansi-regex`                                                        | 6.4.0   | Build/dev           | `strip-ansi`                                                                                                    | MIT              |
 | `node_modules/ansi-styles`                                                       | 6.2.3   | Build/dev           | `wrap-ansi`                                                                                                     | MIT              |
 | `node_modules/chalk`                                                             | 5.6.2   | Build/dev           | `concurrently`                                                                                                  | MIT              |
+| `node_modules/chart.js` | 4.5.1 | Browser runtime | `package.json (dependencies)` | MIT |
 | `node_modules/cliui`                                                             | 9.0.1   | Build/dev           | `yargs`                                                                                                         | ISC              |
 | `node_modules/concurrently`                                                      | 10.0.6  | Build/dev           | `package.json (devDependencies)`                                                                                | MIT              |
 | `node_modules/detect-libc`                                                       | 2.1.2   | Build/dev           | `@parcel/watcher`, `lightningcss`                                                                               | Apache-2.0       |
@@ -163,8 +165,8 @@ All declared dependency and optional-dependency references in this application l
 
 DBHub's published 1.5.0 manifest declares zod ^4.2.0, ssh2 ^1.16.0, dotenv ^16.4.7, express ^4.18.2, ssh-config ^5.0.3, @iarna/toml ^2.2.5, @modelcontextprotocol/node ^2.0.0, and @modelcontextprotocol/server ^2.0.0. Its execution-cache resolution is separate from package-lock.json; this document does not invent resolved versions or a complete lock for that optional tool. Use its linked published dependency/license declarations and DEV.md's pinned launch. It is not bundled with the application.
 
-Node/npm, Python/pip, Git, PostgreSQL, and the optional uv resolver are workstation tools described in DEV.md, not application package entries. Current page JavaScript contains no bundled third-party runtime package. Original font notices stay in static/fonts/.
+Node/npm, Python/pip, Git, PostgreSQL, and the optional uv resolver are workstation tools described in DEV.md, not application package entries. The dashboard bundle contains Chart.js and `@kurkle/color`; their complete installed MIT notices are copied into [static/licenses/chartjs-MIT.txt](../static/licenses/chartjs-MIT.txt) for static collection and submission. Original font notices stay in static/fonts/.
 
 ## Inventory coverage
 
-This snapshot contains 18 pinned Python distributions and 113 npm lock entries. Refresh names, versions, licenses, parent links, optional flags, and counts from actual locks/installed metadata after a dependency change. Check that direct selections have a README rationale and required browser notices remain in the built artifact.
+This snapshot contains 18 pinned Python distributions and 115 npm lock entries. Refresh names, versions, licenses, parent links, optional flags, and counts from actual locks/installed metadata after a dependency change. Check that direct selections have a README rationale and required browser notices remain in the built artifact.

@@ -1,6 +1,6 @@
 """T18 live dashboard query, access, and rendered dataset integration checks."""
 
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.contrib.auth import SESSION_KEY
 from django.test import Client, TestCase
@@ -12,7 +12,7 @@ from borrowing.models import Loan
 from borrowing.release_services import release_request
 from borrowing.return_services import ReturnInput, return_units
 from borrowing.services import approve_request
-from inventory.models import EquipmentUnit, UnitCondition, UnitStatus
+from inventory.models import CatalogItem, Category, EquipmentUnit, UnitCondition, UnitStatus
 from operations.queries import ChartPoint, DashboardCards, dashboard_snapshot
 from operations.tests.records import CatalogRecords, create_catalog_records, create_request
 
@@ -20,7 +20,7 @@ from operations.tests.records import CatalogRecords, create_catalog_records, cre
 class DashboardIntegrationTests(TestCase):
     records: CatalogRecords
     loan: Loan
-    today = timezone.localdate()
+    today: date = timezone.localdate()
 
     @classmethod
     def setUpTestData(cls) -> None:
@@ -49,10 +49,12 @@ class DashboardIntegrationTests(TestCase):
         first, second = tuple(self.loan.units.order_by("pk"))
         initial = dashboard_snapshot(self.today)
         self.assertEqual(initial.cards, DashboardCards(0, 1, 1, 1))
-        self.assertEqual(
-            initial.monthly_issued_loans,
-            (ChartPoint((self.today - timedelta(days=5)).strftime("%b %Y"), 1),),
+        expected_months: tuple[ChartPoint, ...] = (
+            ChartPoint(self.loan.issued_on.strftime("%b %Y"), 1),
         )
+        if self.loan.issued_on.month != self.today.month:
+            expected_months += (ChartPoint(self.today.strftime("%b %Y"), 0),)
+        self.assertEqual(initial.monthly_issued_loans, expected_months)
         self.assertEqual(initial.category_issued_units, (ChartPoint("Test cameras", 2),))
 
         return_units(
@@ -79,6 +81,40 @@ class DashboardIntegrationTests(TestCase):
         final = dashboard_snapshot(self.today)
         self.assertEqual(final.cards, DashboardCards(1, 1, 0, 0))
         self.assertEqual(final.category_issued_units, (ChartPoint("Test cameras", 2),))
+
+    def test_chart_history_includes_idle_months_and_ranks_categories_by_issued_units(self) -> None:
+        first_month: date = (self.today.replace(day=1) - timedelta(days=35)).replace(day=1)
+        idle_month: date = (first_month + timedelta(days=32)).replace(day=1)
+        Loan.objects.filter(pk=self.loan.pk).update(issued_on=first_month)
+        category: Category = Category.objects.create(name="Audio", description="")
+        item: CatalogItem = CatalogItem.objects.create(
+            category=category, name="Classroom speaker", description="Fictional chart test"
+        )
+        EquipmentUnit.objects.create(
+            catalog_item=item,
+            asset_code="T18-AUDIO-001",
+            condition=UnitCondition.GOOD,
+            acquired_on=self.today,
+            status=UnitStatus.AVAILABLE,
+        )
+        request_line = create_request(self.records.borrower.pk, item.pk, timezone.now())
+        approve_request(self.records.admin.pk, request_line.request_id, "Chart history check")
+        release_request(self.records.admin.pk, request_line.request_id)
+
+        snapshot = dashboard_snapshot(self.today)
+
+        self.assertEqual(
+            snapshot.monthly_issued_loans,
+            (
+                ChartPoint(first_month.strftime("%b %Y"), 1),
+                ChartPoint(idle_month.strftime("%b %Y"), 0),
+                ChartPoint(self.today.strftime("%b %Y"), 1),
+            ),
+        )
+        self.assertEqual(
+            snapshot.category_issued_units,
+            (ChartPoint("Test cameras", 2), ChartPoint("Audio", 1)),
+        )
 
     def test_dashboard_renders_live_values_and_json_safe_chart_data(self) -> None:
         self.records.category.name = "Lab </script><script>alert(1)</script>"

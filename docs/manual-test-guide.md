@@ -1639,19 +1639,21 @@ For an actual loan ID, inspect its ReturnRecord `loan_unit_id`, `received_by_id`
 
 **Entry URL:** `/manage/`
 
+**UI-11/UI-12 follow-up:** The Chart.js dashboard and Kiro-assisted workspace improvements are Done on `jerome`, not integrated into main. The user authorized combined commit/push with Codex/Kiro co-author credit. Install the locked npm packages and rebuild assets before reviewing. T18's integrated baseline and Alex's credit remain intact; see [publication review](../handoffs/dashboard-and-workspace-publication-review-10-20-2026.md).
+
 **Required role:** Active `ADMIN`. Use fictional/disposable workflow records only. Do not change production-like records merely to make a chart look populated.
 
-**Read-only local snapshot:** On October 20, 2026 Asia/Manila at merged revision `26b1ee5`, the local development database reported the following values through `dashboard_snapshot(timezone.localdate())`, inside a transaction verified as `transaction_read_only = on`:
+**Read-only local snapshot:** Rechecked October 20, 2026 Asia/Manila during combined UI-11/UI-12 publication review on `jerome` (based on `5527432`). The configured development database reported the following values inside a transaction verified as `transaction_read_only = on`; this inspection changed no live records:
 
 | Field | Value |
 | --- | ---: |
 | Campus date | `2026-10-20` |
-| Available units | `11` |
+| Available units | `9` |
 | Pending requests | `2` |
-| Active loans | `0` |
+| Active loans | `1` |
 | Overdue loans | `0` |
-| Monthly chart points | `1`: `Oct 2026`, `1` loan |
-| Category chart points | `1`: `Photography & Video`, `1` issued unit |
+| Monthly chart points | `1`: `Oct 2026`, `2` loans |
+| Category chart points | `2`: `Photography & Video`, `3` issued units; `Audio Visual Equipment`, `1` issued unit |
 
 Recheck these values before every manual run; they are a dated local snapshot, not demonstration data or a permanent expected total.
 
@@ -1670,7 +1672,7 @@ Expected results:
 - Anonymous access redirects to login with a safe `next=/manage/`; BASIC_USER access returns 403.
 - Active ADMIN GET/HEAD returns the shared administrator shell and current database values; POST returns 405 and changes nothing.
 - An inactive administrator receives 403 and the existing session is invalidated.
-- With the dated snapshot above, cards show `11`, `2`, `0`, `0`, and both charts contain one point. In a disposable database with no business records, all four cards show `0`, and the two useful empty messages read `No issued loans yet.` and `No issued equipment usage yet.`
+- With the dated snapshot above, cards show `9`, `2`, `1`, `0`; the monthly chart contains one point and the category chart two. In a disposable database with no business records, all four cards show `0`, and the two useful empty messages read `No issued loans yet.` and `No issued equipment usage yet.`
 
 ### T18-02 - Cards and charts follow committed workflows
 
@@ -1691,12 +1693,26 @@ If the loan is already past its stored due date on the campus date, Overdue loan
 | Check | Expected result |
 | --- | --- |
 | Category label containing `<`, `>` or `&` in a disposable test database | The label renders as text; it cannot close the embedded JSON script or inject markup |
-| Monthly chart | Months are chronological; each loan contributes once |
-| Category chart | Categories are alphabetical; each issued LoanUnit contributes once, including returned units |
+| Monthly chart | Columns are chronological from the first release through the current month, including months with zero releases; each loan contributes once |
+| Category chart | Horizontal bars rank categories by issued-unit count, highest first, with alphabetical ties; each issued LoanUnit contributes once, including returned units and repeat issues |
+| Axes and exact values | Count axes begin at zero with whole-number ticks; hovering/tapping a bar shows its full label and exact count; category tooltips wrap on compact screens |
 | Data disclosure | `View monthly chart data` and `View category chart data` expose the same labels/counts in tables |
 | Keyboard | Navigation, disclosure controls and real workflow links remain keyboard reachable with visible focus |
-| Widths | Check desktop plus `390px` and `320px`; cards stack, charts remain readable and the page has no viewport overflow |
+| Widths | Check desktop plus `390px` and `320px`; cards stack, charts remain readable and the page has no viewport overflow. Long month histories scroll inside the chart region; many categories scroll vertically inside their region. Full category names remain in tooltips/tables |
 | JavaScript disabled | The disclosure tables retain the stored chart data even though enhanced bars are absent |
+
+Do not backdate live records to manufacture chart history. If historical releases or multiple categories are unavailable, record those browser cases as Not run; the automated chart-history case uses disposable PostgreSQL records.
+
+### T18-04 - Dashboard card actions (UI-11)
+
+| Control | Expected destination and result |
+| --- | --- |
+| `dashboard-view-available` | `/manage/units/?status=AVAILABLE`; existing unit filter is selected |
+| `dashboard-review-pending` | `/manage/requests/?status=PENDING`; existing request filter is selected |
+| `dashboard-view-loans` | `/manage/loans/`; existing issued-loan records and progress |
+| `dashboard-review-due-dates` | `/manage/loans/`; inspect stored due dates and overdue labels. This existing list has no active/overdue filter; the link does not imply one |
+
+Use Tab/Enter as well as pointer input, then return to the dashboard. Confirm the four cards describe the current state, while chart totals describe all recorded releases. Refresh after a real authorized transaction to obtain new values; the dashboard does not poll automatically.
 
 Use this read-only command to recheck card and series sizes without exposing borrower identities:
 
@@ -1704,13 +1720,31 @@ Use this read-only command to recheck card and series sizes without exposing bor
 .\.venv\Scripts\python.exe manage.py shell -c "from django.utils import timezone; from operations.queries import dashboard_snapshot; snapshot=dashboard_snapshot(timezone.localdate()); print(timezone.localdate(), snapshot.cards, len(snapshot.monthly_issued_loans), len(snapshot.category_issued_units))"
 ```
 
+### T18-05 - Workspace shortcuts, pending badge and filters (UI-12)
+
+| Field / action | Expected result |
+| --- | --- |
+| Active ADMIN; Pending count `0` | Borrowing navigation has no badge |
+| Active ADMIN; Pending count `2` in the dated live snapshot | `nav-manage-borrowing-badge` displays `2`, with an accessible count; dashboard Pending card also reads `2` on reload |
+| Disposable queue count `100` | Badge displays `99+`; its accessible label retains `100 pending requests`. Do not create live requests merely to run the cap case |
+| BASIC_USER, anonymous or deactivated administrator | No administrator badge context is supplied; protected management pages retain their role/active-account behavior |
+| Dashboard versus request queue | Inactive badge uses teal/white; active Borrowing badge inverts to white/teal. Counts follow committed decisions on the next page load |
+| `home-manage-equipment`, `home-manage-requests`, `home-manage-accounts`, `home-manage-maintenance` | Full-width shortcut rows retain their named routes; the final Maintenance row has no trailing separator |
+| `home-manage-settings`, `home-manage-audit` | Existing tool rows remain functional; the final Audit row has no trailing separator |
+| `/manage/requests/` | Clear filters appears before Search requests. Submit a harmless search and clear it using the real controls; refer to [T13 queue cases](#t13-01-queue-filters-and-read-only-detail) for filter behavior |
+| Desktop and `320px` / `390px` | Badge aligns within navigation; page stays within viewport. Equipment subnav tabs remain content-width rather than stretching across their row |
+
 ### T18 verification
 
 - **Implementation verification:** Alex's original run passed 4 focused T18 PostgreSQL tests in 0.304s, 32 operations tests in 3.864s and the complete 298-test suite in 54.443s; see [his snapshot](../handoffs/alex-t18-live-administration-dashboard-10-20-2026.md). Coverage includes actual approval/release/partial/final-return services, returned-unit category totals, one-loan monthly counts, active/overdue changes, empty states, safe JSON embedding, active-admin access, inactive-session denial and 405 POST behavior.
 - **Frontend build:** Fresh theme contrast, Tailwind and JavaScript builds pass, including `dashboard-charts.js`.
 - **Merged-source review:** All **298 PostgreSQL tests passed in 56.385s** on `26b1ee5`, including the four T18 tests. Build/contrast, npm formatting/audit (zero vulnerabilities), Django database/schema/migration checks, Ruff lint, T18 Python/template formatting and pip consistency pass. Repository-wide Ruff formatting flags untouched `accounts/views.py`, `inventory/tests/test_portal_equipment.py` (line endings) and `handoffs/borrower-portal-ui-improvements-10-20-2026.md` (Python example); djLint flags untouched `templates/inventory/portal/equipment_list.html`. These remain separate cleanup findings; no application files were changed by this review.
 - **Read-only local data:** The dated snapshot above was executed against the configured development database with `transaction_read_only = on`; no live records were changed.
-- **Not run:** Manual browser workflow, keyboard/compact-width screenshots, JavaScript-disabled browser review, Firefox/Safari, screen-reader evaluation, performance measurement and system-wide acceptance.
+- **Combined publication verification:** All **301 PostgreSQL tests pass in 48.703s**; 11 focused navigation/dashboard checks pass in 2.923s. The two added real navigation tests cover Pending counts after real approval/rejection, zero hiding, 99+ display/exact label and role isolation. Fresh Chromium 153 desktop/390px/320px, active/inactive badge colors, shortcut rows/borders, request Search/Clear, keyboard disclosures, subnav sizing and no-JavaScript tables pass. Clean npm install/build/audit and changed-file format checks pass; four earlier unrelated repository-wide formatting findings remain. Browser/server contexts were closed and disposable review data removed. See [publication review](../handoffs/dashboard-and-workspace-publication-review-10-20-2026.md).
+- **UI-11 automated:** Five focused PostgreSQL dashboard tests passed in 0.419s; the full suite passed **299 tests in 56.043s**. The added real-ORM case verifies an idle month and category ranking; existing partial/final-return, access and JSON-safety checks remain passing.
+- **UI-11 browser:** Chromium 153.0.8010.12, October 20 Asia/Manila, disposable database. Desktop 1440px, 390px and 320px bounds/screenshots pass. Exactly two populated charts, integer zero-based axes, hover/tap tooltips (including a long category label), both native data disclosures, four card destinations, keyboard horizontal scrolling and JavaScript-disabled tables pass. Empty-state review shows real inventory and two empty messages with no canvases. No JavaScript errors observed. Browser contexts/server were closed and the disposable database was removed; no live business data changed.
+- **UI-11 browser fixture:** Cards `11 / 1 / 3 / 1`; May–October 2026 monthly counts `1 / 3 / 0 / 2 / 0 / 2`; category counts `6 / 6 / 4`, including returned units. These are isolated verification records, not the live snapshot or T21 demonstration dataset.
+- **Not run:** Firefox/Safari, complete screen-reader evaluation, performance measurement, many-category vertical scrolling, live transaction mutations in a browser and system-wide acceptance. Alex's earlier Not run browser state remains historical in his handoff.
 
 ## Recording manual results
 
@@ -1741,7 +1775,7 @@ T13 including both query fixes is integrated (Module 12); T14 concurrency tests 
 
 ## Running the automated test suite
 
-The merged T18 source at `26b1ee5` passed **298 PostgreSQL tests in 56.385s**, including four T18 dashboard checks. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
+The combined UI-11/UI-12 checkout passes **301 PostgreSQL tests in 48.703s**, including five dashboard and six navigation checks. The integrated T18 baseline at `26b1ee5` previously passed 298 tests in 56.385s. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput
@@ -1790,7 +1824,7 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests.test_dashboard --noinput
 ```
 
-All tests must pass before handover; the merged T18 source passed 298 PostgreSQL tests in 56.385s in the October 20 review. T01–T18 are integrated. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
+All tests must pass before handover; the combined UI-11/UI-12 checkout passed 301 PostgreSQL tests in 48.703s on October 20. T01–T18 are integrated. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
 
 ---
 

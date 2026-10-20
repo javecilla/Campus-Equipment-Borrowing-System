@@ -35,17 +35,35 @@ class DashboardSnapshot:
     category_issued_units: tuple[ChartPoint, ...]
 
 
-def dashboard_snapshot(today: date) -> DashboardSnapshot:
-    """Return current cards and charts from committed inventory and loan records."""
-    active_loans: QuerySet[Loan] = with_loan_progress(Loan.objects.all(), today).filter(
-        outstanding_quantity__gt=0
-    )
-    monthly_issued_loans: tuple[ChartPoint, ...] = tuple(
-        ChartPoint(label=row["month"].strftime("%b %Y"), value=row["value"])
+def monthly_issued_loans(today: date) -> tuple[ChartPoint, ...]:
+    """Include zero-issue months from the first stored release through the current month."""
+    counts: dict[date, int] = {
+        row["month"]: row["value"]
         for row in Loan.objects.annotate(month=TruncMonth("issued_on"))
         .values("month")
         .annotate(value=Count("pk"))
         .order_by("month")
+    }
+    if not counts:
+        return ()
+    month: date = min(counts)
+    last_month: date = max(today.replace(day=1), max(counts))
+    points: list[ChartPoint] = []
+    while month <= last_month:
+        points.append(ChartPoint(label=month.strftime("%b %Y"), value=counts.get(month, 0)))
+        month = date(month.year + month.month // 12, month.month % 12 + 1, 1)
+    return tuple(points)
+
+
+def pending_request_count() -> int:
+    """Count the current administrator decision queue for dashboard and navigation."""
+    return BorrowRequest.objects.filter(status=RequestStatus.PENDING).count()
+
+
+def dashboard_snapshot(today: date) -> DashboardSnapshot:
+    """Return current cards and all-history issue charts from committed records."""
+    active_loans: QuerySet[Loan] = with_loan_progress(Loan.objects.all(), today).filter(
+        outstanding_quantity__gt=0
     )
     category_issued_units: tuple[ChartPoint, ...] = tuple(
         ChartPoint(label=row["category"], value=row["value"])
@@ -53,16 +71,16 @@ def dashboard_snapshot(today: date) -> DashboardSnapshot:
             category=F("allocation__unit__catalog_item__category__name")
         )
         .annotate(value=Count("pk"))
-        .order_by("category")
+        .order_by("-value", "category")
     )
     return DashboardSnapshot(
         cards=DashboardCards(
             available_units=EquipmentUnit.objects.filter(status=UnitStatus.AVAILABLE).count(),
-            pending_requests=BorrowRequest.objects.filter(status=RequestStatus.PENDING).count(),
+            pending_requests=pending_request_count(),
             active_loans=active_loans.count(),
             overdue_loans=active_loans.filter(due_date__lt=today).count(),
         ),
-        monthly_issued_loans=monthly_issued_loans,
+        monthly_issued_loans=monthly_issued_loans(today),
         category_issued_units=category_issued_units,
     )
 
