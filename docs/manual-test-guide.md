@@ -1461,7 +1461,7 @@ The earlier UI follow-up PostgreSQL suite passed **254 tests in 42.919s** using 
 
 ## Module 15 — Release, Due-Date Revision and Borrowing Slip (T15)
 
-**Owner:** Jerome Avecilla (`jerome`). **Revision:** T15 implementation on `jerome` from main baseline `866eb7e`; **not integrated into main**. T13/T14 prerequisites and T16 are integrated. **Role:** active ADMIN. **Entry:** `/manage/requests/` → Approved request → **Revise due date** or **Release equipment**; **Issued loans** opens `/manage/loans/`. Run `npm.cmd run build` before starting Django so the native print button's module exists.
+**Owner:** Jerome Avecilla (`jerome`). **Revision:** T15 source `74924dd` committed/pushed on `jerome` from main baseline `866eb7e`; **not integrated into main**. T13/T14 prerequisites and T16 are integrated. **Role:** active ADMIN. **Entry:** `/manage/requests/` → Approved request → **Revise due date** or **Release equipment**; **Issued loans** opens `/manage/loans/`. Run `npm.cmd run build` before starting Django so the native print button's module exists.
 
 ### Checked records and date boundaries
 
