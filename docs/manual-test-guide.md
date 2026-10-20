@@ -115,19 +115,30 @@ Record the settings currently displayed before changing them. The values above a
 
 ### 1.7 Block an inactive account (requires creating one first)
 
-1. Log in as admin, go to `/manage/accounts/`
-2. Find `auth_demo_user`, click **Deactivate**, confirm
-3. Log out, then try to log in as `auth_demo_user`
+The October 20, 2026 read-only local snapshot contains active ADMIN `localadmin` and active BASIC_USER `basicdemo`. Use their existing private passwords, or substitute another fictional account with known credentials. No account was deactivated while preparing this guide.
 
-✅ Login rejected — inactive accounts cannot sign in
+1. Log in as the administrator, go to `/manage/accounts/`, find `basicdemo`, choose **Deactivate**, and confirm.
+2. Log out, then submit `/accounts/login/` with **Username or email** `basicdemo` and its correct password.
 
-1. To test an existing session, first reactivate and sign in as the borrower in a separate browser profile or private window.
-2. Keep that session open while the administrator deactivates the account again.
-3. In the borrower window, reload `/portal/equipment/`.
+✅ Login remains blocked on the sign-in page and displays **Your account has been deactivated. Please contact an administrator.** Visiting `/portal/` still redirects to login because no authenticated session was created.
 
-✅ The first protected request is denied with 403 and the session is invalidated. Subsequent anonymous requests redirect to login.
+3. Submit the deactivated account's email in uppercase with the same correct password.
 
-**Restore the account before continuing:** log in as admin, re-activate `auth_demo_user`.
+✅ The same deactivated-account message appears; email matching remains case-insensitive and no session is created.
+
+4. Submit `basicdemo` with an incorrect password, then submit an unknown identifier such as `missing@example.invalid`.
+
+✅ Each attempt displays only **Invalid username/email or password.** The page does not disclose whether either identifier exists, and no session is created.
+
+5. In the administrator session, reactivate `basicdemo`. Submit its unchanged username and password again.
+
+✅ Login succeeds and redirects to `/portal/`, confirming the earlier block was caused by deactivation.
+
+6. To test an existing session, first keep an authenticated borrower session open in a separate browser profile or private window, then deactivate that account from the administrator session and reload `/portal/equipment/` in the borrower window.
+
+✅ The first protected request is denied with 403 and the existing session is invalidated. Subsequent anonymous requests redirect to login.
+
+**Restore the account before continuing:** log in as admin and reactivate the fictional borrower. Record the browser/version and actual outcome separately; these steps are expected behavior, not an automated-test result.
 
 ---
 

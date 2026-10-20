@@ -110,21 +110,40 @@ class AuthenticationRouteTests(TestCase):
         )
         self.assertRedirects(safe_response, "/portal/?from=login", fetch_redirect_response=False)
 
-    def test_invalid_and_inactive_credentials_share_a_generic_error(self) -> None:
+    def test_wrong_password_uses_generic_error_without_session(self) -> None:
         invalid_response = self.client.post(
             reverse("accounts:login"),
             {"username": self.borrower.username, "password": "wrong-password"},
         )
         self.assertEqual(invalid_response.status_code, 200)
         self.assertContains(invalid_response, "Invalid username/email or password.")
+        self.assertNotContains(invalid_response, "Your account has been deactivated.")
         self.assertNotIn(SESSION_KEY, self.client.session)
 
+    def test_inactive_username_with_correct_password_shows_deactivated_error(self) -> None:
         inactive_response = self.client.post(
             reverse("accounts:login"),
             {"username": self.inactive.username, "password": PASSWORD},
         )
         self.assertEqual(inactive_response.status_code, 200)
-        self.assertContains(inactive_response, "Invalid username/email or password.")
+        self.assertContains(
+            inactive_response,
+            "Your account has been deactivated. Please contact an administrator.",
+        )
+        self.assertNotContains(inactive_response, "Invalid username/email or password.")
+        self.assertNotIn(SESSION_KEY, self.client.session)
+
+    def test_inactive_case_insensitive_email_shows_deactivated_error(self) -> None:
+        inactive_response = self.client.post(
+            reverse("accounts:login"),
+            {"username": self.inactive.email.upper(), "password": PASSWORD},
+        )
+        self.assertEqual(inactive_response.status_code, 200)
+        self.assertContains(
+            inactive_response,
+            "Your account has been deactivated. Please contact an administrator.",
+        )
+        self.assertNotContains(inactive_response, "Invalid username/email or password.")
         self.assertNotIn(SESSION_KEY, self.client.session)
 
     def test_email_login_is_case_insensitive_for_both_roles_and_supports_csrf_logout(self) -> None:
@@ -148,18 +167,40 @@ class AuthenticationRouteTests(TestCase):
                 self.assertRedirects(logout_response, reverse("accounts:login"))
                 self.assertNotIn(SESSION_KEY, client.session)
 
-    def test_wrong_password_inactive_and_unknown_emails_share_a_generic_error(self) -> None:
-        for email, password in [
+    def test_inactive_wrong_password_and_unknown_identifier_keep_generic_error(self) -> None:
+        for identifier, password in [
             (self.borrower.email, "wrong-password"),
-            (self.inactive.email, PASSWORD),
+            (self.inactive.email, "wrong-password"),
             ("missing@example.invalid", PASSWORD),
         ]:
-            with self.subTest(email=email):
+            with self.subTest(identifier=identifier):
                 response = self.client.post(
-                    reverse("accounts:login"), {"username": email, "password": password}
+                    reverse("accounts:login"), {"username": identifier, "password": password}
                 )
                 self.assertContains(response, "Invalid username/email or password.")
+                self.assertNotContains(response, "Your account has been deactivated.")
                 self.assertNotIn(SESSION_KEY, self.client.session)
+
+    def test_reactivating_the_same_account_restores_login(self) -> None:
+        blocked_response = self.client.post(
+            reverse("accounts:login"),
+            {"username": self.inactive.username, "password": PASSWORD},
+        )
+        self.assertContains(blocked_response, "Your account has been deactivated.")
+        self.assertNotIn(SESSION_KEY, self.client.session)
+
+        User.objects.filter(pk=self.inactive.pk).update(is_active=True)
+        login_response = self.client.post(
+            reverse("accounts:login"),
+            {"username": self.inactive.username, "password": PASSWORD},
+        )
+
+        self.assertRedirects(
+            login_response,
+            reverse("portal:home"),
+            fetch_redirect_response=False,
+        )
+        self.assertIn(SESSION_KEY, self.client.session)
 
     def test_duplicate_email_is_denied_while_usernames_keep_their_roles(self) -> None:
         User.objects.filter(pk=self.borrower.pk).update(email=self.admin.email.upper())
@@ -167,6 +208,7 @@ class AuthenticationRouteTests(TestCase):
             reverse("accounts:login"), {"username": self.admin.email, "password": PASSWORD}
         )
         self.assertContains(response, "Invalid username/email or password.")
+        self.assertNotContains(response, "Your account has been deactivated.")
         self.assertNotIn(SESSION_KEY, self.client.session)
         for user, destination in [
             (self.admin, "operations:dashboard"),
@@ -187,6 +229,7 @@ class AuthenticationRouteTests(TestCase):
             reverse("accounts:login"), {"username": self.borrower.email, "password": PASSWORD}
         )
         self.assertContains(response, "Invalid username/email or password.")
+        self.assertNotContains(response, "Your account has been deactivated.")
         self.assertNotIn(SESSION_KEY, self.client.session)
 
     def test_valid_email_longer_than_username_limit_can_sign_in(self) -> None:
