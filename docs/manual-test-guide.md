@@ -115,25 +115,38 @@ Record the settings currently displayed before changing them. The values above a
 
 ### 1.7 Block an inactive account (requires creating one first)
 
-1. Log in as admin, go to `/manage/accounts/`
-2. Find `auth_demo_user`, click **Deactivate**, confirm
-3. Log out, then try to log in as `auth_demo_user`
+Prerequisite: a fictional ADMIN and BASIC_USER with known private passwords. The October 20, 2026 integration-review read-only lookup found neither earlier example `localadmin` nor the chosen borrower's username; those names are not current setup evidence. Substitute your chosen fictional borrower in the steps below. No live account was changed during review.
 
-✅ Login rejected — inactive accounts cannot sign in
+1. Log in as the administrator, go to `/manage/accounts/`, find the chosen fictional borrower, choose **Deactivate**, and confirm.
+2. Log out, then submit `/accounts/login/` with **Username or email** the chosen borrower's username and its correct password.
 
-1. To test an existing session, first reactivate and sign in as the borrower in a separate browser profile or private window.
-2. Keep that session open while the administrator deactivates the account again.
-3. In the borrower window, reload `/portal/equipment/`.
+✅ Login remains blocked on the sign-in page and displays **Your account has been deactivated. Please contact an administrator.** Visiting `/portal/` still redirects to login because no authenticated session was created.
 
-✅ The first protected request is denied with 403 and the session is invalidated. Subsequent anonymous requests redirect to login.
+3. Submit the deactivated account's email in uppercase with the same correct password.
 
-**Restore the account before continuing:** log in as admin, re-activate `auth_demo_user`.
+✅ The same deactivated-account message appears; email matching remains case-insensitive and no session is created.
+
+4. Submit the chosen borrower's username with an incorrect password, then submit an unknown identifier such as `missing@example.invalid`.
+
+✅ Each attempt displays only **Invalid username/email or password.** The page does not disclose whether either identifier exists, and no session is created.
+
+5. In the administrator session, reactivate the chosen borrower's username. Submit its unchanged username and password again.
+
+✅ Login succeeds and redirects to `/portal/`, confirming the earlier block was caused by deactivation.
+
+6. To test an existing session, first keep an authenticated borrower session open in a separate browser profile or private window, then deactivate that account from the administrator session and reload `/portal/equipment/` in the borrower window.
+
+✅ The first protected request is denied with 403 and the existing session is invalidated. Subsequent anonymous requests redirect to login.
+
+**Restore the account before continuing:** log in as admin and reactivate the fictional borrower. Record the browser/version and actual outcome separately; these steps are expected behavior, not an automated-test result.
 
 ---
 
 ## Module 2 — Borrower Registration (T09)
 
 **Base URL:** `/accounts/register/`
+
+**Executed integration review, October 20, 2026 Asia/Manila:** Chromium 153.0.8010.12 passed these cases using isolated `fictional_admin` and `fictional_borrower` / `borrower@example.invalid` fixtures. Correct username and uppercase email displayed the inactive message; wrong/unknown credentials stayed generic; no session was created; an existing deactivated session received 403; reactivation restored login with the same password. The 320px page had no horizontal overflow or JavaScript errors. Browser/server closed and disposable database removed. These fixtures are not live development accounts.
 
 ### 2.1 Successful registration
 
@@ -1639,7 +1652,7 @@ For an actual loan ID, inspect its ReturnRecord `loan_unit_id`, `received_by_id`
 
 **Entry URL:** `/manage/`
 
-**UI-11/UI-12 follow-up:** The Chart.js dashboard and Kiro-assisted workspace improvements are Done on `jerome`, not integrated into main. Combined source `f3d42ba` is committed/pushed on `origin/jerome` with Codex/Kiro credit recorded; main integration remains separate. Install the locked npm packages and rebuild assets before reviewing. T18's integrated baseline and Alex's credit remain intact; see [publication review](../handoffs/dashboard-and-workspace-publication-review-10-20-2026.md).
+**UI-11/UI-12 follow-up:** The Chart.js dashboard and Kiro-assisted workspace improvements are integrated through user-merged PR #48 at `9d67fab`. Combined source `f3d42ba` is committed/pushed on `origin/jerome` with Codex/Kiro credit recorded; source/receipt ancestry and exact published-tree equality are verified. Install the locked npm packages and rebuild assets before reviewing. T18's integrated baseline and Alex's credit remain intact; see [publication review](../handoffs/dashboard-and-workspace-publication-review-10-20-2026.md).
 
 **Required role:** Active `ADMIN`. Use fictional/disposable workflow records only. Do not change production-like records merely to make a chart look populated.
 
@@ -1775,7 +1788,7 @@ T13 including both query fixes is integrated (Module 12); T14 concurrency tests 
 
 ## Running the automated test suite
 
-The combined UI-11/UI-12 checkout passes **301 PostgreSQL tests in 48.703s**, including five dashboard and six navigation checks. The integrated T18 baseline at `26b1ee5` previously passed 298 tests in 56.385s. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
+The combined PR #46 authentication and integrated UI-11/UI-12 checkout passes **304 PostgreSQL tests in 74.818s**, including five dashboard and six navigation checks. The integrated T18 baseline at `26b1ee5` previously passed 298 tests in 56.385s. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput
@@ -1824,7 +1837,7 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests.test_dashboard --noinput
 ```
 
-All tests must pass before handover; the combined UI-11/UI-12 checkout passed 301 PostgreSQL tests in 48.703s on October 20. T01–T18 are integrated. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
+All tests must pass before handover; the combined PR #46 authentication/UI checkout passed 304 PostgreSQL tests in 74.818s on October 20. T01–T18 are integrated. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
 
 ---
 

@@ -21,7 +21,7 @@ class LoginForm(AuthenticationForm):
 
     error_messages: dict[str, str] = {
         "invalid_login": "Invalid username/email or password.",
-        "inactive": "Invalid username/email or password.",
+        "inactive": "Your account has been deactivated. Please contact an administrator.",
     }
     username = UsernameField(
         label="Username or email",
@@ -56,18 +56,21 @@ class LoginForm(AuthenticationForm):
         identifier: str | None = self.cleaned_data.get("username")
         password: str | None = self.cleaned_data.get("password")
         if identifier is not None and password:
-            usernames: tuple[str, ...] = tuple(
-                User.objects.filter(
-                    Q(username=identifier) | Q(email__iexact=identifier)
-                ).values_list("username", flat=True)[:2]
+            candidates: tuple[User, ...] = tuple(
+                User.objects.filter(Q(username=identifier) | Q(email__iexact=identifier))[:2]
             )
-            if len(usernames) != 1:
+            if len(candidates) != 1:
                 # Match Django's password-hash work when rejecting an unknown identity.
                 User().set_password(password)
                 raise self.get_invalid_login_error()
+            candidate: User = candidates[0]
+            if not candidate.is_active:
+                if candidate.check_password(password):
+                    self.confirm_login_allowed(candidate)
+                raise self.get_invalid_login_error()
             user: User | None = cast(
                 User | None,
-                authenticate(self.request, username=usernames[0], password=password),
+                authenticate(self.request, username=candidate.username, password=password),
             )
             if user is None:
                 raise self.get_invalid_login_error()
