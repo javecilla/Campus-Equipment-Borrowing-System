@@ -2,7 +2,7 @@
 
 ## Purpose and scope
 
-This guide covers T01-T13/T16 integrated in main `cf50d0c` through PR #35, including both T13 query fixes, plus the local T14 PostgreSQL concurrency proof on `jerome` ([Module 13](#module-13--postgresql-competing-approvals-t14)). T14 is uncommitted and awaits publication/main integration. Release and returns remain pending; T12/T13/T16 browser results remain Not run until supplied.
+This guide covers T01-T14/T16 integrated in main, including T13 query fixes through PR #35 and T14 concurrency proof through PR #37 at `5381c83` ([Module 13](#module-13--postgresql-competing-approvals-t14)). T15 / Margareth is ready with T13/T14 satisfied, but remains Not started. Release and returns remain pending; T12/T13/T16 browser results remain Not run until supplied.
 
 For the current borrower checks, go directly to [Module 9: request submission](#module-9--borrower-request-submission-t11) or [Module 10: request and loan tracking](#module-10--borrower-request-and-loan-tracking-t12). For equipment maintenance and reconciliation, see [Module 11: equipment maintenance](#module-11--equipment-maintenance-and-inventory-reconciliation-t16). Use the [result record](#recording-manual-results) to report what actually happened.
 
@@ -1154,7 +1154,7 @@ print(
   - ✅ Status badge: `Closed`; Outcome badge: `Retired` in slate.
   - ✅ Physical unit status is permanently set to `Retired`.
   - ✅ Summary count cards reconcile: `Retired: 1`, `Maintenance: 4`, `Available: 11`, `Serviceable: 11`, `Total: 16`.
-  - Retired unit cannot be selected for new maintenance. Borrowers choose catalog items, not physical units; availability falls by one. T13 now allocates eligible units; browser cases remain unrun; Module 13 verifies the T14 approval races locally.
+  - Retired unit cannot be selected for new maintenance. Borrowers choose catalog items, not physical units; availability falls by one. T13 now allocates eligible units; browser cases remain unrun; Module 13 verifies the integrated T14 approval races.
 
 ---
 
@@ -1349,7 +1349,7 @@ Record actual browser outcomes and fictional IDs in the shared [result record](#
 
 ## Module 13 — PostgreSQL Competing Approvals (T14)
 
-**Owner:** Jerome Avecilla (`jerome`), with Margareth's existing approval service. **Revision:** local uncommitted tests on main `cf50d0c` (PR #35). **Status:** Done locally; not integrated into main. **Entry:** terminal in the repository, with the project virtual environment and PostgreSQL configured. No browser/server session or live fixture preparation is required.
+**Owner:** Jerome Avecilla (`jerome`), with Margareth's existing approval service. **Revision:** source `058357c`, integrated through PR #37 at main `5381c83975753426208ffde6370c4e8da09fe5d9`. **Status:** Done and integrated. **Entry:** terminal in the repository, with the project virtual environment and PostgreSQL configured. No browser/server session or live fixture preparation is required.
 
 ### T14-01: Reproduce the last-unit race
 
@@ -1391,9 +1391,9 @@ Expected: one complete approval with exactly two allocations and two Reserved un
 
 ### Actual verification and limits
 
-On October 20, 2026, a **read-only local inspection at 07:55 Asia/Manila** verified PostgreSQL 17.5, Read Committed isolation and limits 7 days / 3 per item. The fixture snapshots above match those limits but do not read or modify live settings, accounts or stock. Actual automated results: **2 focused tests passed in 0.894s; 254 full-suite tests passed in 42.576s**. Both runs created and destroyed the separate PostgreSQL test database. All required configured checks pass; see [T14 handoff](../handoffs/t14-postgresql-competing-approval-proof-10-20-2026.md).
+On October 20, 2026, a **read-only local inspection at 07:55 Asia/Manila** verified PostgreSQL 17.5, Read Committed isolation and limits 7 days / 3 per item. The fixture snapshots above match those limits but do not read or modify live settings, accounts or stock. Actual automated results: the implementation run passed **2 focused tests in 0.894s**; the fresh publication run passed **254 full-suite tests in 39.994s**. Both runs created and destroyed the separate PostgreSQL test database. All required configured checks pass; see [integration receipt](../handoffs/t14-publication-main-integration-and-t15-readiness-10-20-2026.md).
 
-Manual/browser simultaneous submissions are **Not run**. To record a fresh terminal reproduction, retain its command, revision, Asia/Manila timestamp, count and actual outcome in the result record below. T14 must reach main before Margareth starts T15.
+Manual/browser simultaneous submissions are **Not run**. To record a fresh terminal reproduction, retain its command, revision, Asia/Manila timestamp, count and actual outcome in the result record below. T14 is integrated; Margareth / T15 is ready, Not started.
 
 ---
 
@@ -1414,7 +1414,7 @@ Report the purpose marker/request ID and the smallest reproduction steps for a f
 
 ## What is not testable yet
 
-T13 including both query fixes is integrated (Module 12); T14 concurrency tests pass locally (Module 13) and await publication/main integration. The following tasks remain **Not started**; their full workflows are not implemented:
+T13 including both query fixes is integrated (Module 12); T14 concurrency tests are integrated through PR #37 (Module 13). T15 prerequisites are satisfied; release remains Not started. The following tasks remain **Not started**; their full workflows are not implemented:
 
 | Task | Feature | Owner |
 | --- | --- | --- |
@@ -1428,7 +1428,7 @@ T13 including both query fixes is integrated (Module 12); T14 concurrency tests 
 
 ## Running the automated test suite
 
-The local T14 checkout passed **254 PostgreSQL tests in 42.576s**, including 2 T14, 28 T13 and 33 maintenance tests. The focused T14 suite passed 2 tests in 0.894s. T13 query regressions remain passing after their PR #35 integration. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
+The published T14 checkout passed **254 PostgreSQL tests in 39.994s**, including 2 T14, 28 T13 and 33 maintenance tests. The focused T14 suite passed 2 tests in 0.894s. T13 query regressions remain passing after their PR #35 integration. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput
@@ -1471,8 +1471,8 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests --noinput
 ```
 
-All tests must pass before handover; 254 is the verified count on local T14 jerome. T13 corrections are integrated; T14 must also be published/integrated before T15 starts. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
+All tests must pass before handover; 254 is the verified count on the integrated T14 source. T13/T14 are integrated and T15 is ready, Not started. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
 
 ---
 
-*Manual testing guide - scope: T01-T13/T16 including T13 query fixes integrated; T14 verified locally on jerome, awaiting publication/main integration. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
+*Manual testing guide - scope: T01-T14/T16 integrated; T15 ready with integrated prerequisites, Not started. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
