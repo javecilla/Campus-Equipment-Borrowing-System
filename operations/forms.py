@@ -8,11 +8,7 @@ from django.core.exceptions import ValidationError
 
 from operations.models import AuditAction
 
-CONTROL_CLASSES: str = (
-    "h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 "
-    "transition-colors hover:border-slate-300 focus:border-accent focus:outline-none "
-    "focus:ring-2 focus:ring-accent/15 aria-invalid:border-rose-500"
-)
+CONTROL_CLASSES: str = "ui-input"
 
 
 class SettingsForm(forms.Form):

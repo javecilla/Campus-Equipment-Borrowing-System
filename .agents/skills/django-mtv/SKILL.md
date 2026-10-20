@@ -21,6 +21,8 @@ Preserve the two-role scope and custom admin requirement. Use server-derived act
 
 ## Make and review the smallest change
 
+For templates, form widget styling, shared CSS or navigation, also use [campus-ui](../campus-ui/SKILL.md) to preserve the implemented design system. Its component rules remain canonical in the coding guide.
+
 Reuse existing rules and functions. Follow the guide for naming, strict typing, classes limited to required interfaces/data records, explicit parameters, errors, dependency declarations, and Django-native behavior. Do not duplicate business rules in templates, signals, views, and services. Cross-check any schema/state/URL changes with their canonical document and the affected callers.
 
 When reviewing, identify the concrete violation, file/location, consequence, and smallest correction. Do not claim that a template restriction enforces authorization or that SQLite proves PostgreSQL row-lock behavior. Do not add unrelated security infrastructure or testing machinery.

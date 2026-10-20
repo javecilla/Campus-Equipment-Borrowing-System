@@ -1,10 +1,10 @@
 {% extends "operations/manage/base.html" %}
 {% block title %}{{ category.name }} · Campus Equipment{% endblock %}
 {% block workspace_content %}
-    <section data-testid="category-detail">
+    <section data-testid="category-detail" class="ui-page">
         {% include "inventory/manage/nav.html" with active_tab="categories" %}
         <div class="space-y-8">
-            <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <header class="ui-page-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <div class="flex items-center gap-3">
                         <p class="text-xs font-semibold tracking-widest text-accent uppercase">Equipment category</p>
@@ -14,31 +14,23 @@
                             <span class="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-accent">Active</span>
                         {% endif %}
                     </div>
-                    <h1 class="font-heading text-3xl font-semibold">{{ category.name }}</h1>
+                    <h1 class="font-heading font-semibold">{{ category.name }}</h1>
                 </div>
                 <div class="flex flex-wrap gap-3">
                     <a href="{% url 'inventory_manage:category-update' category.pk %}"
                        data-testid="edit-category-button"
-                       class="inline-flex h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">
-                        Edit category
-                    </a>
+                       class="ui-button ui-button--outline">Edit category</a>
                     {% if category.is_archived %}
                         <a href="{% url 'inventory_manage:category-restore' category.pk %}"
                            data-testid="restore-category-button"
-                           class="inline-flex h-11 items-center justify-center rounded-md bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-800">
-                            Restore category
-                        </a>
+                           class="ui-button ui-button--primary">Restore category</a>
                     {% else %}
                         <a href="{% url 'inventory_manage:category-archive' category.pk %}"
                            data-testid="archive-category-button"
-                           class="inline-flex h-11 items-center justify-center rounded-md border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100">
-                            Archive category
-                        </a>
+                           class="ui-button ui-button--danger-tonal">Archive category</a>
                         <a href="{% url 'inventory_manage:item-create' %}?category={{ category.pk }}"
                            data-testid="add-item-button"
-                           class="inline-flex h-11 items-center justify-center rounded-md bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-800">
-                            Add equipment item
-                        </a>
+                           class="ui-button ui-button--primary">Add equipment item</a>
                     {% endif %}
                 </div>
             </header>
@@ -55,29 +47,29 @@
                 <div class="flex items-center justify-between">
                     <h2 class="font-heading text-xl font-semibold">Catalog items in this category</h2>
                 </div>
-                <div class="overflow-x-auto border-y border-slate-200">
-                    <table class="min-w-full divide-y divide-slate-200">
+                <div class="overflow-x-auto border-y border-slate-200"
+                     tabindex="0"
+                     role="region"
+                     aria-label="Scrollable category details table"
+                     data-testid="table-scroll-1">
+                    <table class="ui-data-table min-w-full divide-y divide-slate-200">
                         <thead class="bg-slate-50 text-left text-sm text-slate-600">
                             <tr>
-                                <th scope="col" class="px-5 py-3">Item name</th>
-                                <th scope="col" class="px-5 py-3 text-center">Serviceable units</th>
-                                <th scope="col" class="px-5 py-3 text-center">Total units</th>
-                                <th scope="col" class="px-5 py-3">Status</th>
+                                <th scope="col">Item name</th>
+                                <th scope="col" class="text-center">Serviceable units</th>
+                                <th scope="col" class="text-center">Total units</th>
+                                <th scope="col">Status</th>
                                 <th scope="col"
-                                    class="relative px-5 py-3 text-right"><span class="sr-only">Actions</span></th>
+                                    class="relative text-right"><span class="sr-only">Actions</span></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             {% for item in items %}
                                 <tr>
-                                    <td class="px-5 py-4 font-semibold text-slate-900">
-                                        {% include "inventory/manage/item_identity.html" %}
-                                    </td>
-                                    <td class="px-5 py-4 text-center text-sm font-medium text-slate-700">
-                                        {{ item.serviceable_units }}
-                                    </td>
-                                    <td class="px-5 py-4 text-center text-sm font-medium text-slate-700">{{ item.total_units }}</td>
-                                    <td class="px-5 py-4 text-sm">
+                                    <td class="font-semibold text-slate-900">{% include "inventory/manage/item_identity.html" %}</td>
+                                    <td class="text-center text-sm font-medium text-slate-700">{{ item.serviceable_units }}</td>
+                                    <td class="text-center text-sm font-medium text-slate-700">{{ item.total_units }}</td>
+                                    <td class="text-sm">
                                         {% if item.is_archived %}
                                             <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">Archived</span>
                                         {% elif category.is_archived %}
@@ -86,7 +78,7 @@
                                             <span class="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-accent">Active</span>
                                         {% endif %}
                                     </td>
-                                    <td class="px-5 py-4 text-right text-sm">
+                                    <td class="text-right text-sm">
                                         <a href="{% url 'inventory_manage:item-detail' item.pk %}"
                                            class="font-semibold text-accent hover:underline">
                                             View
@@ -95,8 +87,7 @@
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="5"
-                                        class="px-5 py-8 text-center text-sm text-slate-500">
+                                    <td colspan="5" class="text-center text-sm text-slate-500">
                                         No catalog items have been added to this category yet.
                                     </td>
                                 </tr>

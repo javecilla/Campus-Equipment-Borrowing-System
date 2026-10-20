@@ -1,11 +1,11 @@
 {% extends "operations/manage/base.html" %}
 {% block title %}Archive {{ item.name }} · Campus Equipment{% endblock %}
 {% block workspace_content %}
-    <section data-testid="item-archive-confirmation">
+    <section data-testid="item-archive-confirmation" class="ui-page">
         {% include "inventory/manage/nav.html" with active_tab="items" %}
-        <div class="w-full max-w-2xl py-2">
+        <div class="w-full py-2">
             <p class="mb-3 text-xs font-semibold tracking-widest text-accent uppercase">Equipment catalog</p>
-            <h1 class="mb-4 font-heading text-3xl font-semibold">Archive {{ item.name }}?</h1>
+            <h1 class="mb-4 font-heading font-semibold">Archive {{ item.name }}?</h1>
             {% if error %}
                 <p class="mb-5 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"
                    role="alert">{{ error }}</p>
@@ -22,14 +22,10 @@
                 {% csrf_token %}
                 <button data-testid="item-archive-submit"
                         type="submit"
-                        class="min-h-11 rounded-md bg-rose-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-rose-700">
-                    Confirm archive
-                </button>
+                        class="ui-button ui-button--danger">Confirm archive</button>
                 <a href="{% url 'inventory_manage:item-detail' item.pk %}"
                    data-testid="item-archive-cancel"
-                   class="inline-flex min-h-11 items-center rounded-md border border-slate-200 px-4 text-sm font-semibold hover:bg-slate-50">
-                    Cancel
-                </a>
+                   class="ui-button ui-button--outline">Cancel</a>
             </form>
         </div>
     </section>

@@ -1,10 +1,10 @@
 {% extends "operations/manage/base.html" %}
 {% block title %}{{ unit.asset_code }} · Physical unit · Campus Equipment{% endblock %}
 {% block workspace_content %}
-    <section data-testid="unit-detail">
+    <section data-testid="unit-detail" class="ui-page">
         {% include "inventory/manage/nav.html" with active_tab="units" %}
         <div class="space-y-8">
-            <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <header class="ui-page-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <a href="{% url 'inventory_manage:unit-list' %}"
                        class="text-xs font-semibold tracking-wider text-accent uppercase hover:underline">
@@ -12,7 +12,7 @@
                     </a>
                     <div class="mt-2 flex flex-wrap items-center gap-3">
                         <h1 data-testid="unit-asset-code"
-                            class="font-heading font-mono text-3xl font-semibold">{{ unit.asset_code }}</h1>
+                            class="font-heading font-mono font-semibold">{{ unit.asset_code }}</h1>
                         <span data-testid="unit-status" class="inline-flex items-center">
                             {% if unit.status == "AVAILABLE" %}
                                 <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-accent">Available</span>
@@ -41,19 +41,13 @@
                     {% if unit.status == "AVAILABLE" %}
                         <a href="{% url 'inventory_manage:maintenance-create' %}?unit={{ unit.pk }}"
                            data-testid="unit-maintenance-button"
-                           class="inline-flex h-11 items-center justify-center rounded-md border border-amber-300 bg-amber-50 px-4 text-sm font-semibold text-amber-800 transition-colors hover:bg-amber-100">
-                            Open maintenance
-                        </a>
+                           class="ui-button ui-button--outline">Open maintenance</a>
                     {% endif %}
                     <a href="{% url 'inventory_manage:unit-update' unit.pk %}"
                        data-testid="unit-edit-button"
-                       class="inline-flex h-11 items-center justify-center rounded-md bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-800">
-                        Edit physical unit
-                    </a>
+                       class="ui-button ui-button--primary">Edit physical unit</a>
                     <a href="{% url 'inventory_manage:item-detail' unit.catalog_item.pk %}"
-                       class="inline-flex h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">
-                        View catalog item
-                    </a>
+                       class="ui-button ui-button--outline">View catalog item</a>
                 </div>
             </header>
             {% if has_history %}
@@ -120,32 +114,36 @@
                 <div class="flex items-center justify-between">
                     <h2 class="font-heading text-xl font-semibold">Allocation and borrowing history</h2>
                 </div>
-                <div class="overflow-x-auto border-y border-slate-200">
+                <div class="overflow-x-auto border-y border-slate-200"
+                     tabindex="0"
+                     role="region"
+                     aria-label="Scrollable unit details table"
+                     data-testid="table-scroll-1">
                     <table data-testid="allocations-table"
-                           class="min-w-full divide-y divide-slate-200 text-sm">
+                           class="ui-data-table min-w-full divide-y divide-slate-200 text-sm">
                         <thead class="bg-slate-50 text-left text-slate-600">
                             <tr>
-                                <th scope="col" class="px-5 py-3">Request</th>
-                                <th scope="col" class="px-5 py-3">Borrower</th>
-                                <th scope="col" class="px-5 py-3">Allocated on</th>
-                                <th scope="col" class="px-5 py-3">Allocated by</th>
-                                <th scope="col" class="px-5 py-3">Release & Return</th>
+                                <th scope="col">Request</th>
+                                <th scope="col">Borrower</th>
+                                <th scope="col">Allocated on</th>
+                                <th scope="col">Allocated by</th>
+                                <th scope="col">Release & Return</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             {% for alloc in allocations %}
                                 <tr data-testid="allocation-row-{{ alloc.pk }}">
-                                    <td class="px-5 py-4 font-semibold text-slate-900">
+                                    <td class="font-semibold text-slate-900">
                                         Request #{{ alloc.request_item.request.pk }}
                                         <span class="block text-xs font-normal text-slate-500">{{ alloc.request_item.request.purpose|truncatechars:40 }}</span>
                                     </td>
-                                    <td class="px-5 py-4 text-slate-700">
+                                    <td class="text-slate-700">
                                         {{ alloc.request_item.request.owner.username }}
                                         <span class="block text-xs text-slate-500">{{ alloc.request_item.request.owner.get_full_name }}</span>
                                     </td>
-                                    <td class="px-5 py-4 text-slate-600 whitespace-nowrap">{{ alloc.allocated_at|date:"M j, Y, g:i a" }}</td>
-                                    <td class="px-5 py-4 text-slate-600">{{ alloc.allocated_by.username }}</td>
-                                    <td class="px-5 py-4 text-slate-700">
+                                    <td class="text-slate-600 whitespace-nowrap">{{ alloc.allocated_at|date:"M j, Y, g:i a" }}</td>
+                                    <td class="text-slate-600">{{ alloc.allocated_by.username }}</td>
+                                    <td class="text-slate-700">
                                         {% if alloc.cancelled_at %}
                                             <span class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
                                                 Cancelled on {{ alloc.cancelled_at|date:"M j, Y" }}
@@ -173,8 +171,7 @@
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="5"
-                                        class="px-5 py-8 text-center text-sm text-slate-500">
+                                    <td colspan="5" class="text-center text-sm text-slate-500">
                                         No borrowing or allocation records for this physical unit.
                                     </td>
                                 </tr>
@@ -187,22 +184,26 @@
                 <div class="flex items-center justify-between">
                     <h2 class="font-heading text-xl font-semibold">Maintenance history</h2>
                 </div>
-                <div class="overflow-x-auto border-y border-slate-200">
+                <div class="overflow-x-auto border-y border-slate-200"
+                     tabindex="0"
+                     role="region"
+                     aria-label="Scrollable unit details table"
+                     data-testid="table-scroll-2">
                     <table data-testid="maintenance-table"
-                           class="min-w-full divide-y divide-slate-200 text-sm">
+                           class="ui-data-table min-w-full divide-y divide-slate-200 text-sm">
                         <thead class="bg-slate-50 text-left text-slate-600">
                             <tr>
-                                <th scope="col" class="px-5 py-3">Problem description</th>
-                                <th scope="col" class="px-5 py-3">Status</th>
-                                <th scope="col" class="px-5 py-3">Outcome</th>
-                                <th scope="col" class="px-5 py-3">Opened</th>
-                                <th scope="col" class="px-5 py-3">Closed / Action taken</th>
+                                <th scope="col">Problem description</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Outcome</th>
+                                <th scope="col">Opened</th>
+                                <th scope="col">Closed / Action taken</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             {% for record in maintenance_records %}
                                 <tr data-testid="maintenance-row-{{ record.pk }}">
-                                    <td class="px-5 py-4 font-medium text-slate-900">
+                                    <td class="font-medium text-slate-900">
                                         <a href="{% url 'inventory_manage:maintenance-detail' record.pk %}"
                                            class="text-accent hover:underline">
                                             {{ record.problem }}
@@ -211,7 +212,7 @@
                                             <span class="block text-xs font-normal text-amber-700">From damaged return</span>
                                         {% endif %}
                                     </td>
-                                    <td class="px-5 py-4">
+                                    <td>
                                         {% if record.status == "OPEN" %}
                                             <span class="inline-flex rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700">Open</span>
                                             <a href="{% url 'inventory_manage:maintenance-close' record.pk %}"
@@ -220,7 +221,7 @@
                                             <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">Closed</span>
                                         {% endif %}
                                     </td>
-                                    <td class="px-5 py-4 text-slate-700">
+                                    <td class="text-slate-700">
                                         {% if record.outcome == "AVAILABLE" %}
                                             <span class="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">Repaired / Available</span>
                                         {% elif record.outcome == "RETIRED" %}
@@ -229,11 +230,11 @@
                                             <span class="text-xs text-slate-500">—</span>
                                         {% endif %}
                                     </td>
-                                    <td class="px-5 py-4 text-slate-600 whitespace-nowrap">
+                                    <td class="text-slate-600 whitespace-nowrap">
                                         {{ record.opened_at|date:"M j, Y, g:i a" }}
                                         <span class="block text-xs text-slate-500">by {{ record.opened_by.username }}</span>
                                     </td>
-                                    <td class="px-5 py-4 text-slate-700">
+                                    <td class="text-slate-700">
                                         {% if record.closed_at %}
                                             <span class="block font-medium">{{ record.action }}</span>
                                             <span class="text-xs text-slate-500">Closed on {{ record.closed_at|date:"M j, Y" }} by {{ record.closed_by.username }}</span>
@@ -244,8 +245,7 @@
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="5"
-                                        class="px-5 py-8 text-center text-sm text-slate-500">
+                                    <td colspan="5" class="text-center text-sm text-slate-500">
                                         No maintenance records for this physical unit.
                                     </td>
                                 </tr>

@@ -3,14 +3,14 @@
 {% block workspace_content %}
     <section data-testid="loan-detail-page"
              aria-labelledby="loan-detail-heading"
-             class="max-w-4xl">
+             class="ui-page">
         <a href="{% url 'portal:loan-list' %}"
            class="text-sm font-medium text-accent underline focus-visible:outline-2 focus-visible:outline-accent">Back to my loans</a>
         <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
                 <p class="text-xs font-semibold tracking-widest text-accent uppercase">Loan details</p>
                 <h1 id="loan-detail-heading"
-                    class="mt-2 font-heading text-3xl font-semibold">Loan #{{ loan.pk }}</h1>
+                    class="mt-2 font-heading font-semibold">Loan #{{ loan.pk }}</h1>
                 <p class="mt-1 text-sm text-slate-600">Request #{{ loan.request_id }}</p>
             </div>
             {% if loan.closed_at %}

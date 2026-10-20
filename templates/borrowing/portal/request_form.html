@@ -3,11 +3,11 @@
 {% block workspace_content %}
     <section data-testid="request-create-page"
              aria-labelledby="request-heading"
-             class="max-w-3xl">
-        <header>
+             class="ui-page">
+        <header class="ui-page-header">
             <p class="text-xs font-semibold tracking-widest text-accent uppercase">Borrower workspace</p>
             <h1 id="request-heading"
-                class="mt-2 font-heading text-3xl font-semibold">New borrowing request</h1>
+                class="mt-2 font-heading font-semibold">New borrowing request</h1>
             <p class="mt-3 text-sm leading-6 text-slate-600">
                 Choose one to three distinct equipment items. Each quantity can be up to
                 {{ limits.max_quantity_per_item }} units, and your requested return date must be within
@@ -17,7 +17,7 @@
         <form method="post"
               action="{% url 'portal:request-create' %}"
               data-testid="request-create-form"
-              class="mt-8 space-y-7"
+              class="ui-request-layout ui-surface mt-8"
               novalidate>
             {% csrf_token %}
             {% if form.non_field_errors %}
@@ -25,26 +25,23 @@
                      role="alert"
                      data-testid="request-errors">{{ form.non_field_errors }}</div>
             {% endif %}
-            {% if form.purpose.errors %}
-                <div id="request-purpose-errors"
-                     class="text-sm text-rose-700"
-                     role="alert">{{ form.purpose.errors }}</div>
-            {% endif %}
-            <div>
-                <label for="{{ form.purpose.id_for_label }}"
-                       class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.purpose.label }}</label>
-                {{ form.purpose }}
-                {% if form.purpose.errors %}
-                    <p class="mt-1.5 text-xs text-rose-700">{{ form.purpose.errors }}</p>
-                {% endif %}
-            </div>
-            <div>
-                <label for="{{ form.desired_due_date.id_for_label }}"
-                       class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.desired_due_date.label }}</label>
-                {{ form.desired_due_date }}
-                {% if form.desired_due_date.errors %}
-                    <p class="mt-1.5 text-xs text-rose-700">{{ form.desired_due_date.errors }}</p>
-                {% endif %}
+            <div class="space-y-5">
+                <div>
+                    <label for="{{ form.purpose.id_for_label }}"
+                           class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.purpose.label }}</label>
+                    {{ form.purpose }}
+                    {% if form.purpose.errors %}
+                        <p class="mt-1.5 text-xs text-rose-700">{{ form.purpose.errors }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.desired_due_date.id_for_label }}"
+                           class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.desired_due_date.label }}</label>
+                    {{ form.desired_due_date }}
+                    {% if form.desired_due_date.errors %}
+                        <p class="mt-1.5 text-xs text-rose-700">{{ form.desired_due_date.errors }}</p>
+                    {% endif %}
+                </div>
             </div>
             <fieldset class="space-y-4">
                 <legend class="font-heading text-xl font-semibold text-slate-900">Requested equipment</legend>
@@ -84,9 +81,7 @@
             </fieldset>
             <button type="submit"
                     data-testid="request-submit"
-                    class="h-11 rounded-md bg-accent px-5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent mt-5">
-                Submit request
-            </button>
+                    class="ui-button ui-button--primary">Submit request</button>
         </form>
     </section>
 {% endblock %}

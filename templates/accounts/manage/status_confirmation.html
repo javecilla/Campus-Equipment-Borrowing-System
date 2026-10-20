@@ -1,10 +1,10 @@
 {% extends "operations/manage/base.html" %}
 {% block title %}{{ action_label }} {{ account.username }} · Campus Equipment{% endblock %}
 {% block workspace_content %}
-    <section data-testid="account-status-confirmation">
-        <section class="w-full max-w-2xl py-2">
+    <section data-testid="account-status-confirmation" class="ui-page">
+        <section class="w-full py-2">
             <p class="mb-3 text-xs font-semibold tracking-widest text-accent uppercase">Basic-user account</p>
-            <h1 class="mb-4 font-heading text-3xl font-semibold">{{ action_label }} {{ account.username }}?</h1>
+            <h1 class="mb-4 font-heading font-semibold">{{ action_label }} {{ account.username }}?</h1>
             {% if error %}
                 <p class="mb-5 rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-800"
                    role="alert">{{ error }}</p>
@@ -21,10 +21,10 @@
                 {% csrf_token %}
                 <button data-testid="account-status-submit"
                         type="submit"
-                        class="min-h-11 rounded-md bg-accent px-4 text-sm font-semibold text-white hover:bg-emerald-800">{{ action_label }} account</button>
+                        class="ui-button ui-button--primary">{{ action_label }} account</button>
                 <a href="{% url 'accounts:manage-detail' account.pk %}"
                    data-testid="account-status-cancel"
-                   class="inline-flex min-h-11 items-center rounded-md border border-slate-200 px-4 text-sm font-semibold hover:bg-slate-50">Cancel</a>
+                   class="ui-button ui-button--outline">Cancel</a>
             </form>
         </section>
     </section>

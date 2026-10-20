@@ -1,76 +1,81 @@
 {% extends "operations/manage/base.html" %}
 {% block title %}Categories · Campus Equipment{% endblock %}
 {% block workspace_content %}
-    <section data-testid="category-list">
+    <section data-testid="category-list" class="ui-page">
         {% include "inventory/manage/nav.html" with active_tab="categories" %}
         <div class="space-y-8">
-            <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <header class="ui-page-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <p class="text-xs font-semibold tracking-widest text-accent uppercase">Equipment inventory</p>
-                    <h1 class="font-heading text-3xl font-semibold">Equipment categories</h1>
+                    <h1 class="font-heading font-semibold">Equipment categories</h1>
                 </div>
                 <a href="{% url 'inventory_manage:category-create' %}"
                    data-testid="create-category-button"
-                   class="inline-flex h-11 items-center justify-center rounded-md bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-800">
-                    New category
-                </a>
+                   class="ui-button ui-button--primary">New category</a>
             </header>
             <section class="border-t border-slate-200 py-6">
                 <form data-testid="category-search"
                       method="get"
                       action="{% url 'inventory_manage:category-list' %}"
-                      class="grid gap-4 md:grid-cols-[1fr_14rem_auto] md:items-end">
-                    <div>
-                        <label for="{{ form.q.id_for_label }}"
-                               class="mb-2 block text-sm font-medium">{{ form.q.label }}</label>
-                        {{ form.q }}
-                        {{ form.q.errors }}
+                      class="space-y-4">
+                    <div class="ui-filter-grid">
+                        <div>
+                            <label for="{{ form.q.id_for_label }}"
+                                   class="mb-2 block text-sm font-medium">{{ form.q.label }}</label>
+                            {{ form.q }}
+                            {{ form.q.errors }}
+                        </div>
+                        <div>
+                            <label for="{{ form.archived.id_for_label }}"
+                                   class="mb-2 block text-sm font-medium">{{ form.archived.label }}</label>
+                            {{ form.archived }}
+                            {{ form.archived.errors }}
+                        </div>
                     </div>
-                    <div>
-                        <label for="{{ form.archived.id_for_label }}"
-                               class="mb-2 block text-sm font-medium">{{ form.archived.label }}</label>
-                        {{ form.archived }}
-                        {{ form.archived.errors }}
+                    <div class="flex items-center justify-end gap-4">
+                        <a href="{% url 'inventory_manage:category-list' %}"
+                           data-testid="category-search-clear"
+                           class="text-sm font-semibold text-accent underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Clear filters</a>
+                        <button type="submit"
+                                data-testid="category-search-submit"
+                                class="ui-button ui-button--tonal">Search</button>
                     </div>
-                    <button type="submit"
-                            data-testid="category-search-submit"
-                            class="h-11 rounded-md bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-800">
-                        Search
-                    </button>
                 </form>
             </section>
-            <section class="border-y border-slate-200">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200">
+            <section class="ui-table-surface">
+                <div class="overflow-x-auto"
+                     tabindex="0"
+                     role="region"
+                     aria-label="Scrollable category records table"
+                     data-testid="table-scroll-1">
+                    <table class="ui-data-table min-w-full divide-y divide-slate-200">
                         <thead class="bg-slate-50 text-left text-sm text-slate-600">
                             <tr>
-                                <th scope="col" class="px-5 py-3">Category name</th>
-                                <th scope="col" class="px-5 py-3">Description</th>
-                                <th scope="col" class="px-5 py-3 text-center">Items</th>
-                                <th scope="col" class="px-5 py-3">Status</th>
+                                <th scope="col">Category name</th>
+                                <th scope="col">Description</th>
+                                <th scope="col" class="text-center">Items</th>
+                                <th scope="col">Status</th>
                                 <th scope="col"
-                                    class="relative px-5 py-3 text-right"><span class="sr-only">Actions</span></th>
+                                    class="relative text-right"><span class="sr-only">Actions</span></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             {% for cat in page %}
                                 <tr>
-                                    <td class="px-5 py-4 font-semibold text-slate-900">
+                                    <td class="font-semibold text-slate-900">
                                         <a href="{% url 'inventory_manage:category-detail' cat.pk %}"
                                            class="text-accent hover:underline">{{ cat.name }}</a>
                                     </td>
-                                    <td class="px-5 py-4 text-sm text-slate-600">
-                                        {{ cat.description|default:"—"|truncatewords:15 }}
-                                    </td>
-                                    <td class="px-5 py-4 text-center text-sm font-medium text-slate-700">{{ cat.item_count }}</td>
-                                    <td class="px-5 py-4 text-sm">
+                                    <td class="text-sm text-slate-600">{{ cat.description|default:"—"|truncatewords:15 }}</td>
+                                    <td class="text-center text-sm font-medium text-slate-700">{{ cat.item_count }}</td>
+                                    <td class="text-sm">
                                         {% if cat.is_archived %}
                                             <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">Archived</span>
                                         {% else %}
                                             <span class="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-accent">Active</span>
                                         {% endif %}
                                     </td>
-                                    <td class="px-5 py-4 text-right text-sm">
+                                    <td class="text-right text-sm">
                                         <a href="{% url 'inventory_manage:category-detail' cat.pk %}"
                                            data-testid="category-detail-{{ cat.pk }}"
                                            class="font-semibold text-accent hover:underline">
@@ -80,8 +85,7 @@
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="5"
-                                        class="px-5 py-8 text-center text-sm text-slate-500">
+                                    <td colspan="5" class="text-center text-sm text-slate-500">
                                         No categories found matching your query.
                                     </td>
                                 </tr>
@@ -100,16 +104,12 @@
                         {% if page.has_previous %}
                             <a href="{% querystring page=page.previous_page_number %}"
                                data-testid="pagination-prev"
-                               class="inline-flex h-9 items-center rounded border border-slate-200 px-3 text-sm font-medium hover:bg-slate-50">
-                                Previous
-                            </a>
+                               class="ui-button ui-button--outline">Previous</a>
                         {% endif %}
                         {% if page.has_next %}
                             <a href="{% querystring page=page.next_page_number %}"
                                data-testid="pagination-next"
-                               class="inline-flex h-9 items-center rounded border border-slate-200 px-3 text-sm font-medium hover:bg-slate-50">
-                                Next
-                            </a>
+                               class="ui-button ui-button--outline">Next</a>
                         {% endif %}
                     </div>
                 </nav>

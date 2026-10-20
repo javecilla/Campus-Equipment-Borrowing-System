@@ -1,13 +1,13 @@
 {% extends "operations/manage/base.html" %}
 {% block title %}{{ account.username }} · Basic-user account{% endblock %}
 {% block workspace_content %}
-    <section data-testid="account-detail">
+    <section data-testid="account-detail" class="ui-page">
         <div class="space-y-8">
-            <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <header class="ui-page-header flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <a href="{% url 'accounts:manage-list' %}"
                        class="text-sm font-semibold text-accent hover:text-emerald-800">← Basic-user accounts</a>
-                    <h1 class="mt-2 font-heading text-3xl font-semibold">{{ account.username }}</h1>
+                    <h1 class="mt-2 font-heading font-semibold">{{ account.username }}</h1>
                     <p class="text-slate-500">{{ account.get_full_name }}</p>
                 </div>
                 <div class="flex items-center gap-3">
@@ -18,7 +18,7 @@
                     {% else %}
                         <a href="{% url 'accounts:manage-activate' account.pk %}"
                            data-testid="account-activate"
-                           class="inline-flex min-h-11 items-center rounded-md bg-accent px-4 text-sm font-semibold text-white hover:bg-emerald-800">Activate account</a>
+                           class="ui-button ui-button--primary">Activate account</a>
                     {% endif %}
                 </div>
             </header>
@@ -40,28 +40,32 @@
                     <p class="font-semibold">{{ account.profile.contact_number|default:"Not provided" }}</p>
                 </div>
             </section>
-            <section class="border-y border-slate-200">
+            <section class="ui-table-surface">
                 <div class="border-b border-slate-200 px-6 py-4">
                     <h2 class="font-heading text-xl font-semibold">Request history</h2>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200">
+                <div class="overflow-x-auto"
+                     tabindex="0"
+                     role="region"
+                     aria-label="Scrollable details table"
+                     data-testid="table-scroll-1">
+                    <table class="ui-data-table min-w-full divide-y divide-slate-200">
                         <thead class="bg-slate-50 text-left text-sm text-slate-600">
                             <tr>
-                                <th scope="col" class="px-5 py-3">Request</th>
-                                <th scope="col" class="px-5 py-3">Submitted</th>
-                                <th scope="col" class="px-5 py-3">Status</th>
-                                <th scope="col" class="px-5 py-3">Purpose and items</th>
-                                <th scope="col" class="px-5 py-3">Agreed due date</th>
+                                <th scope="col">Request</th>
+                                <th scope="col">Submitted</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Purpose and items</th>
+                                <th scope="col">Agreed due date</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             {% for borrow_request in request_history %}
                                 <tr>
-                                    <td class="px-5 py-4 font-semibold">#{{ borrow_request.pk }}</td>
-                                    <td class="px-5 py-4">{{ borrow_request.submitted_at|date:"M j, Y, g:i a" }}</td>
-                                    <td class="px-5 py-4">{{ borrow_request.get_status_display }}</td>
-                                    <td class="px-5 py-4">
+                                    <td class="font-semibold">#{{ borrow_request.pk }}</td>
+                                    <td>{{ borrow_request.submitted_at|date:"M j, Y, g:i a" }}</td>
+                                    <td>{{ borrow_request.get_status_display }}</td>
+                                    <td>
                                         <p>{{ borrow_request.purpose }}</p>
                                         <ul class="mt-2 text-sm text-slate-500">
                                             {% for request_item in borrow_request.items.all %}
@@ -71,42 +75,46 @@
                                             {% endfor %}
                                         </ul>
                                     </td>
-                                    <td class="px-5 py-4">{{ borrow_request.agreed_due_date|date:"M j, Y" }}</td>
+                                    <td>{{ borrow_request.agreed_due_date|date:"M j, Y" }}</td>
                                 </tr>
                             {% empty %}
                                 <tr>
                                     <td colspan="5"
-                                        class="px-5 py-10 text-center text-slate-500">This account has no request history.</td>
+                                        class="text-center text-slate-500">This account has no request history.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </section>
-            <section class="border-y border-slate-200">
+            <section class="ui-table-surface">
                 <div class="border-b border-slate-200 px-6 py-4">
                     <h2 class="font-heading text-xl font-semibold">Borrowing history</h2>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200">
+                <div class="overflow-x-auto"
+                     tabindex="0"
+                     role="region"
+                     aria-label="Scrollable details table"
+                     data-testid="table-scroll-2">
+                    <table class="ui-data-table min-w-full divide-y divide-slate-200">
                         <thead class="bg-slate-50 text-left text-sm text-slate-600">
                             <tr>
-                                <th scope="col" class="px-5 py-3">Loan</th>
-                                <th scope="col" class="px-5 py-3">Request</th>
-                                <th scope="col" class="px-5 py-3">Issued</th>
-                                <th scope="col" class="px-5 py-3">Due</th>
-                                <th scope="col" class="px-5 py-3">Issued units</th>
-                                <th scope="col" class="px-5 py-3">State</th>
+                                <th scope="col">Loan</th>
+                                <th scope="col">Request</th>
+                                <th scope="col">Issued</th>
+                                <th scope="col">Due</th>
+                                <th scope="col">Issued units</th>
+                                <th scope="col">State</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             {% for loan in loan_history %}
                                 <tr>
-                                    <td class="px-5 py-4 font-semibold">#{{ loan.pk }}</td>
-                                    <td class="px-5 py-4">#{{ loan.request_id }}</td>
-                                    <td class="px-5 py-4">{{ loan.issued_at|date:"M j, Y, g:i a" }}</td>
-                                    <td class="px-5 py-4">{{ loan.due_date|date:"M j, Y" }}</td>
-                                    <td class="px-5 py-4">
+                                    <td class="font-semibold">#{{ loan.pk }}</td>
+                                    <td>#{{ loan.request_id }}</td>
+                                    <td>{{ loan.issued_at|date:"M j, Y, g:i a" }}</td>
+                                    <td>{{ loan.due_date|date:"M j, Y" }}</td>
+                                    <td>
                                         <ul>
                                             {% for loan_unit in loan.units.all %}
                                                 <li>{{ loan_unit.allocation.unit.asset_code }}</li>
@@ -115,12 +123,12 @@
                                             {% endfor %}
                                         </ul>
                                     </td>
-                                    <td class="px-5 py-4">{% if loan.closed_at %}Closed{% else %}Open{% endif %}</td>
+                                    <td>{% if loan.closed_at %}Closed{% else %}Open{% endif %}</td>
                                 </tr>
                             {% empty %}
                                 <tr>
                                     <td colspan="6"
-                                        class="px-5 py-10 text-center text-slate-500">This account has no borrowing history.</td>
+                                        class="text-center text-slate-500">This account has no borrowing history.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

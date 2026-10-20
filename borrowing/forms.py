@@ -12,16 +12,8 @@ from borrowing.models import RequestStatus
 from inventory.models import CatalogItem
 from operations.validation import LoanLimits, validate_requested_due_date
 
-CONTROL_CLASSES: str = (
-    "h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 "
-    "transition-colors hover:border-slate-300 focus:border-accent focus:outline-none "
-    "focus:ring-2 focus:ring-accent/15 aria-invalid:border-rose-500"
-)
-TEXTAREA_CLASSES: str = (
-    "min-h-28 w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm "
-    "text-slate-900 transition-colors hover:border-slate-300 focus:border-accent "
-    "focus:outline-none focus:ring-2 focus:ring-accent/15 aria-invalid:border-rose-500"
-)
+CONTROL_CLASSES: str = "ui-input"
+TEXTAREA_CLASSES: str = "ui-input ui-textarea"
 
 
 class CatalogItemChoiceField(forms.ModelChoiceField):

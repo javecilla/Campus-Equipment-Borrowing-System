@@ -3,14 +3,14 @@
 {% block workspace_content %}
     <section data-testid="request-detail-page"
              aria-labelledby="request-detail-heading"
-             class="max-w-4xl">
+             class="ui-page">
         <a href="{% url 'portal:request-list' %}"
            class="text-sm font-medium text-accent underline focus-visible:outline-2 focus-visible:outline-accent">Back to my requests</a>
         <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
                 <p class="text-xs font-semibold tracking-widest text-accent uppercase">Request details</p>
                 <h1 id="request-detail-heading"
-                    class="mt-2 font-heading text-3xl font-semibold">Request #{{ borrow_request.pk }}</h1>
+                    class="mt-2 font-heading font-semibold">Request #{{ borrow_request.pk }}</h1>
             </div>
             <span class="inline-flex w-fit rounded-full bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700">{{ borrow_request.get_status_display }}</span>
         </div>
@@ -82,11 +82,11 @@
             {% if can_cancel %}
                 <a href="{% url 'portal:request-cancel' request_id=borrow_request.pk %}"
                    data-testid="request-cancel-link"
-                   class="inline-flex min-h-11 items-center rounded-md border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700">Cancel request</a>
+                   class="ui-button ui-button--danger-tonal">Cancel request</a>
             {% endif %}
             {% if loan %}
                 <a href="{% url 'portal:loan-detail' loan_id=loan.pk %}"
-                   class="inline-flex min-h-11 items-center rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">View loan</a>
+                   class="ui-button ui-button--primary">View loan</a>
             {% endif %}
         </div>
     </section>

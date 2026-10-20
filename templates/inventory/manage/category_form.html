@@ -1,18 +1,20 @@
 {% extends "operations/manage/base.html" %}
 {% block title %}{{ title }} · Campus Equipment{% endblock %}
 {% block workspace_content %}
-    <section data-testid="category-form-section">
+    <section data-testid="category-form-section" class="ui-page">
         {% include "inventory/manage/nav.html" with active_tab="categories" %}
-        <div class="max-w-2xl space-y-6">
-            <header>
+        <div class="space-y-6">
+            <header class="ui-page-header">
                 <p class="text-xs font-semibold tracking-widest text-accent uppercase">Category management</p>
-                <h1 class="font-heading text-3xl font-semibold">{{ title }}</h1>
+                <h1 class="font-heading font-semibold">{{ title }}</h1>
             </header>
             {% if form.non_field_errors %}
                 <div class="rounded-md border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700"
                      role="alert">{{ form.non_field_errors }}</div>
             {% endif %}
-            <form method="post" data-testid="category-form" class="space-y-6">
+            <form method="post"
+                  data-testid="category-form"
+                  class="ui-form-grid ui-surface">
                 {% csrf_token %}
                 <div>
                     <label for="{{ form.name.id_for_label }}"
@@ -34,24 +36,18 @@
                         <p class="mt-1.5 text-xs text-rose-600">{{ form.description.errors.0 }}</p>
                     {% endif %}
                 </div>
-                <div class="flex flex-wrap items-center gap-3 pt-2">
+                <div class="ui-actions">
                     <button type="submit"
                             data-testid="category-submit"
-                            class="inline-flex h-11 items-center justify-center rounded-md bg-accent px-6 text-sm font-semibold text-white transition-colors hover:bg-emerald-800">
-                        {{ action_label }}
-                    </button>
+                            class="ui-button ui-button--primary">{{ action_label }}</button>
                     {% if category %}
                         <a href="{% url 'inventory_manage:category-detail' category.pk %}"
                            data-testid="category-cancel"
-                           class="inline-flex h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">
-                            Cancel
-                        </a>
+                           class="ui-button ui-button--outline">Cancel</a>
                     {% else %}
                         <a href="{% url 'inventory_manage:category-list' %}"
                            data-testid="category-cancel"
-                           class="inline-flex h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">
-                            Cancel
-                        </a>
+                           class="ui-button ui-button--outline">Cancel</a>
                     {% endif %}
                 </div>
             </form>

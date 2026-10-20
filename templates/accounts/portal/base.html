@@ -1,7 +1,8 @@
 {% extends "components/workspace.html" %}
 {% block navigation_label %}Borrower{% endblock %}
-{% block account_menu %}
-    {% include "components/account_menu.html" with profile_route="portal:profile" %}
+{% block workspace_label %}Borrower portal{% endblock %}
+{% block account_link %}
+    {% include "components/account_link.html" with profile_route="portal:profile" %}
 {% endblock %}
 {% block navigation %}
     {% comment %}

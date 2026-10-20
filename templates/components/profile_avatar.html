@@ -1,5 +1,5 @@
 {% load static %}
-<img src="{% if request.user.role == 'ADMIN' %}{% static 'images/default-profile-admin.png' %}{% else %}{% static 'images/default-profile-user.png' %}{% endif %}"
+<img src="{% if request.user.role == 'ADMIN' %}{% static 'images/default-profile-admin.jpg' %}{% else %}{% static 'images/default-profile-user.jpg' %}{% endif %}"
      alt=""
      width="80"
      height="80"

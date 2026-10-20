@@ -15,7 +15,7 @@ class EquipmentPhotoForm(forms.Form):
             attrs={
                 "id": "equipment-photo",
                 "accept": "image/jpeg,image/png,image/webp",
-                "class": "block w-full rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-700",
+                "class": "ui-input",
             }
         ),
     )

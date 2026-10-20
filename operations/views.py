@@ -21,8 +21,17 @@ from operations.services import update_settings
 @require_safe
 @admin_required
 def dashboard(request: HttpRequest) -> HttpResponse:
-    """Provide the ADMIN role destination without static dashboard metrics."""
-    return render(request, "operations/manage/dashboard.html")
+    """Pending T18 destination; live dashboard data and charts belong to Alex."""
+    return render(
+        request,
+        "operations/manage/pending.html",
+        {
+            "heading": "Administrator dashboard",
+            "module": "T18 · Alex",
+            "description": "Live cards for available units, pending requests, active loans, and overdue loans; a monthly issued-loan chart and an equipment-category usage chart will appear here.",
+            "next_work": "Implement ORM-backed live cards and charts after T15 and T17 are integrated. All values must update when database transactions change; no static demonstration data.",
+        },
+    )
 
 
 @require_safe
