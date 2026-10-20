@@ -2,10 +2,62 @@
 
 from datetime import date
 
-from django.db.models import Count, Prefetch, Q, QuerySet
+from django.db.models import (
+    BooleanField,
+    Case,
+    Count,
+    F,
+    Func,
+    IntegerField,
+    Prefetch,
+    Q,
+    QuerySet,
+    Value,
+    When,
+)
+from django.utils import timezone
 
 from borrowing.models import BorrowRequest, Loan, LoanUnit, RequestItem, UnitAllocation
 from inventory.models import EquipmentUnit, UnitStatus
+
+
+def with_loan_progress(loans: QuerySet[Loan], today: date) -> QuerySet[Loan]:
+    """Derive progress and calendar-day overdue values without persisting a status.
+
+    Each loan unit has at most one return, so these counts share one nonmultiplying
+    join. Call before introducing other to-many joins in reporting queries.
+    """
+    return loans.annotate(
+        issued_quantity=Count("units"),
+        returned_quantity=Count("units__return_record"),
+        outstanding_quantity=Count("units", filter=Q(units__return_record__isnull=True)),
+    ).annotate(
+        is_active=Case(
+            When(outstanding_quantity__gt=0, then=Value(True)),
+            default=Value(False),
+            output_field=BooleanField(),
+        ),
+        is_overdue=Case(
+            When(outstanding_quantity__gt=0, due_date__lt=today, then=Value(True)),
+            default=Value(False),
+            output_field=BooleanField(),
+        ),
+        overdue_days=Case(
+            When(
+                outstanding_quantity__gt=0,
+                due_date__lt=today,
+                then=Func(
+                    Value(today),
+                    F("due_date"),
+                    arg_joiner=" - ",
+                    template="(%(expressions)s)",
+                    output_field=IntegerField(),
+                ),
+            ),
+            default=Value(0),
+            output_field=IntegerField(),
+        ),
+    )
 
 
 def request_queue(
@@ -95,7 +147,7 @@ def loan_history(owner_id: int) -> QuerySet[Loan]:
         .order_by("pk")
     )
     return (
-        Loan.objects.filter(request__owner_id=owner_id)
+        with_loan_progress(Loan.objects.filter(request__owner_id=owner_id), timezone.localdate())
         .select_related("request")
         .prefetch_related(Prefetch("units", queryset=loan_units))
         .order_by("-issued_at", "-pk")
@@ -110,7 +162,10 @@ def loan_for_request(owner_id: int, request_id: int) -> Loan | None:
         .order_by("pk")
     )
     return (
-        Loan.objects.filter(request__owner_id=owner_id, request_id=request_id)
+        with_loan_progress(
+            Loan.objects.filter(request__owner_id=owner_id, request_id=request_id),
+            timezone.localdate(),
+        )
         .prefetch_related(Prefetch("units", queryset=loan_units))
         .first()
     )
@@ -118,15 +173,9 @@ def loan_for_request(owner_id: int, request_id: int) -> Loan | None:
 
 def manage_loan_history(search_query: str) -> QuerySet[Loan]:
     """List issued loans with counts that do not multiply across return joins."""
-    loans: QuerySet[Loan] = (
-        Loan.objects.select_related("request__owner", "issued_by")
-        .annotate(
-            issued_quantity=Count("units"),
-            returned_quantity=Count("units__return_record"),
-            outstanding_quantity=Count("units", filter=Q(units__return_record__isnull=True)),
-        )
-        .order_by("-issued_at", "-pk")
-    )
+    loans: QuerySet[Loan] = with_loan_progress(
+        Loan.objects.select_related("request__owner", "issued_by"), timezone.localdate()
+    ).order_by("-issued_at", "-pk")
     if search_query:
         condition: Q = Q(request__owner__username__icontains=search_query)
         if search_query.isdecimal() and len(search_query) <= 18:

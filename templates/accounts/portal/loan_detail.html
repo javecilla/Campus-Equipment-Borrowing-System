@@ -13,12 +13,19 @@
                     class="mt-2 font-heading font-semibold">Loan #{{ loan.pk }}</h1>
                 <p class="mt-1 text-sm text-slate-600">Request #{{ loan.request_id }}</p>
             </div>
-            {% if loan.closed_at %}
+            {% if not loan.is_active %}
                 <span class="inline-flex w-fit rounded-full bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700">Returned</span>
             {% else %}
                 <span class="inline-flex w-fit rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-800">Active</span>
             {% endif %}
         </div>
+        {% if loan.is_overdue %}
+            <p role="status"
+               data-testid="portal-loan-overdue"
+               class="mt-4 text-sm font-semibold text-rose-700">Overdue · {{ loan.overdue_days }} day{{ loan.overdue_days|pluralize }} past due.</p>
+        {% endif %}
+        <p class="mt-4 text-sm text-slate-600"
+           data-testid="portal-loan-quantities">Issued / returned / outstanding: {{ loan.issued_quantity }} / {{ loan.returned_quantity }} / {{ loan.outstanding_quantity }}</p>
         <dl class="mt-6 grid gap-4 rounded-lg border border-slate-200 bg-white p-5 text-sm shadow-sm sm:grid-cols-3">
             <div>
                 <dt class="text-slate-500">Released</dt>

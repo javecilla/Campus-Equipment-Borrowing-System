@@ -7,9 +7,14 @@
                data-testid="loan-back"
                class="text-sm font-semibold text-accent underline underline-offset-4">Back to issued loans</a>
             <h1 class="mt-4 font-heading font-semibold">Loan #{{ loan.pk }}</h1>
-            <p class="mt-3 text-sm text-slate-600" data-testid="loan-state">{% if loan.closed_at %}Closed{% else %}Active{% endif %} · {{ loan.request.get_status_display }}</p>
+            <p class="mt-3 text-sm text-slate-600" data-testid="loan-state">{% if loan.is_active %}Active{% else %}Closed{% endif %} · {{ loan.request.get_status_display }}</p>
         </header>
         <div class="flex flex-wrap gap-3">
+            {% if loan.outstanding_quantity %}
+                <a href="{% url 'borrowing_manage:return-create' loan.pk %}"
+                   data-testid="loan-return-link"
+                   class="ui-button ui-button--primary">Return units</a>
+            {% endif %}
             <a href="{% url 'borrowing_manage:loan-slip' loan.pk %}"
                data-testid="loan-slip-link"
                class="ui-button ui-button--primary">Borrowing slip</a>
@@ -17,11 +22,9 @@
                data-testid="loan-request-link"
                class="ui-button ui-button--outline">View request</a>
         </div>
-        {% if loan.outstanding_quantity and loan.due_date < today %}<p role="status"
+        {% if loan.is_overdue %}<p role="status"
    data-testid="loan-overdue"
-   class="text-sm font-semibold text-rose-700">Overdue · Outstanding units are past their due date.</p>{% endif %}
+   class="text-sm font-semibold text-rose-700">Overdue · {{ loan.overdue_days }} day{{ loan.overdue_days|pluralize }} past due.</p>{% endif %}
         {% include "borrowing/manage/loan_summary.html" with loan=loan only %}
-        <p class="text-sm text-slate-500"
-           data-testid="returns-pending">Return processing will be available when the returns workflow is completed.</p>
     </section>
 {% endblock %}
