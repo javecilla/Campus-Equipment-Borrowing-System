@@ -84,7 +84,7 @@ def category_list(request: HttpRequest) -> HttpResponse:
         )
     else:
         categories = Category.objects.none()
-    paginator: Paginator[Category] = Paginator(categories, 25)
+    paginator: Paginator[Category] = Paginator(categories, 5)
     try:
         page: Page[Category] = paginator.page(request.GET.get("page", "1"))
     except (PageNotAnInteger, EmptyPage) as error:
@@ -376,7 +376,7 @@ def unit_list(request: HttpRequest) -> HttpResponse:
         status=request.GET.get("status") or None,
     )
     counts = get_overall_inventory_counts()
-    paginator: Paginator[EquipmentUnit] = Paginator(units, 25)
+    paginator: Paginator[EquipmentUnit] = Paginator(units, 10)
     try:
         page: Page[EquipmentUnit] = paginator.page(request.GET.get("page", "1"))
     except (PageNotAnInteger, EmptyPage) as error:
@@ -509,7 +509,7 @@ def maintenance_list(request: HttpRequest) -> HttpResponse:
         )
     else:
         records = MaintenanceRecord.objects.none()
-    paginator: Paginator[MaintenanceRecord] = Paginator(records, 25)
+    paginator: Paginator[MaintenanceRecord] = Paginator(records, 5)
     try:
         page: Page[MaintenanceRecord] = paginator.page(request.GET.get("page", "1"))
     except (PageNotAnInteger, EmptyPage) as error:

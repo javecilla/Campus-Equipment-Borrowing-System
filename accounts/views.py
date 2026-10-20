@@ -141,8 +141,17 @@ def register_view(request: HttpRequest) -> HttpResponse:
 @require_safe
 @basic_user_required
 def portal_home(request: HttpRequest) -> HttpResponse:
-    """Provide the protected role destination until portal features are integrated."""
-    return render(request, "accounts/portal/home.html")
+    """Pending T20 destination; full borrower portal layout and navigation belong to Ralph with Ellyssa."""
+    return render(
+        request,
+        "accounts/portal/pending.html",
+        {
+            "heading": "Borrower workspace",
+            "module": "T20 · Ralph with Ellyssa",
+            "description": "Integrated role navigation, reusable tables and forms, status labels, confirmations, and responsive layouts for the borrower portal will appear here.",
+            "next_work": "Implement the full portal layout and navigation after T17, T18, and T19 are integrated. Individual features (equipment browsing, requests, loans) are accessible through the navigation tabs above.",
+        },
+    )
 
 
 def _basic_user_or_404(account_id: int) -> User:

@@ -21,17 +21,9 @@ from inventory.models import (
 )
 from inventory.photo_forms import EquipmentPhotoForm
 
-CONTROL_CLASSES: str = (
-    "h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 "
-    "transition-colors hover:border-slate-300 focus:border-accent focus:outline-none "
-    "focus:ring-2 focus:ring-accent/15 aria-invalid:border-rose-500"
-)
+CONTROL_CLASSES: str = "ui-input"
 
-TEXTAREA_CLASSES: str = (
-    "w-full rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-900 "
-    "transition-colors hover:border-slate-300 focus:border-accent focus:outline-none "
-    "focus:ring-2 focus:ring-accent/15 aria-invalid:border-rose-500"
-)
+TEXTAREA_CLASSES: str = "ui-input ui-textarea"
 
 
 class CategoryChoiceField(forms.ModelChoiceField):

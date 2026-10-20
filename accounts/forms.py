@@ -13,11 +13,7 @@ from django.views.decorators.debug import sensitive_variables
 
 from accounts.models import User
 
-CONTROL_CLASSES: str = (
-    "h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 "
-    "transition-colors hover:border-slate-300 focus:border-accent focus:outline-none "
-    "focus:ring-2 focus:ring-accent/15 aria-invalid:border-rose-500"
-)
+CONTROL_CLASSES: str = "ui-input"
 
 
 class LoginForm(AuthenticationForm):
@@ -34,7 +30,7 @@ class LoginForm(AuthenticationForm):
             attrs={
                 "autocomplete": "username",
                 "autofocus": True,
-                "class": "h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 transition-colors hover:border-slate-300 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15 aria-invalid:border-rose-500",
+                "class": "ui-input",
             }
         ),
     )
@@ -44,7 +40,7 @@ class LoginForm(AuthenticationForm):
         widget=forms.PasswordInput(
             attrs={
                 "autocomplete": "current-password",
-                "class": "h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 transition-colors hover:border-slate-300 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15 aria-invalid:border-rose-500",
+                "class": "ui-input",
             }
         ),
     )
@@ -90,7 +86,7 @@ class AccountSearchForm(forms.Form):
         strip=True,
         widget=forms.SearchInput(
             attrs={
-                "class": "h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 transition-colors hover:border-slate-300 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15 aria-invalid:border-rose-500",
+                "class": "ui-input",
                 "placeholder": "Username, name, email, or contact number",
             }
         ),
@@ -101,11 +97,7 @@ class AccountSearchForm(forms.Form):
         choices=(("", "All statuses"), ("true", "Active"), ("false", "Inactive")),
         coerce={"true": True, "false": False}.get,
         empty_value=None,
-        widget=forms.Select(
-            attrs={
-                "class": "h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 transition-colors hover:border-slate-300 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15 aria-invalid:border-rose-500"
-            }
-        ),
+        widget=forms.Select(attrs={"class": "ui-input"}),
     )
 
 

@@ -3,12 +3,12 @@
 {% block workspace_content %}
     <section data-testid="own-profile"
              aria-labelledby="profile-heading"
-             class="max-w-2xl">
+             class="ui-page">
         <p class="text-xs font-semibold tracking-widest text-accent uppercase">Your account</p>
         <div class="mt-5 flex items-center gap-5">
             {% include "components/profile_avatar.html" with avatar_class="h-20 w-20 shrink-0" %}
             <div class="min-w-0">
-                <h1 id="profile-heading" class="font-heading text-3xl font-semibold">My profile</h1>
+                <h1 id="profile-heading" class="font-heading font-semibold">My profile</h1>
                 <p class="mt-1 break-words text-slate-500">{{ request.user.get_full_name }}</p>
             </div>
         </div>
@@ -29,7 +29,7 @@
         </div>
         <form method="post"
               action="{% url 'portal:profile' %}"
-              class="mt-8 space-y-5"
+              class="ui-form-grid ui-surface mt-8"
               novalidate>
             {% csrf_token %}
             <h2 class="font-heading text-xl font-semibold text-slate-900">Personal details</h2>
@@ -71,9 +71,9 @@
                     <div class="mt-1.5 text-xs text-rose-700">{{ form.contact_number.errors }}</div>
                 {% endif %}
             </div>
-            <div class="pt-2">
+            <div class="ui-actions">
                 <button type="submit"
-                        class="rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                        class="ui-button ui-button--primary"
                         data-testid="profile-submit">Save changes</button>
             </div>
         </form>

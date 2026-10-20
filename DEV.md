@@ -4,7 +4,9 @@
 
 Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv`, `.env.local`, and local PostgreSQL database. Git shares source and migrations, not credentials or database contents.
 
-**Current phase: T01-T12/T16 are integrated; T13 corrections are Done on `jerome`.** Main `23c1ad9` contains Margareth's PR #34 baseline and T16 fixes from PR #33 (`aa36c86`). The corrected branch passes **252 PostgreSQL tests** and configured checks. Unicode numeric search is safe and administrator detail excludes ended/released allocations from Reserved units. These fixes await main integration. T14 is unstarted, T15 remains gated, and T17 needs T15. Browser results remain pending. See [fix/publication handoff](handoffs/t13-query-fixes-and-publication-10-19-2026.md) and [current handoff](HANDOFF.md).
+**Current phase: T01-T14/T16 are Done and integrated.** PR #37 at `5381c83` integrates T14 source `058357c`; main already contains T13 query fixes through PR #35. **254 PostgreSQL tests passed in 39.994s** and configured checks pass. Margareth / T15 is ready with integrated T13/T14; it remains Not started. T17 still needs T15. Browser outcomes and recorded cleanup remain pending. See [integration receipt](handoffs/t14-publication-main-integration-and-t15-readiness-10-20-2026.md) and [current handoff](HANDOFF.md).
+
+**UI-09 is implemented locally on `jerome`, awaiting publication/integration.** Its shared M3 presentation does not change workflow APIs or T15 ownership. Read the [canonical component rules](docs/coding-standards.md#shared-m3-roles-and-components-ui-09) before adding feature templates.
 
 For where to add views, models, forms, URLs, and page templates, use [Project Folder Architecture](docs/project-folder-architecture.md).
 
@@ -123,9 +125,9 @@ Then start the server:
 
 Open **<http://127.0.0.1:8000/>** for the custom sign-in route. With `DJANGO_DEBUG=True`, the Tailwind/font preview remains available directly at **<http://127.0.0.1:8000/test>**. The terminal should report no system-check errors or unapplied migrations. Keep that terminal open while working; stop with Ctrl+C, or Ctrl+Break on Windows.
 
-### Expected startup screen
+### Earlier startup screen
 
-Anonymous visitors now see the custom sign-in page, with the existing green branding and bottom wave:
+The supplied screenshot below records the earlier minimal sign-in page. Local UI-09 now uses a responsive M3 layout with the existing brand logo/wave, a contextual desktop panel and stacked compact-screen form; the authentication flow is unchanged:
 
 ![Campus Equipment sign-in page with username or email, password, and the green bottom wave](static/images/login-screen.png)
 
@@ -282,14 +284,16 @@ The library rationale and course-pattern requirements are in [architecture.md](d
 
 | Path                     | Purpose                                                                                                                                   |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `static/css/app.css`     | Tailwind entry point, local font import, font theme, and explicit source locations                                                        |
+| `static/css/app.css`     | Tailwind entry point, local fonts, shared M3 components and explicit source locations                                                        |
 | `static/css/fonts.css`   | Existing local font declarations; imported into Tailwind's base layer                                                                     |
 | `static/js/*.js`         | Browser page modules; the JavaScript build compiles every top-level module                                                                |
 | `static/build/`          | Generated CSS, browser ES modules/chunks, and any generated dependency license notices                                                    |
 | `templates/base.html`    | Shared document shell loading `build/app.css`, favicon links, and metadata; blocks: title, meta_description, extra_head, content, scripts |
 | `static/images/favicon/` | Supplied browser/touch icons and web manifest; manifest icon paths are relative to this directory                                         |
 
-`npm.cmd run build` creates a minified build. `npm.cmd run dev` runs CSS and JavaScript watchers together and stops the sibling if either exits. Build before running `collectstatic` or assembling a submission; include the complete generated build, including chunks/license files, in a runnable artifact. Source control keeps the npm lockfile and source assets; the submission process must build assets explicitly because ignored files are not supplied by Git.
+`npm.cmd run build` compiles minified CSS/browser modules. The fixed palette lives in `static/css/app.css`; no color-generation dependency or separate `theme.css` is required. `build:css` invokes `check:theme` (`scripts/check-theme.mjs`) before compiling, including at CSS watcher startup. Run `npm.cmd run check:theme` after editing semantic role colors; the dependency-free check rejects nine text-role pairs below 4.5:1. See the [canonical component rules](docs/coding-standards.md#shared-m3-roles-and-components-ui-09) for the desktop sidebar and compact navigation. Frontend agents also load the shared [campus-ui skill](.agents/skills/campus-ui/SKILL.md); it guides component reuse and browser verification without acting as an enforcement service.
+
+ `npm.cmd run dev` runs CSS and JavaScript watchers together and stops the sibling if either exits. Build before running `collectstatic` or assembling a submission; include the complete generated build, including chunks/license files, in a runnable artifact. Source control keeps the npm lockfile and source assets; the submission process must build assets explicitly because ignored files are not supplied by Git.
 
 When updating a workstation from the earlier Axios setup, remove its obsolete generated `static/build/http.js` and `static/build/axios-LICENSE.txt` if present before rebuilding or collecting static files. Current builds do not create those files. Keep the source assets and font license files.
 
@@ -311,7 +315,7 @@ The common shell loads the compiled stylesheet, including local fonts; do not lo
 
 Use ordinary Django forms and links for the current server-rendered pages. Login and logout use native form submission with CSRF tokens; no JavaScript HTTP library is installed or needed.
 
-Load an actual page module through its template's scripts block, preserving `{{ block.super }}`, with `<script type="module" src="{% compiled_asset 'build/your-page.js' %}"></script>` and `{% load assets %}`. The build compiles/minifies `frontend-test.js`, `account-menu.js` and the local `equipment-photo.js` preview. The shared workspace loads the account disclosure for outside-click/Escape dismissal; native links/forms still handle profile navigation and logout. Use the [coding guide](docs/coding-standards.md#browser-interactions) for future explicitly authorized enhancements and the [HTTP contract](docs/api_spec.md#common-protocol) for existing HTML/form/CSV response semantics.
+Load an actual page module through its template's scripts block, preserving `{{ block.super }}`, with `<script type="module" src="{% compiled_asset 'build/your-page.js' %}"></script>` and `{% load assets %}`. The build compiles/minifies `frontend-test.js`, `workspace-navigation.js` and the local `equipment-photo.js` preview. The workspace uses a native top-bar profile link and a red sidebar POST logout form; no account dropdown script is needed. Use the [coding guide](docs/coding-standards.md#browser-interactions) for future explicitly authorized enhancements and the [HTTP contract](docs/api_spec.md#common-protocol) for existing HTML/form/CSV response semantics.
 
 ## Working with migrations
 
@@ -350,7 +354,7 @@ Formatting is split by language so Django tags and Python keep their correct par
 | Django templates                   | `.\.venv\Scripts\djlint.exe templates --reformat` | `.\.venv\Scripts\djlint.exe templates --check` |
 | Python                             | `.\.venv\Scripts\ruff.exe format .`               | `.\.venv\Scripts\ruff.exe format --check .`    |
 
-Install both dependency sets first: `npm.cmd ci` and `.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt`. Prettier is pinned in package.json; djLint/Ruff are pinned in requirements-dev.txt. `.prettierrc.json` and pyproject.toml hold shared options; `.prettierignore` excludes Django HTML, Python, private files, dependencies, fonts, and generated output. The npm scripts target source/config files, without rewriting historical Markdown. To format a changed Markdown file deliberately, run `.\node_modules\.bin\prettier.cmd path/to/changed-file.md --write` with its actual path; prose wrapping is preserved.
+Install both dependency sets first: `npm.cmd ci` and `.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt`. Prettier is pinned in package.json; djLint/Ruff are pinned in requirements-dev.txt. `.prettierrc.json` and pyproject.toml hold shared options; `.prettierignore` excludes Django HTML, Python, private files, dependencies, fonts, and generated output. The npm scripts target source/config files and `scripts/**/*.mjs`, without rewriting historical Markdown. To format a changed Markdown file deliberately, run `.\node_modules\.bin\prettier.cmd path/to/changed-file.md --write` with its actual path; prose wrapping is preserved.
 
 For a small feature, use the local formatter executable on the actual owned paths, then run the full non-writing checks. Do not use Prettier's generic HTML parser on Django templates or enable two formatters for the same language in your editor. Editor extensions are optional; the CLI is the team reference. djLint is configured as a Django template formatter; its separate optional linter rules are not a new acceptance gate. Ruff remains the Python linter. No pre-commit hook, automatic Tailwind class sorter, or CI job is installed.
 
@@ -381,7 +385,7 @@ npm.cmd audit
 git --no-pager diff --check
 ```
 
-Tests create and remove a separate `test_<DB_NAME>` PostgreSQL database. Your local account needs permission to create test databases; keep personal data out of them. The foundation suite does not establish acceptance for unimplemented workflows or T14 competing approvals. To format edited Python files, run `.\.venv\Scripts\ruff.exe format .`.
+Tests create and remove a separate `test_<DB_NAME>` PostgreSQL database. Your local account needs permission to create test databases; keep personal data out of them. The T14 module below verifies competing approvals; the foundation suite alone does not establish that result or acceptance for unimplemented workflows. To format edited Python files, run `.\.venv\Scripts\ruff.exe format .`.
 
 For each new feature or changed documented flow, update the relevant [manual testing section](docs/manual-test-guide.md) using the [manual-guide requirements](docs/coding-standards.md#manual-testing-guide-for-feature-delivery). Then write the required [dated handoff](.agents/skills/project-handoff/SKILL.md), link that section, update affected task evidence/current readiness, and leave AI changes uncommitted unless the user requests a commit.
 
@@ -398,7 +402,7 @@ npm.cmd run build
 .\.venv\Scripts\python.exe manage.py test --noinput
 ```
 
-The T07 continuation adds `inventory.0002_category_name_case_insensitive`, `inventory.0003_catalog_item_photo`, and `operations.0003_catalog_restore_audit_actions`. T08-T13 and T16 add no migration or dependency. Do not rewrite existing migrations. Use the existing catalog forms, distinct services, read-only queries, active-admin boundary and documented lock order; see the [HTTP contract](docs/api_spec.md#custom-administration-accounts-and-inventory), [coding standards](docs/coding-standards.md) and [T16 review](handoffs/t16-main-integration-and-documentation-review-10-19-2026.md). `/manage/maintenance/` now implements list/detail/open/close. Registering an initially damaged unit opens maintenance atomically; T16 adds repair/retirement closure. The manual opener accepts no return identifier; future T17 must create damaged-return maintenance in its complete atomic return workflow. T15 remains pending behind accepted T13 and T14; the T16 corrections are integrated. Integration does not supply the full demonstration dataset.
+The T07 continuation adds `inventory.0002_category_name_case_insensitive`, `inventory.0003_catalog_item_photo`, and `operations.0003_catalog_restore_audit_actions`. T08-T13 and T16 add no migration or dependency. Do not rewrite existing migrations. Use the existing catalog forms, distinct services, read-only queries, active-admin boundary and documented lock order; see the [HTTP contract](docs/api_spec.md#custom-administration-accounts-and-inventory), [coding standards](docs/coding-standards.md) and [T16 review](handoffs/t16-main-integration-and-documentation-review-10-19-2026.md). `/manage/maintenance/` now implements list/detail/open/close. Registering an initially damaged unit opens maintenance atomically; T16 adds repair/retirement closure. The manual opener accepts no return identifier; future T17 must create damaged-return maintenance in its complete atomic return workflow. T15 is ready, Not started, with accepted T13/T14 integrated; the T16 corrections are integrated. Integration does not supply the full demonstration dataset.
 
 ### Borrower account verification after T09 integration
 
@@ -416,19 +420,29 @@ Run `.\.venv\Scripts\python.exe manage.py test inventory.tests.test_portal_equip
 
 An active BASIC_USER can submit `/portal/requests/new/` with a purpose, desired return date and one to three distinct active catalog items. The service locks/rechecks the borrower, current settings and eligible catalog records, snapshots both limits and writes the Pending request/items atomically without allocating units. `/portal/requests/` displays submission confirmation, a create link and the integrated T12 owner-scoped history.
 
-Run `.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_request_submission --noinput` for focused checks. See the [Ralph implementation snapshot](handoffs/ralph-t11-request-submission-10-18-2026.md), [resolution review](handoffs/pr27-t11-conflict-resolution-review-10-18-2026.md) and [main integration receipt](handoffs/pr27-t11-main-integration-10-18-2026.md) for actual verification/integration evidence. No new migration or dependency is required by T11. After pulling, run the existing asset build to include the request templates. T12 history/cancellation is integrated through PR #29; PR #34 supplies administrative approval; the subsequent T13 query fixes are Done on `jerome`, awaiting main integration.
+Run `.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_request_submission --noinput` for focused checks. See the [Ralph implementation snapshot](handoffs/ralph-t11-request-submission-10-18-2026.md), [resolution review](handoffs/pr27-t11-conflict-resolution-review-10-18-2026.md) and [main integration receipt](handoffs/pr27-t11-main-integration-10-18-2026.md) for actual verification/integration evidence. No new migration or dependency is required by T11. After pulling, run the existing asset build to include the request templates. T12 history/cancellation is integrated through PR #29; PR #34 supplies administrative approval; the subsequent T13 query fixes are integrated through PR #35 at `cf50d0c`.
 
 ### Borrower request and loan tracking (T12)
 
 The request list at `/portal/requests/` shows only the signed-in borrower's requests, with status filtering and 25-row pagination. Request details show requested items, decision, due dates and any issued/returned units. `/portal/loans/` and `/portal/loans/<id>/` show only that borrower's loans, due dates, asset codes and individual return progress. Pending and Approved requests can be cancelled through a GET confirmation followed by a CSRF-protected POST; approved reservations are released in the same audited transaction. Foreign IDs return 404; ineligible or changed request states return 409 without partial writes.
 
-Run `.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_request_submission borrowing.tests.test_request_tracking --noinput` for focused checks. PR #29 integrates source `eb04470` at main `170cc38`; the [integration review](handoffs/t12-main-integration-and-documentation-review-10-19-2026.md) records 191 passing PostgreSQL tests on that tree. No migration or dependency was added. Rebuild assets after pulling. [Module 10 of the manual test guide](docs/manual-test-guide.md#module-10--borrower-request-and-loan-tracking-t12) provides current Pending-request cases and read-only audit verification. Approved cancellation can now be prepared through T13; corrected `jerome` detail hides ended reservations while preserving allocation history; issued/returned-unit checks await T15/T17. An empty loan history is expected until loans exist; manual results remain pending.
+Run `.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_request_submission borrowing.tests.test_request_tracking --noinput` for focused checks. PR #29 integrates source `eb04470` at main `170cc38`; the [integration review](handoffs/t12-main-integration-and-documentation-review-10-19-2026.md) records 191 passing PostgreSQL tests on that tree. No migration or dependency was added. Rebuild assets after pulling. [Module 10 of the manual test guide](docs/manual-test-guide.md#module-10--borrower-request-and-loan-tracking-t12) provides current Pending-request cases and read-only audit verification. Approved cancellation can now be prepared through T13; PR #35 integrates detail queries that hide ended reservations while preserving allocation history; issued/returned-unit checks await T15/T17. An empty loan history is expected until loans exist; manual results remain pending.
 
 ### Administrator request review and decisions (T13)
 
 PR #34 integrates Margareth's `marga` head `c5cfe37` at main `23c1ad9`. Active ADMIN users can search `/manage/requests/` by request ID or borrower username, filter status and inclusive submission dates, and traverse 25-row pages. Request detail shows purpose, quantities, dates, availability and decision history. Approval/rejection confirmation GETs do not write; POST requires a reason (maximum 500 characters), derives the actor from the session, and calls the atomic workflow service. Approval reserves exact unit quantities or returns 409 with no partial allocation.
 
-Run `.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_requests --noinput` for the 28 T13 tests. Both new integration regressions failed on the baseline and pass on the corrected branch; all 252 PostgreSQL tests pass. The query uses decimal-only ID recognition while retaining Unicode username search, and lists only allocations that have neither ended nor been released under Reserved units. See [fix evidence](handoffs/t13-query-fixes-and-publication-10-19-2026.md) and [Module 12](docs/manual-test-guide.md#module-12--administrator-request-review-and-decisions-t13). Rebuild assets after pulling; no migration or dependency was added. Main still contains the baseline defects until these corrections are integrated. Smaller defaults/typing/helper standards items remain non-blocking follow-ups. T14's separate-connection competing approvals remain unimplemented; T15 must wait for accepted, integrated T13/T14.
+Run `.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_requests --noinput` for the 28 T13 tests. Both query regressions failed on the baseline and pass with the corrections integrated through PR #35 at `cf50d0c`; the current full-suite result is in the T14 section below. The query uses decimal-only ID recognition while retaining Unicode username search, and lists only allocations that have neither ended nor been released under Reserved units. See [fix evidence](handoffs/t13-query-fixes-and-publication-10-19-2026.md) and [Module 12](docs/manual-test-guide.md#module-12--administrator-request-review-and-decisions-t13). Rebuild assets after pulling; no migration or dependency was added. Main includes both query corrections in `1d7a3c7`. Smaller defaults/typing/helper standards items remain non-blocking follow-ups. T14 is integrated through PR #37; T15 / Margareth is ready, Not started.
+
+### PostgreSQL competing approvals (T14)
+
+Run `.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_approval_concurrency --noinput --verbosity 2`. Two `TransactionTestCase` scenarios use committed fictional fixtures, distinct borrowers/admins and separate PostgreSQL connections to call the real `approve_request` service. The tests observe the lock-wait chain before releasing a held category lock, require exactly one approval and one `WorkflowConflict`, and verify allocation, decision, inventory and audit state. The multi-item case also verifies the loser's uncontested unit stays Available. Unexpected database errors fail the test; they do not count as the expected conflict. Existing T13 HTTP tests cover the service conflict's 409 response.
+
+Verification on October 20, 2026: the implementation run passed **2 focused tests in 0.894s**; the fresh publication run passed **254 full-suite tests in 39.994s** on PostgreSQL 17.5. No application service, schema, dependency or live data changed. T14 source `058357c` is Done and integrated through PR #37 at `5381c83975753426208ffde6370c4e8da09fe5d9`; ancestry and exact tested-tree equality are verified. See [Module 13](docs/manual-test-guide.md#module-13--postgresql-competing-approvals-t14) for fixture values and reproduction, and the [integration receipt](handoffs/t14-publication-main-integration-and-t15-readiness-10-20-2026.md) for publication evidence. This proves the tested approval races; cancellation/issue concurrency remains outside T14.
+
+### Next ready task: release and borrowing slip (T15)
+
+Margareth continues on `marga` after syncing main using the [assigned-branch workflow](#assigned-branches-and-main-integration). T13 is integrated through PR #35 and T14 through PR #37; no prerequisite merge is missing. T15 remains Not started until its owner begins authorized implementation. Implement only the backlog's audited pre-issue due-date revision, one-time release/Loan/LoanUnit transaction and printable slip. Reuse the existing approval/cancellation services, allocations, active-role checks and shared lock order; [SRS BR-05/BR-06](docs/SRS.md#business-rules-and-calculations), [HTTP contracts](docs/api_spec.md#custom-administration-requests-loans-and-maintenance), and [database design](docs/db_design.md) own the rules. Reject expired, rejected, cancelled, already issued or incompletely allocated requests. Verify rollback, repeat issue and cancellation/release contention, and add actual T15 manual cases before handoff. T17 returns remain separate.
 
 `.idea/` is ignored and removed from tracked files through main commit `f08fb04`. Each developer may keep local IDE settings; do not force-add them. Generated builds, uploads, dependencies and private environment files also stay outside Git.
 
@@ -455,7 +469,7 @@ Restart Django after applying the migration. The bundled Pillow wheel includes i
 
 The root `static/` directory contains shared source files. [Django's static-files finder](https://docs.djangoproject.com/en/5.2/howto/static-files/) searches it through `STATICFILES_DIRS` in [config/settings.py](config/settings.py). `STATIC_URL` defines the browser prefix `/static/`, so `static/fonts/...` is served at `/static/fonts/...`. Keep `STATIC_ROOT` (`staticfiles/`) separate for generated collection output.
 
-[static/css/fonts.css](static/css/fonts.css) defines the local DM Sans variable fonts and all Poppins weights/styles. [app.css](static/css/app.css) imports it into Tailwind's base layer, and [base.html](templates/base.html) loads the compiled stylesheet once:
+[static/css/fonts.css](static/css/fonts.css) defines the local DM Sans variable fonts and all Poppins weights/styles. [app.css](static/css/app.css) imports it into Tailwind's base layer alongside the fixed color roles, and [base.html](templates/base.html) loads the compiled stylesheet once:
 
 ```django
 {% load assets %}
@@ -537,7 +551,7 @@ Use `git status` and `git diff --name-only --diff-filter=U` to locate conflicts.
 
 ### Jerome's integration responsibility
 
-Jerome reviews scope, contracts, checks, and handoff before using **Create a merge commit**. Preserve contributor credit and permanent member branches. [CODEOWNERS](CODEOWNERS) routes reviews to `@javecilla`; GitHub cannot accept an author's approval of their own PR. [CONTRIBUTING.md](CONTRIBUTING.md#verification-and-review) explains review restrictions and attribution. Local Django/Ruff checks exist; no GitHub Actions workflow is configured.
+Jerome reviews scope, contracts, checks, and handoff before using **Create a merge commit**. Preserve contributor credit and permanent member branches. [CODEOWNERS](CODEOWNERS) routes reviews to `@javecilla`; GitHub cannot accept an author's approval of their own PR. [CONTRIBUTING.md](CONTRIBUTING.md#verification-and-review) explains review restrictions and attribution. Local Django/Ruff checks exist; no repository test CI workflow is configured (the platform Copilot cloud-agent entry is separate).
 
 ## Updating dependencies
 

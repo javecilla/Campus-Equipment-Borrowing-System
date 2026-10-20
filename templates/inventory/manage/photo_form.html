@@ -3,10 +3,10 @@
 {% block title %}Equipment photo · {{ item.name }}{% endblock %}
 {% block workspace_content %}
     {% include "inventory/manage/nav.html" with active_tab="items" %}
-    <section class="max-w-2xl space-y-6" data-testid="equipment-photo-section">
-        <header>
+    <section class="ui-page space-y-6" data-testid="equipment-photo-section">
+        <header class="ui-page-header">
             <p class="text-xs font-semibold tracking-widest text-accent uppercase">{{ item.name }}</p>
-            <h1 class="font-heading text-3xl font-semibold">Equipment photo</h1>
+            <h1 class="font-heading font-semibold">Equipment photo</h1>
         </header>
         <form method="post"
               enctype="multipart/form-data"
@@ -17,14 +17,14 @@
             <div class="flex flex-wrap gap-3">
                 <button type="submit"
                         data-testid="equipment-photo-submit"
-                        class="min-h-11 rounded-md bg-accent px-5 text-sm font-semibold text-white hover:bg-emerald-800">Save photo</button>
+                        class="ui-button ui-button--primary">Save photo</button>
                 <a href="{% url 'inventory_manage:item-detail' item.pk %}"
                    data-testid="equipment-photo-cancel"
-                   class="inline-flex min-h-11 items-center rounded-md border border-slate-200 px-4 text-sm font-semibold">Cancel</a>
+                   class="ui-button ui-button--outline">Cancel</a>
                 {% if item.photo %}
                     <a href="{% url 'inventory_manage:item-photo-remove' item.pk %}"
                        data-testid="equipment-photo-remove-link"
-                       class="inline-flex min-h-11 items-center px-4 text-sm font-semibold text-rose-700 hover:underline">Remove photo</a>
+                       class="ui-button ui-button--danger-tonal">Remove photo</a>
                 {% endif %}
             </div>
         </form>

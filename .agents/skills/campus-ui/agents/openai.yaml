@@ -1,0 +1,4 @@
+interface:
+  display_name: "Campus UI"
+  short_description: "Keep campus frontend work aligned with shared UI"
+  default_prompt: "Use $campus-ui to implement or review this frontend change with the project's existing components and design rules."

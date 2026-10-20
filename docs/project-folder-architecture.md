@@ -99,9 +99,10 @@ Campus-Equipment-Borrowing-System/
 │   ├── fonts/                                   [existing] DM Sans/Poppins and license notices
 │   ├── images/                                  [existing] branding, default equipment photo and setup screenshots
 │   ├── js/frontend-test.js                       [existing] preview font-load check
-│   ├── js/account-menu.js                        [existing] account disclosure dismissal behavior
+│   ├── js/workspace-navigation.js                [existing; UI-09 local] reveal current compact navigation tab
 │   ├── js/equipment-photo.js                     [existing] local image preview and selection removal
 │   └── build/                                   [generated] ignored CSS/browser modules/chunks
+├── scripts/check-theme.mjs                      [existing; UI-09 local] validate fixed stylesheet text-role contrast
 ├── package.json                                 [existing] npm dependencies/build/watch commands
 ├── package-lock.json                            [existing] exact npm dependency graph
 ├── docs/                                        [existing] canonical requirements/design guides
@@ -117,7 +118,7 @@ A **view** is a Python request handler in the relevant app's `views.py`. The pag
 
 The role prefix selects the audience; the feature app selects the Python module. Real basic-user equipment handlers belong in `inventory/`, and borrowing handlers in `borrowing/`. T10 equipment handlers are in `inventory/portal_views.py`, mounted through `accounts/portal_urls.py`. T11 request creation and T12 borrower request/loan history, detail and cancellation handlers live in `borrowing/views.py`; owner-scoped read helpers live in `borrowing/queries.py` and the atomic cancellation workflow in `borrowing/services.py`. The portal URLs are mounted through `accounts/portal_urls.py`. Feature pages extend the existing `operations/manage/base.html` or `accounts/portal/base.html` and fill `workspace_content`; both inherit `components/workspace.html` and the `base.html` document/asset shell. The [coding guide](coding-standards.md#tailwind-styling-pattern) defines the shared layout pattern.
 
-T13 request review/decisions and corrected T16 are integrated. T13's subsequent Unicode-search and reservation-display fixes are Done on `jerome`, awaiting main integration; smaller coding-convention follow-ups remain. See [current evidence](tasks.md#verified-task-evidence). These page placements include existing pages and explicitly planned borrowing examples; route names come from the HTTP contract:
+T13 request review/decisions and corrected T16 are integrated. T13's subsequent Unicode-search and reservation-display fixes are integrated through PR #35 at `cf50d0c`; smaller coding-convention follow-ups remain. PR #37 at `5381c83` integrates T14 [separate-connection approval tests](../borrowing/tests/test_approval_concurrency.py). T15 / Margareth is ready, Not started; its release/slip pages below remain planned. See [current evidence](tasks.md#verified-task-evidence). These page placements include existing pages and explicitly planned borrowing examples; route names come from the HTTP contract:
 
 | Page | Python view location | Template location | Contracted URL name |
 | --- | --- | --- | --- |
@@ -163,7 +164,7 @@ For a form that changes data, the view binds the app's `forms.py` and calls the 
 2. Choose the feature app from the page table. Add its request handler in `views.py`. Put allowed form fields in `forms.py`, reads in `queries.py`, and the complete write action in `services.py` as needed. Create only the layers this feature uses.
 3. Add the named route and mount it through `config/urls.py`. Management namespaces such as `inventory_manage` and `borrowing_manage` are separate from their `/manage/` path prefix. The `portal:*` names span accounts, inventory, and borrowing: coordinate one shared `portal` namespace in the root routing, referring to those feature views. Do not independently mount several competing `portal` namespaces.
 4. Create the feature HTML under the matching `templates/<app>/manage/` or `templates/<app>/portal/` path, extending its role base. Add reusable fragments under `templates/components/`. Use the existing `workspace_content` block and shared navigation; coordinate changes with their owners.
-5. Add CSS/images/scripts under `static/` when needed. The shared base loads compiled `build/app.css`; source `static/css/app.css` imports `fonts.css`. Rebuild rather than add duplicate font stylesheet links; the exact include and font paths are in [DEV.md](../DEV.md#fonts-and-static-assets).
+5. Add CSS/images/scripts under `static/` when needed. The shared base loads compiled `build/app.css`; source `static/css/app.css` owns fixed color roles and imports `fonts.css`. Reuse components through the [campus-ui skill](../.agents/skills/campus-ui/SKILL.md). Rebuild rather than add duplicate font stylesheet links; the exact include and font paths are in [DEV.md](../DEV.md#fonts-and-static-assets).
 6. Add meaningful checks beside the feature in its `tests/` directory, run [the configured commands](../DEV.md#before-handing-over-work), then follow the [handoff workflow](../.agents/skills/project-handoff/SKILL.md). A new persistent field or constraint also needs an app migration.
 
 The shared Django authentication/access contract is integrated through T04 (PR #9, `cb96319`) in `accounts/access.py` and `accounts/middleware.py`. Views for later tasks reuse that interface after their owners sync main and verify the remaining task prerequisites; this folder guide does not authorize implementation.

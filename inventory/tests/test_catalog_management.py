@@ -159,7 +159,7 @@ class CatalogManagementTests(TestCase):
         url: str = reverse("inventory_manage:category-list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context["page"].object_list), 25)
+        self.assertEqual(len(response.context["page"].object_list), 5)
 
         # Invalid page 404
         bad_page = self.client.get(url, {"page": "999"})
@@ -532,7 +532,7 @@ class CatalogManagementTests(TestCase):
                 description="Fictional pagination equipment.",
             )
         for route, page_size in (
-            ("inventory_manage:category-list", 25),
+            ("inventory_manage:category-list", 5),
             ("inventory_manage:item-list", 10),
         ):
             with self.subTest(route=route):

@@ -3,10 +3,9 @@
 {% block workspace_content %}
     <section data-testid="loan-list-page"
              aria-labelledby="loan-list-heading"
-             class="max-w-5xl">
+             class="ui-page">
         <p class="text-xs font-semibold tracking-widest text-accent uppercase">Borrower workspace</p>
-        <h1 id="loan-list-heading"
-            class="mt-2 font-heading text-3xl font-semibold">My loans</h1>
+        <h1 id="loan-list-heading" class="mt-2 font-heading font-semibold">My loans</h1>
         <p class="mt-2 text-sm leading-6 text-slate-600">See due dates and the return progress for equipment issued to you.</p>
         {% if page.object_list %}
             <div class="mt-6 space-y-3">

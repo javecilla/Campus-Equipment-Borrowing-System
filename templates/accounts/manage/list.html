@@ -1,62 +1,73 @@
 {% extends "operations/manage/base.html" %}
 {% block title %}Basic-user accounts · Campus Equipment{% endblock %}
 {% block workspace_content %}
-    <section data-testid="account-list">
+    <section data-testid="account-list" class="ui-page">
         <div class="space-y-8">
-            <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <header class="ui-page-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <p class="text-xs font-semibold tracking-widest text-accent uppercase">Administrator workspace</p>
-                    <h1 class="font-heading text-3xl font-semibold">Basic-user accounts</h1>
+                    <h1 class="font-heading font-semibold">Basic-user accounts</h1>
                 </div>
             </header>
             <section class="border-t border-slate-200 py-6">
                 <form data-testid="account-search"
                       method="get"
                       action="{% url 'accounts:manage-list' %}"
-                      class="grid gap-4 md:grid-cols-[1fr_14rem_auto] md:items-end">
-                    <div>
-                        <label for="{{ form.q.id_for_label }}"
-                               class="mb-2 block text-sm font-medium">{{ form.q.label }}</label>
-                        {{ form.q }}
-                        {{ form.q.errors }}
+                      class="space-y-4">
+                    <div class="ui-filter-grid">
+                        <div>
+                            <label for="{{ form.q.id_for_label }}"
+                                   class="mb-2 block text-sm font-medium">{{ form.q.label }}</label>
+                            {{ form.q }}
+                            {{ form.q.errors }}
+                        </div>
+                        <div>
+                            <label for="{{ form.active.id_for_label }}"
+                                   class="mb-2 block text-sm font-medium">{{ form.active.label }}</label>
+                            {{ form.active }}
+                            {{ form.active.errors }}
+                        </div>
                     </div>
-                    <div>
-                        <label for="{{ form.active.id_for_label }}"
-                               class="mb-2 block text-sm font-medium">{{ form.active.label }}</label>
-                        {{ form.active }}
-                        {{ form.active.errors }}
+                    <div class="flex items-center justify-end gap-4">
+                        <a href="{% url 'accounts:manage-list' %}"
+                           data-testid="account-search-clear"
+                           class="text-sm font-semibold text-accent underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Clear filters</a>
+                        <button type="submit"
+                                data-testid="account-search-submit"
+                                class="ui-button ui-button--tonal">Search</button>
                     </div>
-                    <button type="submit"
-                            class="h-11 rounded-md bg-accent px-4 text-sm font-semibold text-white hover:bg-emerald-800">Search</button>
                 </form>
             </section>
-            <section class="border-y border-slate-200">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200">
+            <section class="ui-table-surface">
+                <div class="overflow-x-auto"
+                     tabindex="0"
+                     role="region"
+                     aria-label="Scrollable records table"
+                     data-testid="table-scroll-1">
+                    <table class="ui-data-table min-w-full divide-y divide-slate-200">
                         <thead class="bg-slate-50 text-left text-sm text-slate-600">
                             <tr>
-                                <th scope="col" class="px-5 py-3">Username</th>
-                                <th scope="col" class="px-5 py-3">Name</th>
-                                <th scope="col" class="px-5 py-3">Email</th>
-                                <th scope="col" class="px-5 py-3">Status</th>
-                                <th scope="col"
-                                    class="px-5 py-3"><span class="sr-only">Details</span></th>
+                                <th scope="col">Username</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Status</th>
+                                <th scope="col"><span class="sr-only">Details</span></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             {% for account in page %}
                                 <tr>
-                                    <td class="px-5 py-4 font-semibold">{{ account.username }}</td>
-                                    <td class="px-5 py-4">{{ account.get_full_name }}</td>
-                                    <td class="px-5 py-4">{{ account.email }}</td>
-                                    <td class="px-5 py-4">
+                                    <td class="font-semibold">{{ account.username }}</td>
+                                    <td>{{ account.get_full_name }}</td>
+                                    <td>{{ account.email }}</td>
+                                    <td>
                                         {% if account.is_active %}
                                             <span class="font-semibold text-accent">Active</span>
                                         {% else %}
                                             <span class="font-semibold text-amber-700">Inactive</span>
                                         {% endif %}
                                     </td>
-                                    <td class="px-5 py-4 text-right">
+                                    <td class="text-right">
                                         <a href="{% url 'accounts:manage-detail' account.pk %}"
                                            data-testid="account-detail-{{ account.pk }}"
                                            class="font-semibold text-accent hover:text-emerald-800">View details</a>
@@ -65,7 +76,7 @@
                             {% empty %}
                                 <tr>
                                     <td colspan="5"
-                                        class="px-5 py-10 text-center text-slate-500">No basic-user accounts match these filters.</td>
+                                        class="text-center text-slate-500">No basic-user accounts match these filters.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -78,11 +89,11 @@
                         <div class="flex gap-3">
                             {% if page.has_previous %}
                                 <a href="?q={{ form.q.value|default_if_none:''|urlencode }}&amp;active={{ form.active.value|default_if_none:''|urlencode }}&amp;page={{ page.previous_page_number }}"
-                                   class="rounded-md border border-slate-200 px-3 py-2 font-semibold hover:bg-slate-50">Previous</a>
+                                   class="ui-button ui-button--outline">Previous</a>
                             {% endif %}
                             {% if page.has_next %}
                                 <a href="?q={{ form.q.value|default_if_none:''|urlencode }}&amp;active={{ form.active.value|default_if_none:''|urlencode }}&amp;page={{ page.next_page_number }}"
-                                   class="rounded-md border border-slate-200 px-3 py-2 font-semibold hover:bg-slate-50">Next</a>
+                                   class="ui-button ui-button--outline">Next</a>
                             {% endif %}
                         </div>
                     </nav>

@@ -9,13 +9,14 @@
   },
   "scripts": {
     "build": "npm run build:css && npm run build:js",
-    "build:css": "tailwindcss -i static/css/app.css -o static/build/app.css --minify",
+    "build:css": "npm run check:theme && tailwindcss -i static/css/app.css -o static/build/app.css --minify",
     "build:js": "esbuild static/js/*.js --bundle --splitting --format=esm --platform=browser --target=es2022 --minify --outdir=static/build",
     "dev": "concurrently --kill-others --names css,js \"npm:watch:css\" \"npm:watch:js\"",
     "watch:css": "npm run build:css -- --watch",
     "watch:js": "npm run build:js -- --watch",
-    "format": "prettier --write package.json package-lock.json .prettierrc.json \"static/**/*.{js,css}\"",
-    "format:check": "prettier --check package.json package-lock.json .prettierrc.json \"static/**/*.{js,css}\""
+    "format": "prettier --write package.json package-lock.json .prettierrc.json \"static/**/*.{js,css}\" \"scripts/**/*.mjs\"",
+    "format:check": "prettier --check package.json package-lock.json .prettierrc.json \"static/**/*.{js,css}\" \"scripts/**/*.mjs\"",
+    "check:theme": "node scripts/check-theme.mjs"
   },
   "devDependencies": {
     "@tailwindcss/cli": "4.3.0",

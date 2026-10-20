@@ -2,7 +2,9 @@
 
 ## Purpose and scope
 
-This guide covers the T01-T13/T16 baseline in main `23c1ad9` plus the [verified T13 query fixes](../handoffs/t13-query-fixes-and-publication-10-19-2026.md) on `jerome`. Both functional defects are fixed on that branch and await main integration. Expected results below describe the corrected checkout. T14 concurrency proof, release and returns remain pending; T12/T13/T16 browser results remain Not run until supplied.
+This guide covers T01-T14/T16 integrated in main, including T13 query fixes through PR #35 and T14 concurrency proof through PR #37 at `5381c83` ([Module 13](#module-13--postgresql-competing-approvals-t14)). T15 / Margareth is ready with T13/T14 satisfied, but remains Not started. Release and returns remain pending; T12/T13/T16 browser results remain Not run until supplied.
+
+The shared M3 UI refresh (UI-09) is implemented locally on `jerome`, not integrated; [Module 14](#module-14--shared-m3-layout-and-controls-ui-09) records its actual layout/accessibility smoke checks separately from the workflow cases below.
 
 For the current borrower checks, go directly to [Module 9: request submission](#module-9--borrower-request-submission-t11) or [Module 10: request and loan tracking](#module-10--borrower-request-and-loan-tracking-t12). For equipment maintenance and reconciliation, see [Module 11: equipment maintenance](#module-11--equipment-maintenance-and-inventory-reconciliation-t16). Use the [result record](#recording-manual-results) to report what actually happened.
 
@@ -972,7 +974,7 @@ Record the actual new request ID from the confirmation/list. On October 19 with 
 5. Open a request. Verify its item/category details, decision status/reason when decided, and current due dates.
 6. Substitute another borrower's request ID in the detail URL. The response should be 404 without revealing record contents. Invalid page numbers should also return 404; invalid status filters should show a validation error and no records.
 
-Pagination shows 25 records per page. If a fictional borrower already has more than 25, verify Previous/Next retains the selected status and does not duplicate/skip rows. The three-record snapshot cannot exercise that boundary; leave it Not run until suitable records exist. Cross-user checks also need a second fictional borrower's known request; the snapshot found no such request.
+Pagination shows 6 records per page. If a fictional borrower already has more than 6, verify Previous/Next retains the selected status and does not duplicate/skip rows. The three-record snapshot cannot exercise that boundary; leave it Not run until suitable records exist. Cross-user checks also need a second fictional borrower's known request; the snapshot found no such request.
 
 ### 10.2 Cancel a Pending request
 
@@ -996,7 +998,7 @@ Before: Pending, null cancellation fields, zero matching audits. After: Cancelle
 
 ### 10.3 Cancel an Approved request and release its reservations
 
-**Case T12-03 — now available to prepare.** Use [T13 approval in Module 12](#module-12--administrator-request-review-and-decisions-t13) on a fresh fictional request. The October 19, 22:31 local snapshot has no Approved requests yet; prepare this prerequisite through the browser workflow, without editing database statuses. Corrected jerome detail excludes ended allocations from Reserved units while retaining their history. Main `23c1ad9` still has the original display defect until integration.
+**Case T12-03 — now available to prepare.** Use [T13 approval in Module 12](#module-12--administrator-request-review-and-decisions-t13) on a fresh fictional request. The October 19, 22:31 local snapshot has no Approved requests yet; prepare this prerequisite through the browser workflow, without editing database statuses. Corrected jerome detail excludes ended allocations from Reserved units while retaining their history. PR #35 integrates this display fix at main `cf50d0c`.
 
 1. After approving through T13, record the Approved request ID and the Reserved status of every unit assigned to it.
 2. As that same borrower, open the request details and confirm cancellation.
@@ -1056,7 +1058,7 @@ print(
 - **Current example:** `CEL-AVE-PROJ-002`, unit ID 2, `FAIR`, HDMI Projector / Audio Visual Equipment, is `AVAILABLE`. Dropdown label: `CEL-AVE-PROJ-002 — HDMI Projector (Fair)`.
 - **Existing maintenance:** 4 Open, 0 Closed: record 4 / `CEL-AVE-PROJ-001` (unit 1), plus record 1 / `CEL-AVE-HDMI-001` (unit 4), record 2 / `CEL-PHV-RLT-001` (unit 8), record 3 / `CEL-LAB-VCL-001` (unit 15). Units 4, 8 and 15 are Damaged/Maintenance; unit 1 is Good/Maintenance. For a fresh opening use projector 002, not unit 1. To continue the previous projector-001 run, its existing record is `/manage/maintenance/4/`; do not try to open it again.
 - **Initial counts:** Available 12, Reserved 0, Issued 0, Maintenance 4, Retired 0, Serviceable 12, Total 16. Settings remain 7 days / 3 units. No loans exist.
-- These replace Kenneth's workstation examples; `cam-qwert` / `sony` is not in this local snapshot. If data changed, select another eligible fictional unit and record the actual baseline. Counts below assume only these sequential cases change inventory. Reserved/Issued browser rejection and more-than-25-row pagination require additional legitimate records; leave them Not run here. No seed data was created by this review.
+- These replace Kenneth's workstation examples; `cam-qwert` / `sony` is not in this local snapshot. If data changed, select another eligible fictional unit and record the actual baseline. Counts below assume only these sequential cases change inventory. Reserved/Issued browser rejection and more-than-5-row pagination require additional legitimate records; leave them Not run here. No seed data was created by this review.
 - Test repair before retirement. Retirement has no reversal in the supplied interface; use a disposable fictional unit for that case.
 
 ---
@@ -1154,7 +1156,7 @@ print(
   - ✅ Status badge: `Closed`; Outcome badge: `Retired` in slate.
   - ✅ Physical unit status is permanently set to `Retired`.
   - ✅ Summary count cards reconcile: `Retired: 1`, `Maintenance: 4`, `Available: 11`, `Serviceable: 11`, `Total: 16`.
-  - Retired unit cannot be selected for new maintenance. Borrowers choose catalog items, not physical units; availability falls by one. T13 now allocates eligible units; browser cases remain unrun and T14 competing-approval proof is still pending.
+  - Retired unit cannot be selected for new maintenance. Borrowers choose catalog items, not physical units; availability falls by one. T13 now allocates eligible units; browser cases remain unrun; Module 13 verifies the integrated T14 approval races.
 
 ---
 
@@ -1188,7 +1190,7 @@ print(
     - ✅ Displays only closed maintenance records.
   - **Clear filters:** Click **Clear**.
     - ✅ Restores unfiltered list.
-  - **Pagination:** List paginates at 25 rows per page; pagination links preserve active `q` and `status` query parameters using `{% querystring %}`. Invalid page returns 404.
+  - **Pagination:** List paginates at 5 rows per page; pagination links preserve active `q` and `status` query parameters using `{% querystring %}`. Invalid page returns 404.
 
 ---
 
@@ -1201,7 +1203,7 @@ print(
   4. **CSRF protection:** Submitting POST to `/manage/maintenance/new/` or `/manage/maintenance/<id>/close/` without a valid CSRF token returns **403 Forbidden**.
   5. **Keyboard & Responsive navigation:** Use `Tab` / `Shift+Tab` to verify visible focus order across all filter inputs, action buttons, form controls, and table links. Verify clean grid stacking and no horizontal overflow on mobile viewports (375px).
 
-All 33 maintenance tests pass within the current 252-test PostgreSQL suite (the earlier T16 review passed 224 total tests). They include manual lifecycle/access/filter/count checks, seven new real integrity tests for the removed return-link argument, opening/repair audit rollback, changed-state 409, CSRF/protected fields, competing administrators and unit-before-maintenance closure locking. Browser, keyboard, mobile and pagination-boundary results remain **Not run**; these tests do not implement T17.
+All 33 maintenance tests pass within the current 254-test PostgreSQL suite (the earlier T16 review passed 224 total tests). They include manual lifecycle/access/filter/count checks, seven new real integrity tests for the removed return-link argument, opening/repair audit rollback, changed-state 409, CSRF/protected fields, competing administrators and unit-before-maintenance closure locking. Browser, keyboard, mobile and pagination-boundary results remain **Not run**; these tests do not implement T17.
 
 ---
 
@@ -1209,7 +1211,7 @@ The manual `open_maintenance` action accepts no `source_return_id` and always ap
 
 ## Module 12 — Administrator Request Review and Decisions (T13)
 
-**Owner:** Margareth Raine H. Ignacio (`marga`); Jerome with Codex for the authorized query fixes. **Revision:** PR #34 main baseline `23c1ad9`, preserving `c5cfe37`, plus [fixes on jerome](../handoffs/t13-query-fixes-and-publication-10-19-2026.md) awaiting main integration. **Status:** Done on corrected jerome; browser verification pending. **Role:** active ADMIN. **Entry:** `/manage/requests/`. T03/T11 are integrated; release/slips/returns remain pending. All browser cases below are **Not run**. Two automated HTTP/database regressions failed before the fixes and now pass.
+**Owner:** Margareth Raine H. Ignacio (`marga`); Jerome with Codex for the authorized query fixes. **Revision:** PR #34 baseline `23c1ad9`, preserving `c5cfe37`, plus [fixes `1d7a3c7`](../handoffs/t13-query-fixes-and-publication-10-19-2026.md) integrated through PR #35 at main `cf50d0c`. **Status:** Done and integrated; browser verification pending. **Role:** active ADMIN. **Entry:** `/manage/requests/`. T03/T11 are integrated; release/slips/returns remain pending. All browser cases below are **Not run**. Two automated HTTP/database regressions failed before the fixes and now pass.
 
 ### Preparation and verified local records
 
@@ -1293,7 +1295,7 @@ Expected: HTTP 409 with requested/available quantities and **Nothing was reserve
 
 Run [T12-03](#module-10--borrower-request-and-loan-tracking-t12) on the approved T13-02 request as its owning BASIC_USER. Expected: Cancelled, allocation `cancelled_at`/`ended_at` set, physical unit Available again, and a `REQUEST_CANCELLED` audit. Reopen administrator detail.
 
-Expected on corrected jerome: Reserved units shows None for the cancelled request, availability is restored and the ended allocation remains stored. The new integration regression verifies all three plus the cancellation audit. Main `23c1ad9` still shows the ended allocation as Reserved until the fix is integrated. Browser result remains Not run; do not edit historical rows to hide the original defect.
+Expected on corrected jerome: Reserved units shows None for the cancelled request, availability is restored and the ended allocation remains stored. The new integration regression verifies all three plus the cancellation audit. PR #35 integrates this fix into main `cf50d0c`; the earlier `23c1ad9` baseline showed ended allocations as Reserved. Browser result remains Not run; do not edit historical rows to hide the original defect.
 
 ### T13-07: Unicode numeric search succeeds without an exception
 
@@ -1301,7 +1303,7 @@ Expected on corrected jerome: Reserved units shows None for the cancelled reques
 | --- | --- |
 | Request ID or borrower username | `²` (superscript two) |
 
-Expected on corrected jerome: HTTP 200 with normal username matches or empty results. The query uses `isdecimal()` before converting an ID; `²` remains username search text. The new integration regression confirms a username containing `²` is found and Arabic-Indic decimal digits still match a request ID. Main `23c1ad9` raises `ValueError` for `²` until integration. Browser result remains Not run.
+Expected on corrected jerome: HTTP 200 with normal username matches or empty results. The query uses `isdecimal()` before converting an ID; `²` remains username search text. The new integration regression confirms a username containing `²` is found and Arabic-Indic decimal digits still match a request ID. PR #35 integrates this fix into main `cf50d0c`; the earlier `23c1ad9` baseline raised `ValueError` for `²`. Browser result remains Not run.
 
 ### T13-08: Access, eligibility and audit integrity
 
@@ -1309,7 +1311,7 @@ Expected on corrected jerome: HTTP 200 with normal username matches or empty res
 - Both decision POSTs require CSRF (403 without a valid token). Extra actor/owner/status/allocation fields must not control writes; use the real form for normal testing and retain any private tokens locally during direct HTTP tests.
 - Approval for an inactive borrower or archived item/category returns 409 without reservations. These browser cases need deliberately prepared fictional records through existing account/catalog interfaces; no such live changes were made for this guide.
 - Temporary PostgreSQL probes forced rejection of approval/rejection audit inserts and verified rollback of their business writes. These ran only in the test database; no live audit constraints were installed.
-- Desktop/mobile, keyboard focus, pagination boundaries and stale browser submissions still need actual results. **T14's separate-connection competing last-unit approvals are not implemented or verified by these cases or the T13 TestCase suite.**
+- Desktop/mobile, keyboard focus, pagination boundaries and stale browser submissions still need actual results. **Module 13 now verifies competing approvals separately with PostgreSQL TransactionTestCase; these browser cases and the T13 TestCase suite alone do not establish concurrency.**
 
 ### Read-only verification of your fictional request
 
@@ -1347,6 +1349,114 @@ Record actual browser outcomes and fictional IDs in the shared [result record](#
 
 ---
 
+## Module 13 — PostgreSQL Competing Approvals (T14)
+
+**Owner:** Jerome Avecilla (`jerome`), with Margareth's existing approval service. **Revision:** source `058357c`, integrated through PR #37 at main `5381c83975753426208ffde6370c4e8da09fe5d9`. **Status:** Done and integrated. **Entry:** terminal in the repository, with the project virtual environment and PostgreSQL configured. No browser/server session or live fixture preparation is required.
+
+### T14-01: Reproduce the last-unit race
+
+Run this command while no other process is running this checkout's test database:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_approval_concurrency --noinput --verbosity 2
+```
+
+The runner creates and removes `test_<DB_NAME>`; the configured database user needs test-database creation permission. Never point tests at a database containing retained data. Fixtures are generated in this separate database, with runtime IDs; do not seed or edit live equipment to run T14.
+
+| Field / setup | Exact fixture value |
+| --- | --- |
+| First ADMIN / borrower usernames | `fictional_admin` / `fictional_borrower` |
+| Second ADMIN / borrower usernames | `t14_second_admin` / `t14_second_borrower` |
+| Account eligibility | Active; distinct ADMIN and BASIC_USER accounts respectively |
+| Category / shared catalog item | `Test cameras` / `Test camera`, both active |
+| Last physical unit | `TEST-CAM-001`, GOOD, AVAILABLE |
+| Each Pending request | One shared item, quantity `1`; purpose `Fictional classroom activity` |
+| Due date / request limit snapshots | Test run's local date + 3 days; 7 days / 3 units per item |
+| Decision reason | `T14 competing approval for request <generated request ID>` |
+
+The test holds the category lock in a third connection until PostgreSQL reports that both worker connections are waiting in its blocking chain. All three backend PIDs must differ. Releasing that lock lets the real `approve_request` services compete. The expected loser is specifically `WorkflowConflict` from stock shortage; a database timeout, deadlock, integrity error or unexpected exception fails the test. The winner is intentionally unspecified.
+
+Expected: `test_last_unit_has_one_approval_and_one_workflow_conflict ... ok`. Exactly one request is Approved with its actor, timestamp, reason and active allocation; the unit is Reserved. The loser remains Pending with no decision metadata, allocation or audit. Exactly one `REQUEST_APPROVED` audit belongs to the winner; no loan exists. Existing T13 HTTP tests establish the conflict's 409 mapping; this scenario tests the service transactions directly.
+
+### T14-02: Multi-item atomicity under the same contention
+
+The same command also runs `test_multi_item_loser_keeps_other_stock_available_without_partial_allocations`. Each request gets an additional uncontested item before its shared item in request-line order:
+
+| Field / setup | Exact fixture value |
+| --- | --- |
+| Additional item for each request | `T14 extra item <generated request ID>` |
+| Additional unit for each request | `T14-EXTRA-<generated request ID>`, GOOD, AVAILABLE |
+| Requested quantity per item | `1` (two distinct items per request) |
+| Shared item / unit | Same `Test camera` / `TEST-CAM-001` last-unit competition |
+
+Expected: one complete approval with exactly two allocations and two Reserved units. The loser stays Pending without decision metadata, allocations or audit, and its additional unit stays Available. This tests actual overlapping multi-item approvals, including an otherwise available item preceding the shortage; it does not implement issue/return or establish cancellation/issue concurrency.
+
+### Actual verification and limits
+
+On October 20, 2026, a **read-only local inspection at 07:55 Asia/Manila** verified PostgreSQL 17.5, Read Committed isolation and limits 7 days / 3 per item. The fixture snapshots above match those limits but do not read or modify live settings, accounts or stock. Actual automated results: the implementation run passed **2 focused tests in 0.894s**; the fresh publication run passed **254 full-suite tests in 39.994s**. Both runs created and destroyed the separate PostgreSQL test database. All required configured checks pass; see [integration receipt](../handoffs/t14-publication-main-integration-and-t15-readiness-10-20-2026.md).
+
+Manual/browser simultaneous submissions are **Not run**. To record a fresh terminal reproduction, retain its command, revision, Asia/Manila timestamp, count and actual outcome in the result record below. T14 is integrated; Margareth / T15 is ready, Not started.
+
+---
+
+## Module 14 — Shared M3 Layout and Controls (UI-09)
+
+**Owner:** Jerome Avecilla with Codex assistance. **Revision:** local uncommitted `jerome` on main `01b25a9` (PR #38); UI-09 is not integrated into main. **Scope:** shared presentation across existing templates, not T15/T17 workflows or full T20 acceptance. Follow [DEV setup/build](../DEV.md#frontend-assets-tailwind-and-page-scripts) and the [canonical M3 component rules](coding-standards.md#shared-m3-roles-and-components-ui-09).
+
+The October 20, 2026, **08:42 Asia/Manila read-only inspection** confirmed active fictional `auth_demo_admin` / `auth_demo_user` accounts, limits 7 days / 3 per item, active item IDs 21/1/2, unit IDs 2/3/4, maintenance IDs 1/2/3 and that the fictional borrower's request #3 was Approved. These are dated local fixtures, not a seed promise. Recheck your own records before opening their IDs; use your existing account's private password, never share credentials. UI checks need no new inventory, approval, cancellation or settings writes.
+
+### UI09-01: Build and compare responsive layouts
+
+```powershell
+npm.cmd ci
+npm.cmd run build
+.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
+```
+
+The build reads the fixed palette from `app.css`, verifies nine foreground/background role pairs at **at least 4.5:1** without a third-party color library, then compiles shared CSS and browser modules. There is no separate `theme.css` request. Restart the server after source changes when using `--noreload`; otherwise use the ordinary development server's template reload behavior.
+
+| Field / action | Value / expected result |
+| --- | --- |
+| ADMIN entry pages | `/manage/`, `/manage/items/`, `/manage/units/new/`, `/manage/requests/`, `/manage/settings/`, `/manage/audit/` |
+| BASIC_USER entry pages | `/portal/`, `/portal/equipment/`, `/portal/requests/new/`, `/portal/requests/`, `/portal/profile/` |
+| Compact viewport | `320 × 1000` and `375 × 1000`; single-column fields/cards, compact account avatar and horizontally scrollable tabs |
+| Medium viewport | `768 × 1000`; no whole-page horizontal overflow |
+| Sidebar breakpoint | `1023 × 1000` keeps compact navigation; `1024 × 1000` has a 240px desktop sidebar and remaining-width main column. |
+| Expanded viewport | `1440 × 1000` and `1920 × 1000`; white panels, neutral gray canvas, teal active navigation, matching header/main gutters and adaptive catalog tracks |
+| Form breakpoint | Unit form at `839px` uses one field column; `840px` uses two. Equipment/asset code and condition/acquisition date share rows. |
+| Request form breakpoint | At `1440px`, purpose/date and requested-item rows occupy adjacent 1:2 panes; compact screens stack them. |
+| Home shortcuts | ADMIN: equipment, requests, accounts, maintenance plus settings/audit tools; two panel columns from 1200px. BASIC_USER: equipment, request creation, own requests, profile. Each opens an existing named route; no static dashboard counts are shown. |
+
+Expected: consistent labels, input height, primary/tonal/outlined/destructive action emphasis, surface shape and table spacing. Controls are at least 48px high. Long tables scroll inside their own region while the page remains within the viewport. Labels remain associated with controls; view pages have no duplicate IDs.
+
+### UI09-02: Keyboard, motion, scrolling and error states
+
+| Field / action | Concrete value / expected result |
+| --- | --- |
+| Keyboard entry | Reload an ADMIN page, `Tab` to Skip to content and `Enter`; focus moves to main content with no missing tab destination. |
+| Profile link | At 320/375/640/768/1023/1024/1440/1702px, the top workspace bar shows the avatar, display name and role without a dropdown. Click it or focus it and press Enter: ADMIN opens `/manage/profile/`; BASIC_USER opens `/portal/profile/`. The link has `aria-current="page"` on the profile page. |
+| Log out row | At 1024px and wider, the red icon/text row sits at the bottom of the sidebar with the same padding, spacing and icon size as the other links. At 320px it sits beside the brand. Confirm it remains visible at 1024 × 500. Activate it to submit a CSRF-protected POST, return to sign-in, then verify a protected profile URL redirects to sign-in. |
+| Compact current destination | Open `/manage/audit/` at 320px; the active tab is revealed in the scrolling navigation. |
+| Table scrolling | On `/manage/accounts/` at 320px, focus the named scrollable table region; arrow/trackpad scrolling reaches off-screen columns without scrolling the whole page sideways. |
+| Reduced motion | Emulate `prefers-reduced-motion: reduce`; press/hover changes occur without animated transitions and keyboard focus remains visible. |
+| Press feedback | Hold the New equipment item action before releasing; subtle scale feedback is visible. Release navigates to the existing item form without a business write. |
+| Cancellation emphasis | Open the eligible request cancellation confirmation without submitting; Confirm cancellation uses the shared danger button. |
+| Unicode queue filter | `q=²`; normal results/empty state, no exception. |
+| Invalid date filters | From `2026-10-22`, through `2026-10-20`; bound range error without workflow writes. |
+| Invalid request | Leave purpose, return date and item rows blank, then Submit request; bound errors retain labels/unique IDs and no request is created. |
+| Invalid sign-in | Username/email `ui-check@example.invalid`, password `invalid-local-ui-check`; the generic sign-in error remains visible and readable. |
+| Wrong role | BASIC_USER opens `/manage/items/`; custom 403 remains enforced and styled. |
+
+Use the [result record](#recording-manual-results) for additional tests. Do not submit valid create/update/decision/cancellation actions just to inspect their appearance; their workflow cases remain in their existing modules.
+
+### Actual execution and limits
+
+The fixed-palette follow-up on October 20 passed **12 home/profile page checks** across both roles at 320/1024/1440px in Chrome **155.0.8059.84**: expected colors/font, visible profile link, one compiled stylesheet, no separate theme request and no page overflow. Both roles' direct profile navigation and logout passed **4 interaction checks**. All 31 semantic color values match the earlier generated palette exactly. The dependency-free build check accepts the nine text-role pairs and rejects low-contrast/missing-role fixtures without changing application CSS. The new campus-ui skill and Django skill passed metadata validation. See the [dependency/skill handoff](../handoffs/fixed-palette-and-shared-campus-ui-skill-10-20-2026.md) for verification and concurrent-work limits. Prior navigation acceptance remains in the [navigation handoff](../handoffs/sidebar-logout-and-topbar-profile-link-10-20-2026.md), with broader routes/forms in the [reference-design handoff](../handoffs/minimal-dashboard-reference-and-ui-review-10-20-2026.md).
+
+The current follow-up PostgreSQL suite passed **254 tests in 42.919s** using a separately named test database after the standard shared test database run encountered fixture/teardown interference; see the handoff for the failed attempt. Configured build/format/template/Django/migration/pip/audit checks pass. These UI checks do not establish complete screen-reader conformance, Firefox/Safari results, every populated loan/return screen or the outstanding full lifecycle/manual cases. No business mutations were performed in the browser. Temporary sessions for the existing fictional accounts were used and logged out. No new account/inventory seed data or migrations were introduced. UI-09 remains local and uncommitted; T15 stays ready on integrated main and T20 retains its original workflow gates.
+
+---
+
 ## Recording manual results
 
 Use one row per actual test run. Expected outcomes in this guide do not count as passes. Keep evidence fictional and do not include passwords, session/CSRF tokens or private environment values.
@@ -1354,7 +1464,7 @@ Use one row per actual test run. Expected outcomes in this guide do not count as
 | Case | Revision / browser / date | Actual result | Pass / Fail / Not run | Evidence / issue |
 | --- | --- | --- | --- | --- |
 | Example: T11-15 | `6c5ea8f`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Screenshot or request marker/ID, without private data |
-| Example: T13-02 | corrected jerome, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request ID; corrections awaiting main integration |
+| Example: T13-02 | corrected jerome, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request ID; corrections integrated through PR #35 |
 | Example: T12-01 | `170cc38`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request/loan ID; no private data |
 | Example: T16-01 | `23c1ad9` including integrated T16 fixes, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional asset code/maintenance ID; no private data |
 
@@ -1364,11 +1474,10 @@ Report the purpose marker/request ID and the smallest reproduction steps for a f
 
 ## What is not testable yet
 
-T13 is available on corrected jerome with both functional findings resolved (Module 12); main integration is pending. The following tasks are **Not started**; T14 requires separate-connection integration testing and the other feature workflows have no browser implementation:
+T13 including both query fixes is integrated (Module 12); T14 concurrency tests are integrated through PR #37 (Module 13). T15 prerequisites are satisfied; release remains Not started. The following tasks remain **Not started**; their full workflows are not implemented:
 
 | Task | Feature | Owner |
 | --- | --- | --- |
-| T14 | Competing-approval concurrency test | Jerome + Margareth |
 | T15 | Equipment release and printable borrowing slip | Margareth |
 | T17 | Per-unit returns, partial returns, damaged-return maintenance | Margareth + Kenneth |
 | T18 | Live dashboard cards and charts | Alex |
@@ -1379,7 +1488,7 @@ T13 is available on corrected jerome with both functional findings resolved (Mod
 
 ## Running the automated test suite
 
-The corrected jerome checkout passed **252 PostgreSQL tests in 42.541s**, including 28 T13 and 33 maintenance tests. The focused T13 suite passed 28 tests in 0.809s. Both added regressions failed against main baseline `23c1ad9` and pass with the query fixes. Earlier 250-test/five-probe review results remain historical in the dated review; those temporary probes were not committed. To run the current suite yourself:
+The published T14 checkout passed **254 PostgreSQL tests in 39.994s**, including 2 T14, 28 T13 and 33 maintenance tests. The focused T14 suite passed 2 tests in 0.894s. T13 query regressions remain passing after their PR #35 integration. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput
@@ -1388,6 +1497,9 @@ The corrected jerome checkout passed **252 PostgreSQL tests in 42.541s**, includ
 Run a specific module's tests:
 
 ```powershell
+# PostgreSQL separate-connection competing approvals (T14)
+.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_approval_concurrency --noinput --verbosity 2
+
 # Administrator queue, review, approval and rejection (T13)
 .\.venv\Scripts\python.exe manage.py test borrowing.tests.test_requests --noinput
 
@@ -1419,8 +1531,8 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests --noinput
 ```
 
-All tests must pass before handover; 252 is the verified count on corrected jerome. Corrections must be integrated before dependent tasks consume accepted T13 from main. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
+All tests must pass before handover; 254 is the verified count on the integrated T14 source. T13/T14 are integrated and T15 is ready, Not started. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
 
 ---
 
-*Manual testing guide - scope: T01-T13/T16 baseline integrated, plus verified T13 query fixes on jerome awaiting main integration. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
+*Manual testing guide - scope: T01-T14/T16 integrated; T15 ready with integrated prerequisites, Not started. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*

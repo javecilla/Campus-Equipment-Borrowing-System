@@ -1,14 +1,18 @@
 {% extends "accounts/portal/base.html" %}
 {% block title %}Borrower workspace · Campus Equipment{% endblock %}
 {% block workspace_content %}
-    <section data-testid="portal-home" aria-labelledby="portal-heading">
+    <section data-testid="portal-home"
+             aria-labelledby="portal-heading"
+             class="ui-page">
         <p class="text-xs font-semibold tracking-widest text-accent uppercase">Borrower workspace</p>
         <h1 id="portal-heading"
-            class="mt-3 font-heading text-3xl font-semibold tracking-tight">Welcome, {{ request.user.first_name }}.</h1>
-        <p class="mt-4 max-w-2xl leading-7 text-slate-500">Your campus equipment workspace. Explore the tabs above to see where your borrowing tools will appear.</p>
-        <div class="mt-12 max-w-2xl border-t border-slate-200 pt-6">
-            <h2 class="text-sm font-semibold">Upcoming modules</h2>
-            <p class="mt-2 text-sm leading-6 text-slate-500">Profile editing, equipment browsing, requests, and loan tracking are being prepared. Each section describes its upcoming module.</p>
+            class="mt-3 font-heading font-semibold tracking-tight">Welcome, {{ request.user.first_name }}.</h1>
+        <p class="mt-4 leading-7 text-slate-500">Find equipment for your next class or project and keep your borrowing organized.</p>
+        <div class="ui-launch-grid">
+            {% include "components/action_link.html" with route="portal:equipment-list" label="Browse equipment" description="Explore active equipment and current availability." testid="home-portal-equipment" only %}
+            {% include "components/action_link.html" with route="portal:request-create" label="Create a request" description="Choose equipment, quantities, and a return date." testid="home-portal-create-request" only %}
+            {% include "components/action_link.html" with route="portal:request-list" label="My requests" description="Track decisions and manage eligible cancellations." testid="home-portal-requests" only %}
+            {% include "components/action_link.html" with route="portal:profile" label="My profile" description="Review your account and update personal details." testid="home-portal-profile" only %}
         </div>
     </section>
 {% endblock %}

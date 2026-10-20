@@ -1,0 +1,18 @@
+<a href="{% url route %}"
+   class="ui-launch-link"
+   data-testid="{{ testid }}">
+    <span class="flex items-center justify-between gap-4 font-heading font-semibold">
+        {{ label }}
+        <svg width="20"
+             height="20"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="1.75"
+             aria-hidden="true"
+             class="shrink-0 text-accent">
+            <path d="m13 6 6 6-6 6M19 12H5" />
+        </svg>
+    </span>
+    <span class="text-sm leading-6 text-slate-600">{{ description }}</span>
+</a>

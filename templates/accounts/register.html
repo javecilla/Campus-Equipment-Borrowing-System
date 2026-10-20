@@ -3,95 +3,96 @@
 {% block title %}Register · Campus Equipment{% endblock %}
 {% block meta_description %}Register for a student account on the Campus Equipment Borrowing System.{% endblock %}
 {% block content %}
-    <main class="flex min-h-svh flex-col bg-surface px-6 pt-10 text-slate-900 sm:pt-16"
-          data-testid="register-page">
-        <section class="mx-auto w-full max-w-md" aria-labelledby="register-heading">
-            <header class="mb-6 text-center">
-                <img src="{% static 'images/logo.png' %}"
-                     alt="Campus Equipment"
-                     width="48"
-                     height="48"
-                     class="mx-auto mb-4 h-12 w-12 rounded-xl">
-                <h1 id="register-heading"
-                    class="mb-2 font-heading text-2xl font-semibold tracking-tight">Create an account</h1>
-                <p class="text-sm leading-6 text-slate-500">Register as a student borrower.</p>
-            </header>
-            {% include "components/messages.html" %}
-            <form method="post"
-                  action="{% url 'accounts:register' %}"
-                  class="space-y-4"
-                  novalidate>
-                {% csrf_token %}
-                {% if form.non_field_errors %}
-                    <div class="rounded-md border border-rose-100 bg-rose-50 px-3 py-2.5 text-sm leading-5 text-rose-700"
-                         role="alert"
-                         data-testid="register-error">{{ form.non_field_errors }}</div>
-                {% endif %}
-                <div>
-                    <label for="{{ form.username.id_for_label }}"
-                           class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.username.label }}</label>
-                    {{ form.username }}
-                    {% if form.username.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.username.errors }}</div>{% endif %}
-                </div>
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <main class="ui-auth" data-testid="register-page">
+        <div class="ui-auth-layout">
+            {% include "components/auth_intro.html" %}
+            <section class="ui-auth-form" aria-labelledby="register-heading">
+                <header class="mb-6 text-center">
+                    <img src="{% static 'images/logo.jpg' %}"
+                         alt="Campus Equipment"
+                         width="48"
+                         height="48"
+                         class="mx-auto mb-4 h-12 w-12 rounded-xl">
+                    <h1 id="register-heading"
+                        class="mb-2 font-heading font-semibold tracking-tight">Create an account</h1>
+                    <p class="text-sm leading-6 text-slate-500">Register as a borrower.</p>
+                </header>
+                {% include "components/messages.html" %}
+                <form method="post"
+                      action="{% url 'accounts:register' %}"
+                      class="space-y-4"
+                      novalidate>
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                        <div class="rounded-md border border-rose-100 bg-rose-50 px-3 py-2.5 text-sm leading-5 text-rose-700"
+                             role="alert"
+                             data-testid="register-error">{{ form.non_field_errors }}</div>
+                    {% endif %}
                     <div>
-                        <label for="{{ form.first_name.id_for_label }}"
-                               class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.first_name.label }}</label>
-                        {{ form.first_name }}
-                        {% if form.first_name.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.first_name.errors }}</div>{% endif %}
+                        <label for="{{ form.username.id_for_label }}"
+                               class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.username.label }}</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.username.errors }}</div>{% endif %}
+                    </div>
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="{{ form.first_name.id_for_label }}"
+                                   class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.first_name.label }}</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.first_name.errors }}</div>{% endif %}
+                        </div>
+                        <div>
+                            <label for="{{ form.last_name.id_for_label }}"
+                                   class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.last_name.label }}</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.last_name.errors }}</div>{% endif %}
+                        </div>
                     </div>
                     <div>
-                        <label for="{{ form.last_name.id_for_label }}"
-                               class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.last_name.label }}</label>
-                        {{ form.last_name }}
-                        {% if form.last_name.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.last_name.errors }}</div>{% endif %}
+                        <label for="{{ form.email.id_for_label }}"
+                               class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.email.label }}</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.email.errors }}</div>{% endif %}
                     </div>
-                </div>
-                <div>
-                    <label for="{{ form.email.id_for_label }}"
-                           class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.email.label }}</label>
-                    {{ form.email }}
-                    {% if form.email.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.email.errors }}</div>{% endif %}
-                </div>
-                <div>
-                    <label for="{{ form.contact_number.id_for_label }}"
-                           class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.contact_number.label }}</label>
-                    {{ form.contact_number }}
-                    {% if form.contact_number.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.contact_number.errors }}</div>{% endif %}
-                </div>
-                <div>
-                    <label for="{{ form.password1.id_for_label }}"
-                           class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.password1.label }}</label>
-                    {{ form.password1 }}
-                    {% if form.password1.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.password1.errors }}</div>{% endif %}
-                </div>
-                <div>
-                    <label for="{{ form.password2.id_for_label }}"
-                           class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.password2.label }}</label>
-                    {{ form.password2 }}
-                    {% if form.password2.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.password2.errors }}</div>{% endif %}
-                </div>
-                <button type="submit"
-                        class="h-11 w-full rounded-md bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                        data-testid="register-submit">Create account</button>
-            </form>
-            <p class="mt-6 text-center text-xs leading-5 text-slate-500">
-                Already have an account?
-                <a href="{% url 'accounts:login' %}"
-                   class="font-medium text-accent hover:underline"
-                   data-testid="register-login-link">Sign in</a>.
-            </p>
-        </section>
-        <div class="pointer-events-none -mx-6 mt-auto pt-10 sm:pt-14">
+                    <div>
+                        <label for="{{ form.contact_number.id_for_label }}"
+                               class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.contact_number.label }}</label>
+                        {{ form.contact_number }}
+                        {% if form.contact_number.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.contact_number.errors }}</div>{% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.password1.id_for_label }}"
+                               class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.password1.label }}</label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.password1.errors }}</div>{% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.password2.id_for_label }}"
+                               class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.password2.label }}</label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}<div class="mt-1.5 text-xs text-rose-700">{{ form.password2.errors }}</div>{% endif %}
+                    </div>
+                    <button type="submit"
+                            class="ui-button ui-button--primary w-full"
+                            data-testid="register-submit">Create account</button>
+                </form>
+                <p class="mt-6 text-center text-xs leading-5 text-slate-500">
+                    Already have an account?
+                    <a href="{% url 'accounts:login' %}"
+                       class="font-medium text-accent hover:underline"
+                       data-testid="register-login-link">Sign in</a>.
+                </p>
+            </section>
+        </div>
+        <!-- <div class="ui-auth-wave">
             <svg xmlns="http://www.w3.org/2000/svg"
                  viewBox="0 0 1440 320"
                  preserveAspectRatio="none"
                  aria-hidden="true"
-                 focusable="false"
-                 class="block h-28 w-full sm:h-40">
-                <path fill="#047857" fill-opacity="1" d="M0,128L48,133.3C96,139,192,149,288,138.7C384,128,480,96,576,85.3C672,75,768,85,864,80C960,75,1056,53,1152,53.3C1248,53,1344,75,1392,85.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z">
+                 focusable="false">
+                <path fill="var(--md-sys-color-primary)" fill-opacity="1" d="M0,128L48,133.3C96,139,192,149,288,138.7C384,128,480,96,576,85.3C672,75,768,85,864,80C960,75,1056,53,1152,53.3C1248,53,1344,75,1392,85.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z">
                 </path>
             </svg>
-        </div>
+        </div> -->
     </main>
 {% endblock %}

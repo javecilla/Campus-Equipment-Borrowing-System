@@ -110,7 +110,7 @@ def portal_request_list(request: HttpRequest) -> HttpResponse:
         if form.is_valid()
         else BorrowRequest.objects.none()
     )
-    paginator: Paginator[BorrowRequest] = Paginator(requests, 25)
+    paginator: Paginator[BorrowRequest] = Paginator(requests, 6)
     try:
         page: Page[BorrowRequest] = paginator.page(request.GET.get("page", "1"))
     except (PageNotAnInteger, EmptyPage) as error:

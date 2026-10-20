@@ -190,7 +190,7 @@ class PortalEquipmentCatalogSearchTests(TestCase):
         # Page 1
         page1 = self.client.get(reverse("portal:equipment-list"), {"category": str(category.pk)})
         self.assertEqual(page1.status_code, 200)
-        self.assertEqual(len(page1.context["page"]), 25)
+        self.assertEqual(len(page1.context["page"]), 10)
         self.assertTrue(page1.context["page"].has_next())
 
         # Page 2
@@ -198,7 +198,7 @@ class PortalEquipmentCatalogSearchTests(TestCase):
             reverse("portal:equipment-list"), {"category": str(category.pk), "page": "2"}
         )
         self.assertEqual(page2.status_code, 200)
-        self.assertEqual(len(page2.context["page"]), 5)
+        self.assertEqual(len(page2.context["page"]), 10)
         self.assertTrue(page2.context["page"].has_previous())
 
         # Invalid page 404
