@@ -69,9 +69,9 @@ Campus-Equipment-Borrowing-System/
 │   ├── locking.py                               [existing] shared lock helpers and order
 │   ├── validation.py                            [existing] pure item/limit/date validation
 │   ├── services.py                              [existing] audited settings update
-│   ├── queries.py                               [existing] loan-limit and audit reads; reporting comes later
+│   ├── queries.py                               [existing] loan-limit, audit and T18 dashboard reads; reporting comes later
 │   ├── tests/                                   [existing] foundation integration checks
-│   ├── views.py                                 [existing] settings/audit/profile handlers and dashboard placeholder
+│   ├── views.py                                 [existing] settings/audit/profile handlers and T18 live dashboard
 │   ├── workspace_views.py                       [existing] pending report presentation
 │   ├── forms.py                                 [existing] settings and audit filter inputs
 │   ├── templatetags/assets.py                      [existing] content-versioned compiled asset URLs
@@ -95,7 +95,7 @@ Campus-Equipment-Borrowing-System/
 │   ├── borrowing/                               [existing] submission and administrator request review/decision pages
 │   │   ├── manage/                              [existing/planned] request/decision, integrated T15 pages and integrated T17 returns present
 │   │   └── portal/                              [existing] borrower request/loan history and cancellation
-│   └── operations/manage/                       [existing/planned] settings/audit pages; live dashboard/reports planned
+│   └── operations/manage/                       [existing/planned] settings/audit and T18 dashboard pages; reports planned
 │
 ├── static/                                      [existing] shared source static files
 │   ├── css/fonts.css                            [existing] local font declarations and typography
