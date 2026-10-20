@@ -2,7 +2,9 @@
 
 ## Purpose and scope
 
-This guide covers T01-T14/T16 integrated in main, including T13 query fixes through PR #35 and T14 concurrency proof through PR #37 at `5381c83` ([Module 13](#module-13--postgresql-competing-approvals-t14)). T15 / Margareth is ready with T13/T14 satisfied, but remains Not started. Release and returns remain pending; T12/T13/T16 browser results remain Not run until supplied.
+Kenneth, Margareth and Ellyssa now focus on validation, documentation and manual testing under the [current responsibilities](tasks.md#current-ownership-and-support-responsibilities). Run available cases and record actual outcomes; unimplemented flows remain Not run. Report T15/T16 defects to Jerome, T17/T20 defects to Ralph and T18/T19 defects to Alex. Diagram preparation stays on standby until Jerome's go signal after system completion, subject to T25 prerequisites.
+
+This guide covers T01-T14/T16 integrated in main, including T13 query fixes through PR #35 and T14 concurrency proof through PR #37 at `5381c83` ([Module 13](#module-13--postgresql-competing-approvals-t14)). T15 / Jerome is ready with T13/T14 satisfied, but remains Not started. Release and returns remain pending; T12/T13/T16 browser results remain Not run until supplied.
 
 The shared M3 UI refresh (UI-09) is implemented locally on `jerome`, not integrated; [Module 14](#module-14--shared-m3-layout-and-controls-ui-09) records its actual layout/accessibility smoke checks separately from the workflow cases below.
 
@@ -1395,7 +1397,7 @@ Expected: one complete approval with exactly two allocations and two Reserved un
 
 On October 20, 2026, a **read-only local inspection at 07:55 Asia/Manila** verified PostgreSQL 17.5, Read Committed isolation and limits 7 days / 3 per item. The fixture snapshots above match those limits but do not read or modify live settings, accounts or stock. Actual automated results: the implementation run passed **2 focused tests in 0.894s**; the fresh publication run passed **254 full-suite tests in 39.994s**. Both runs created and destroyed the separate PostgreSQL test database. All required configured checks pass; see [integration receipt](../handoffs/t14-publication-main-integration-and-t15-readiness-10-20-2026.md).
 
-Manual/browser simultaneous submissions are **Not run**. To record a fresh terminal reproduction, retain its command, revision, Asia/Manila timestamp, count and actual outcome in the result record below. T14 is integrated; Margareth / T15 is ready, Not started.
+Manual/browser simultaneous submissions are **Not run**. To record a fresh terminal reproduction, retain its command, revision, Asia/Manila timestamp, count and actual outcome in the result record below. T14 is integrated; Jerome / T15 is ready, Not started.
 
 ---
 
@@ -1478,11 +1480,11 @@ T13 including both query fixes is integrated (Module 12); T14 concurrency tests 
 
 | Task | Feature | Owner |
 | --- | --- | --- |
-| T15 | Equipment release and printable borrowing slip | Margareth |
-| T17 | Per-unit returns, partial returns, damaged-return maintenance | Margareth + Kenneth |
+| T15 | Equipment release and printable borrowing slip | Jerome |
+| T17 | Per-unit returns, partial returns, damaged-return maintenance | Ralph |
 | T18 | Live dashboard cards and charts | Alex |
 | T19 | Loan/overdue reports and CSV export | Alex |
-| T20 | Full cross-workflow UI/accessibility acceptance; shared role layouts already exist | Ralph + Ellyssa |
+| T20 | Full cross-workflow UI/accessibility acceptance; shared role layouts already exist | Ralph |
 
 ---
 

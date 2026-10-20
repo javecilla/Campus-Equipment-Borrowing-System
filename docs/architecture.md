@@ -2,7 +2,7 @@
 
 ## Status and proposed stack
 
-This architecture guides implementation. T01-T12 and T16 are Done and integrated; PR #33 at `aa36c86` preserves T16 fixes `d68d7f7`. PR #34 at `23c1ad9` adds T13 administrator queue/detail and atomic approval/rejection through the shared locking helpers. The two [T13 query corrections](../handoffs/t13-query-fixes-and-publication-10-19-2026.md) are integrated through PR #35 at `cf50d0c`. T14 competing-approval proof is integrated through PR #37 at `5381c83`; T15 / Margareth is ready, Not started; issue, returns and reporting remain pending. [The backlog](tasks.md#verified-task-evidence) owns acceptance/integration evidence. Behavioral authority is [SRS.md](SRS.md); persistence is in [db_design.md](db_design.md) and actual models/migrations. [Coding standards](coding-standards.md) define MTV boundaries and review rules.
+This architecture guides implementation. T01-T12 and T16 are Done and integrated; PR #33 at `aa36c86` preserves T16 fixes `d68d7f7`. PR #34 at `23c1ad9` adds T13 administrator queue/detail and atomic approval/rejection through the shared locking helpers. The two [T13 query corrections](../handoffs/t13-query-fixes-and-publication-10-19-2026.md) are integrated through PR #35 at `cf50d0c`. T14 competing-approval proof is integrated through PR #37 at `5381c83`; T15 / Jerome is ready, Not started; issue, returns and reporting remain pending. [The backlog](tasks.md#verified-task-evidence) owns acceptance/integration evidence. Behavioral authority is [SRS.md](SRS.md); persistence is in [db_design.md](db_design.md) and actual models/migrations. [Coding standards](coding-standards.md) define MTV boundaries and review rules.
 
 Use a single server-rendered Django application with Python 3.13, Django 5.2 LTS, PostgreSQL 17, and Psycopg 3. Pin tested patch versions during implementation. Django 5.2 supports the proposed Python series and database; consult the [release notes](https://docs.djangoproject.com/en/5.2/releases/5.2/) and [database documentation](https://docs.djangoproject.com/en/5.2/ref/databases/).
 
@@ -69,11 +69,13 @@ The five Python app/config directories, shared `static/`, and common template sh
 | --- | --- | --- |
 | `config/` | Settings, root URL configuration, application entry points | Jerome with Alex for security settings |
 | `accounts/` | Custom auth user/profile, login, role/active checks, account management, registration/profile | Alex; Ellyssa owns portal-facing registration/profile pages |
-| `inventory/` | Categories, items, units, maintenance, availability queries | Kenneth |
-| `borrowing/` | Requests/items, allocations, loans/loan units, returns, workflow services | Jerome defines shared models; Ralph owns submission/tracking; Margareth owns approval/release/return |
+| `inventory/` | Categories, items, units, maintenance, availability queries | Kenneth delivered catalog/units/maintenance baseline; Jerome now owns T16 maintenance |
+| `borrowing/` | Requests/items, allocations, loans/loan units, returns, workflow services | Jerome defines shared models and owns T15 release; Ralph owns submission/tracking and T17 returns; Margareth delivered T13 approval |
 | `operations/` | Audit logs, settings, dashboard/report queries, exports | Jerome for audit/settings; Alex for dashboard/reports |
-| `templates/` | Shared document/role layouts, navigation/messages and implemented T05–T13/T16 pages; release/return/report templates remain planned | Feature owners; Ellyssa and Ralph coordinate integration |
+| `templates/` | Shared document/role layouts, navigation/messages and implemented T05–T13/T16 pages; release/return/report templates remain planned | Feature owners; Ralph owns T20 integration; Ellyssa supports validation/documentation/manual testing |
 | `static/` | Source fonts/images/CSS/JavaScript and ignored generated `build/` assets; discovered through STATICFILES_DIRS | Feature owners |
+
+Current task/support assignments and the deferred conversion of MTV/database/workflow drafts into an actual diagramming tool follow [the backlog ownership decision](tasks.md#current-ownership-and-support-responsibilities). Original implementation credit is preserved; module coordination does not replace task ownership or authorize diagram work before Jerome's go signal.
 
 Each Django app keeps models, forms, function-based views, URLs, service/query functions, migrations, and tests close to its feature. Split further only when actual file size or responsibility warrants it. Avoid a generic CRUD framework or unnecessary repository abstraction over Django ORM.
 

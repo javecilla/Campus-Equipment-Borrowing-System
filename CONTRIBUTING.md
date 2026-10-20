@@ -2,7 +2,7 @@
 
 ## A shared school project
 
-The Campus Equipment Borrowing System is a team school project. The members and agreed feature responsibilities are listed in [README.md](README.md) and the original [member assignment file](docs/Project-Members.txt). The repository account holder, access administrator, task coordinator, or most frequent committer must not present the team's work as their individual project. Feature ownership means coordination and accountability, not exclusive ownership of the repository.
+The Campus Equipment Borrowing System is a team school project. The [backlog's current ownership and support responsibilities](docs/tasks.md#current-ownership-and-support-responsibilities) define current assignments, summarized in [README.md](README.md); the original [member assignment file](docs/Project-Members.txt) preserves original assignments and branches. The repository account holder, access administrator, task coordinator, or most frequent committer must not present the team's work as their individual project. Feature ownership means coordination and accountability, not exclusive ownership of the repository.
 
 Give accurate credit for code, documentation, testing, design, and presentation work. Each member contributes across those areas and follows the course's leadership/individual-evidence requirements. Coordinate shared interfaces with affected members; do not erase attribution or another member's unreviewed work.
 
