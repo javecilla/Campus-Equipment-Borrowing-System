@@ -1,4 +1,5 @@
 {% for message in messages %}
-    <p class="mb-6 border-l-2 border-accent bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
-       role="status">{{ message }}</p>
+    <p class="mb-6 border-l-2 px-4 py-3 text-sm {% if message.level >= 40 %}border-rose-600 bg-rose-50 text-rose-800{% elif message.level >= 30 %}border-amber-600 bg-amber-50 text-amber-800{% else %}border-accent bg-emerald-50 text-emerald-800{% endif %}"
+       data-testid="workspace-message"
+       role="{% if message.level >= 40 %}alert{% else %}status{% endif %}">{{ message }}</p>
 {% endfor %}

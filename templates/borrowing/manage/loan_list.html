@@ -52,7 +52,7 @@
                             <td>{{ loan.request.owner.username }}</td>
                             <td>{{ loan.issued_on|date:"M j, Y" }}</td>
                             <td>{{ loan.due_date|date:"M j, Y" }}</td>
-                            <td>{% if loan.is_active %}Active{% else %}Closed{% endif %}{% if loan.is_overdue %} · Overdue {{ loan.overdue_days }} day{{ loan.overdue_days|pluralize }}{% endif %}</td>
+                            <td>{% include "components/loan_status.html" with loan=loan only %}{% if loan.is_overdue %}<p class="mt-1 text-xs text-rose-700">{{ loan.overdue_days }} day{{ loan.overdue_days|pluralize }} past due</p>{% endif %}</td>
                             <td>{{ loan.outstanding_quantity }} / {{ loan.issued_quantity }}</td>
                             <td><a href="{% url 'borrowing_manage:loan-detail' loan.pk %}"
    data-testid="manage-loan-view-{{ loan.pk }}"
@@ -68,18 +68,6 @@
                 </tbody>
             </table>
         </div>
-        <nav class="mt-6 flex items-center justify-between gap-4 text-sm"
-             aria-label="Loan pages"
-             data-testid="loan-pagination">
-            <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
-            <div class="flex gap-4">
-                {% if page.has_previous %}<a href="{% querystring page=page.previous_page_number %}"
-   data-testid="loan-page-previous"
-   class="text-accent underline">Previous</a>{% endif %}
-                {% if page.has_next %}<a href="{% querystring page=page.next_page_number %}"
-   data-testid="loan-page-next"
-   class="text-accent underline">Next</a>{% endif %}
-            </div>
-        </nav>
+        {% include "components/pagination.html" with label="Loan pages" testid="loan-pagination" previous_testid="loan-page-previous" next_testid="loan-page-next" %}
     </section>
 {% endblock %}

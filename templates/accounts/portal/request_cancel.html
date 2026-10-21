@@ -29,6 +29,7 @@
                             data-testid="request-cancel-submit"
                             class="ui-button ui-button--danger">Confirm cancellation</button>
                     <a href="{% url 'portal:request-detail' request_id=borrow_request.pk %}"
+                       data-testid="request-cancel-keep"
                        class="ui-button ui-button--outline">Keep request</a>
                 </form>
             {% endif %}

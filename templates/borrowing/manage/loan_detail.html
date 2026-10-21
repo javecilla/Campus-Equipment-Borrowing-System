@@ -7,7 +7,10 @@
                data-testid="loan-back"
                class="text-sm font-semibold text-accent underline underline-offset-4">Back to issued loans</a>
             <h1 class="mt-4 font-heading font-semibold">Loan #{{ loan.pk }}</h1>
-            <p class="mt-3 text-sm text-slate-600" data-testid="loan-state">{% if loan.is_active %}Active{% else %}Closed{% endif %} · {{ loan.request.get_status_display }}</p>
+            <div class="mt-3 flex flex-wrap gap-2" data-testid="loan-state">
+                {% include "components/loan_status.html" with loan=loan only %}
+                {% include "components/request_status.html" with borrow_request=loan.request only %}
+            </div>
         </header>
         <div class="flex flex-wrap gap-3">
             {% if loan.outstanding_quantity %}

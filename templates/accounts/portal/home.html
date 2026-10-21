@@ -4,15 +4,135 @@
     <section data-testid="portal-home"
              aria-labelledby="portal-heading"
              class="ui-page">
-        <p class="text-xs font-semibold tracking-widest text-accent uppercase">Borrower workspace</p>
-        <h1 id="portal-heading"
-            class="mt-3 font-heading font-semibold tracking-tight">Welcome, {{ request.user.first_name }}.</h1>
-        <p class="mt-4 leading-7 text-slate-500">Find equipment for your next class or project and keep your borrowing organized.</p>
-        <div class="ui-launch-grid">
-            {% include "components/action_link.html" with route="portal:equipment-list" label="Browse equipment" description="Explore active equipment and current availability." testid="home-portal-equipment" only %}
-            {% include "components/action_link.html" with route="portal:request-create" label="Create a request" description="Choose equipment, quantities, and a return date." testid="home-portal-create-request" only %}
-            {% include "components/action_link.html" with route="portal:request-list" label="My requests" description="Track decisions and manage eligible cancellations." testid="home-portal-requests" only %}
-            {% include "components/action_link.html" with route="portal:profile" label="My profile" description="Review your account and update personal details." testid="home-portal-profile" only %}
+        <header class="ui-page-header flex flex-wrap items-start justify-between gap-4">
+            <div class="min-w-0">
+                <p class="text-xs font-semibold tracking-widest text-accent uppercase">Borrower workspace</p>
+                <h1 id="portal-heading"
+                    class="mt-2 font-heading font-semibold">Welcome, {{ request.user.first_name|default:request.user.username }}.</h1>
+                <p class="mt-3 text-sm leading-6 text-slate-600">Keep track of your requests, equipment and return dates.</p>
+            </div>
+            <a href="{% url 'portal:request-create' %}"
+               data-testid="home-portal-create-request"
+               class="ui-button ui-button--primary">Create a request</a>
+        </header>
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+             aria-label="Your borrowing summary">
+            <a href="{% url 'portal:request-list' %}?status=PENDING"
+               data-testid="home-pending-requests"
+               class="ui-surface focus-visible:outline-2 focus-visible:outline-accent">
+                <p class="text-sm text-slate-600">Pending requests</p>
+                <p class="mt-2 font-heading text-3xl font-semibold">{{ workspace.pending_requests }}</p>
+                <p class="mt-2 text-xs text-slate-500">Awaiting a decision</p>
+            </a>
+            <a href="{% url 'portal:request-list' %}?status=APPROVED"
+               data-testid="home-approved-requests"
+               class="ui-surface focus-visible:outline-2 focus-visible:outline-accent">
+                <p class="text-sm text-slate-600">Approved requests</p>
+                <p class="mt-2 font-heading text-3xl font-semibold">{{ workspace.approved_requests }}</p>
+                <p class="mt-2 text-xs text-slate-500">Check details before collection</p>
+            </a>
+            <a href="{% url 'portal:loan-list' %}"
+               data-testid="home-active-loans"
+               class="ui-surface focus-visible:outline-2 focus-visible:outline-accent">
+                <p class="text-sm text-slate-600">Active loans</p>
+                <p class="mt-2 font-heading text-3xl font-semibold">{{ workspace.active_loans }}</p>
+                <p class="mt-2 text-xs text-slate-500">Equipment still to return</p>
+            </a>
+            <a href="#home-loans-heading"
+               data-testid="home-overdue-loans"
+               class="ui-surface focus-visible:outline-2 focus-visible:outline-accent">
+                <p class="text-sm text-slate-600">Overdue loans</p>
+                <p class="mt-2 font-heading text-3xl font-semibold {% if workspace.overdue_loans %}text-rose-700{% endif %}">{{ workspace.overdue_loans }}</p>
+                <p class="mt-2 text-xs text-slate-500">Outstanding after the due date</p>
+            </a>
         </div>
+        <div class="ui-dashboard-grid">
+            <section class="ui-surface" aria-labelledby="home-loans-heading">
+                <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+                    <h2 id="home-loans-heading"
+                        tabindex="-1"
+                        class="font-heading text-xl font-semibold">Equipment to return</h2>
+                    <a href="{% url 'portal:loan-list' %}"
+                       data-testid="home-portal-loans"
+                       class="text-sm font-semibold text-accent underline focus-visible:outline-2 focus-visible:outline-accent">View all loans</a>
+                </div>
+                <p class="mb-4 text-sm text-slate-600">Up to five active loans, earliest due first. Return equipment to an administrator for recording.</p>
+                {% if workspace.due_loans %}
+                    <ul class="divide-y divide-slate-100">
+                        {% for loan in workspace.due_loans %}
+                            <li data-testid="home-due-loan" class="py-4">
+                                <div class="flex flex-wrap items-center justify-between gap-3">
+                                    <a href="{% url 'portal:loan-detail' loan_id=loan.pk %}"
+                                       data-testid="home-loan-{{ loan.pk }}"
+                                       class="font-semibold text-accent underline focus-visible:outline-2 focus-visible:outline-accent">Loan #{{ loan.pk }}</a>
+                                    {% include "components/loan_status.html" with loan=loan only %}
+                                </div>
+                                <p class="mt-2 text-sm">Due {{ loan.due_date|date:"M j, Y" }} · {{ loan.outstanding_quantity }} unit{{ loan.outstanding_quantity|pluralize }} outstanding</p>
+                                {% if loan.is_overdue %}<p class="mt-1 text-sm font-medium text-rose-700">{{ loan.overdue_days }} day{{ loan.overdue_days|pluralize }} past due</p>{% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    {% include "components/empty_state.html" with testid="home-loans-empty" heading="Nothing to return" description="Your active loans and due dates will appear here after equipment is issued." action_route="portal:equipment-list" action_label="Browse equipment" only %}
+                {% endif %}
+            </section>
+            <section class="ui-surface" aria-labelledby="home-actions-heading">
+                <h2 id="home-actions-heading"
+                    class="font-heading text-xl font-semibold">Your workspace</h2>
+                <a href="{% url 'portal:equipment-list' %}"
+                   data-testid="home-portal-equipment"
+                   class="ui-tool-link focus-visible:outline-2 focus-visible:outline-accent">Browse equipment {% include "components/icon.html" with icon="equipment-list" only %}</a>
+                <a href="{% url 'portal:request-list' %}"
+                   data-testid="home-portal-requests"
+                   class="ui-tool-link focus-visible:outline-2 focus-visible:outline-accent">My requests {% include "components/icon.html" with icon="request-list" only %}</a>
+                <a href="{% url 'portal:profile' %}"
+                   data-testid="home-portal-profile"
+                   class="ui-tool-link focus-visible:outline-2 focus-visible:outline-accent">My profile {% include "components/icon.html" with icon="accounts" only %}</a>
+            </section>
+        </div>
+        <section class="mt-8" aria-labelledby="home-requests-heading">
+            <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+                <h2 id="home-requests-heading"
+                    class="font-heading text-xl font-semibold">Recent requests</h2>
+                <a href="{% url 'portal:request-list' %}"
+                   data-testid="home-all-requests"
+                   class="text-sm font-semibold text-accent underline focus-visible:outline-2 focus-visible:outline-accent">View all requests</a>
+            </div>
+            {% if workspace.recent_requests %}
+                <div class="ui-table-surface">
+                    <div role="region"
+                         aria-label="Your five most recent requests"
+                         tabindex="0"
+                         class="overflow-x-auto"
+                         data-testid="home-requests-scroll">
+                        <table class="ui-data-table min-w-full text-sm">
+                            <caption class="sr-only">Your five most recent requests, newest first</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Request</th>
+                                    <th scope="col">Equipment</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Agreed return</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for borrow_request in workspace.recent_requests %}
+                                    <tr data-testid="home-recent-request">
+                                        <td class="whitespace-nowrap"><a href="{% url 'portal:request-detail' request_id=borrow_request.pk %}"
+   data-testid="home-request-{{ borrow_request.pk }}"
+   class="font-semibold text-accent underline focus-visible:outline-2 focus-visible:outline-accent">#{{ borrow_request.pk }}</a></td>
+                                        <td class="min-w-56 max-w-sm"><ul>{% for item in borrow_request.items.all %}<li>{{ item.catalog_item.name }} · {{ item.quantity }}</li>{% endfor %}</ul></td>
+                                        <td>{% include "components/request_status.html" with borrow_request=borrow_request only %}</td>
+                                        <td class="whitespace-nowrap">{{ borrow_request.agreed_due_date|date:"M j, Y" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% else %}
+                {% include "components/empty_state.html" with testid="home-requests-empty" heading="No requests yet" description="Browse equipment and submit a request for administrator review. Your latest requests will appear here." action_route="portal:request-create" action_label="Create your first request" only %}
+            {% endif %}
+        </section>
     </section>
 {% endblock %}

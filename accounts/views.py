@@ -11,6 +11,7 @@ from django.db.models import QuerySet
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import Resolver404, resolve, reverse
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
 
@@ -35,6 +36,7 @@ from accounts.services import (
     register_basic_user,
 )
 from borrowing.models import BorrowRequest, Loan
+from borrowing.queries import borrower_workspace
 
 ADMIN_NEXT_NAMESPACES: frozenset[str] = frozenset(
     {"accounts", "borrowing_manage", "inventory_manage", "operations"}
@@ -141,16 +143,12 @@ def register_view(request: HttpRequest) -> HttpResponse:
 @require_safe
 @basic_user_required
 def portal_home(request: HttpRequest) -> HttpResponse:
-    """Pending T20 destination; full borrower portal layout and navigation belong to Ralph with Ellyssa."""
+    """Show the active borrower's own request and return-aware loan overview."""
+    user: User = cast(User, request.user)
     return render(
         request,
-        "accounts/portal/pending.html",
-        {
-            "heading": "Borrower workspace",
-            "module": "T20 · Ralph with Ellyssa",
-            "description": "Integrated role navigation, reusable tables and forms, status labels, confirmations, and responsive layouts for the borrower portal will appear here.",
-            "next_work": "Implement the full portal layout and navigation after T17, T18, and T19 are integrated. Individual features (equipment browsing, requests, loans) are accessible through the navigation tabs above.",
-        },
+        "accounts/portal/home.html",
+        {"workspace": borrower_workspace(user.pk, timezone.localdate())},
     )
 
 

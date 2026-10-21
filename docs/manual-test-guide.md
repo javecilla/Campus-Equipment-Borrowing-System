@@ -1763,7 +1763,7 @@ Use this read-only command to recheck card and series sizes without exposing bor
 
 ## Module 18 — Administrator loan and overdue reporting (T19)
 
-**Status:** Done and integrated through PR #49 at fetched main `e8f2a19`, source `16e1d4c`. Fresh review passes **315 PostgreSQL tests in 57.317s**; source/merge tree equality and T17/T18 ancestry are verified. Ralph / T20 has all prerequisites satisfied and remains Not started. Browser/mobile/keyboard/spreadsheet checks remain Not run. See [integration review](../handoffs/t19-main-review-and-local-merge-conflict-resolution-10-21-2026.md).
+**Status:** Done and integrated through PR #49 at fetched main `e8f2a19`, source `16e1d4c`. Fresh review passes **315 PostgreSQL tests in 57.317s**; source/merge tree equality and T17/T18 ancestry are verified. Ralph's T20 is verified locally on `ralph`, awaiting review/main integration. Module 19 records its cross-workflow browser subset; spreadsheet-opening and remaining Module 18 cases stay explicit. See [integration review](../handoffs/t19-main-review-and-local-merge-conflict-resolution-10-21-2026.md).
 
 **Entry URLs:**
 
@@ -1821,6 +1821,66 @@ Prepare fictional issued loans whose stored issue dates fall before, exactly on,
 - **Isolated data check:** a temporary fictional PostgreSQL database produced 27 loan rows totaling 31 issued, 3 returned and 28 outstanding units, plus one overdue row totaling 3 issued, 1 returned and 2 outstanding. The temporary server/database and clipboard value were removed. A later preparation session created `T19-DEMO-*` records in the ignored local development database through existing services; no report/browser result is claimed from them and they are excluded from Git.
 - **Browser and populated local data:** Not run. The computer-use runtime exposed no browser surface, so administrator/BASIC_USER workflows, populated-report behavior, downloaded-spreadsheet inspection, desktop/390/320 layouts and keyboard focus are not claimed.
 
+## Module 19 — Integrated role workspaces (T20)
+
+**Delivery:** Ralph's local, uncommitted work on `ralph`, based on main `f8b1c5b`; not integrated into main. Rebuild assets, then open `/portal/` as an active BASIC_USER or `/manage/` as an active ADMIN. Existing feature contracts, role checks and workflow services remain authoritative. These cases exercise T20 and do not complete T22/T23 acceptance sessions.
+
+**Local read-only check, October 21, 2026, 15:56 Asia/Manila:** one active account per role, three catalog items, four units, five requests and two loans. Settings are seven maximum loan days and three units per item. These totals do not establish the eligibility or ownership of any particular request; recheck the signed-in user's pages before selecting one. No live rows were created or modified for this guide. Populated browser execution used a separate disposable PostgreSQL database with fictional accounts, overdue/approved/pending requests, a foreign owner's request, an empty borrower and a deliberately long catalog name. Its IDs do not identify records in the live database.
+
+### T20-01: Home summary, ownership and empty states
+
+| Field / action | Value |
+| --- | --- |
+| Entry | `/portal/`, active BASIC_USER |
+| Ownership tampering | Add `?owner_id=999999&user_id=999999`; summary must remain the signed-in user's |
+| Pending / Approved card | Open each card; the existing request list retains `status=PENDING` / `status=APPROVED` |
+| Active loans card | Opens the full own-loan history |
+| Overdue loans card | Keyboard activation moves to Equipment to return |
+| Preview limits | At most five recent requests and five active loans; full-history links remain available |
+| New/empty borrower | Zero counts, Nothing to return and No requests yet; existing browse/create actions work |
+
+**Expected:** newest requests sort by submission time/ID descending. Active loans sort by due date/ID ascending. Counts include all matching owned records. Loans due today are not overdue; partial returns remain active and final returns disappear from the due preview. Foreign details return 404. ADMIN opening `/portal/` receives 403; anonymous visitors go to login; inactive sessions receive 403 and end. Home GET/HEAD does not change transaction history; POST returns 405.
+
+### T20-02: Forms, filters, confirmations and status text
+
+Use current local records you are permitted to change, or an isolated test database. A GET confirmation or its back-out action must leave the stored request unchanged.
+
+| Field | Value |
+| --- | --- |
+| Purpose | `T20 classroom equipment check` |
+| Desired return, October 21 example | `2026-10-23`; recompute as campus today + 2 days |
+| Catalog item | Select one active item from the form; recheck its category and intended availability before administrator approval |
+| Quantity | `1`; leave unused item rows blank |
+| Invalid purpose | Empty; submit and check associated error text and preserved other inputs |
+| Invalid desired return | Campus today, or today + current maximum days + 1 |
+| Invalid quantity | Current maximum + 1 (`4` with the checked settings) |
+| Invalid request status filter | `/portal/requests/?status=INVALID` |
+| Valid status pagination | `/portal/requests/?status=PENDING`; with more than six results, use Next then Previous |
+
+**Expected:** invalid forms return bound errors without a new request; invalid filters show Check your filters and Clear filters, rather than a successful empty-history message. Pagination retains the status. Valid submission redirects with a status-region confirmation. Open request cancellation, choose Keep request, then reopen and confirm only if intended. Confirmed cancellation updates the request and displays a success status region. Review/approval and release also offer back-out actions. Shared statuses use text as well as color; Active/Overdue/Closed loan state remains distinct from Pending/Approved/Issued/Partially returned/Returned request state. A partial return keeps the loan active; returning the final damaged unit closes the loan and opens maintenance through the existing service. Follow Modules 12/15/16 for the precise administrative inputs and stored checks.
+
+### T20-03: Responsive, keyboard, downloads and recovery
+
+| Field / action | Value |
+| --- | --- |
+| Viewports | 1440, 1024, 768, 390 and 320px |
+| Pages | Both homes; catalog; profile; request/loan histories and details; new request; cancellation; administrator approval/release/return; both reports |
+| Keyboard | Tab to Skip to content, Enter, then navigate controls; keep focus visible and labels associated |
+| Wide table | Focus the named local scroll region and use arrow keys; the document itself must not overflow |
+| Reports | Download both CSVs through their existing links; preserve report access and filter contracts |
+| JavaScript disabled | Sign in, open an empty borrower home, follow Create your first request, and POST logout |
+| Access recovery | Open a foreign owner's detail (404) or the other role's workspace (403), then use the existing return-home action |
+
+**Expected:** one meaningful h1 per page, correct active parent navigation on details/confirmations, visible direct profile link and native POST logout, readable status labels, local table scrolling and usable compact controls. No script exception or implementation detail should appear in product flows. These checks do not constitute a full screen-reader assessment or spreadsheet-application review.
+
+### T20 executed results
+
+- Full PostgreSQL suite: **322 tests passed in 87.253s**, including seven new workspace checks for real workflow progression, due-today boundaries, isolation, bounded previews, safe methods, filter retention and confirmation/CSRF behavior.
+- Isolated Edge/Chromium execution: 17 routes at five widths passed document bounds, h1 and active-navigation checks. Native request validation/submission, approval/release back-out, partial/final damaged returns, cancellation back-out/confirmation, 403/404, both CSV downloads, both-role logout and JavaScript-disabled empty-state navigation passed with zero page-script exceptions.
+- Keyboard skip link, visible focus and overdue anchor passed. Final screenshots and keyboard table scrolling are recorded in the [T20 handoff](../handoffs/ralph-t20-role-workspace-integration-10-21-2026.md).
+- Final workspace/navigation/report regression: 24 tests passed in 7.034s. Both downloaded CSVs parse successfully and their issued/returned/outstanding totals equal their row sums. The disposable browser database was removed after checks; the live database was preserved.
+- **Not run:** screen-reader evaluation, Firefox/Safari, opening CSVs in spreadsheet software, actual user acceptance sessions and the complete maintenance repair lifecycle. Existing Module 18 spreadsheet cases and T22/T23 remain pending.
+
 ## Recording manual results
 
 Use one row per actual test run. Expected outcomes in this guide do not count as passes. Keep evidence fictional and do not include passwords, session/CSRF tokens or private environment values.
@@ -1844,7 +1904,7 @@ T13 including both query fixes is integrated (Module 12); T14 concurrency tests 
 
 | Task | Feature | Owner |
 | --- | --- | --- |
-| T20 | Full cross-workflow UI/accessibility acceptance; shared role layouts already exist | Ralph |
+| T20 | Implemented and verified locally on `ralph`; review/main integration pending. Screen-reader and additional-browser coverage remain Not run | Ralph |
 
 ---
 

@@ -1,5 +1,6 @@
 """Read-only queries: administrator request queue/detail and owner-scoped borrower history."""
 
+from dataclasses import dataclass
 from datetime import date
 
 from django.db.models import (
@@ -17,7 +18,14 @@ from django.db.models import (
 )
 from django.utils import timezone
 
-from borrowing.models import BorrowRequest, Loan, LoanUnit, RequestItem, UnitAllocation
+from borrowing.models import (
+    BorrowRequest,
+    Loan,
+    LoanUnit,
+    RequestItem,
+    RequestStatus,
+    UnitAllocation,
+)
 from inventory.models import EquipmentUnit, UnitStatus
 
 
@@ -137,6 +145,44 @@ def request_history(owner_id: int, status: str) -> QuerySet[BorrowRequest]:
     if status:
         requests = requests.filter(status=status)
     return requests
+
+
+@dataclass(frozen=True)
+class BorrowerWorkspace:
+    pending_requests: int
+    approved_requests: int
+    active_loans: int
+    overdue_loans: int
+    recent_requests: tuple[BorrowRequest, ...]
+    due_loans: tuple[Loan, ...]
+
+
+def borrower_workspace(owner_id: int, today: date) -> BorrowerWorkspace:
+    """Summarize only this owner's history; bounded previews keep the home page small.
+
+    Reuse return-aware loan progress so partial returns remain active, final returns
+    disappear from the due list, and a loan due today is not marked overdue.
+    """
+    requests = BorrowRequest.objects.filter(owner_id=owner_id)
+    request_counts = requests.aggregate(
+        pending=Count("pk", filter=Q(status=RequestStatus.PENDING)),
+        approved=Count("pk", filter=Q(status=RequestStatus.APPROVED)),
+    )
+    loans = with_loan_progress(Loan.objects.filter(request__owner_id=owner_id), today)
+    loan_counts = loans.aggregate(
+        active=Count("pk", filter=Q(is_active=True)),
+        overdue=Count("pk", filter=Q(is_overdue=True)),
+    )
+    return BorrowerWorkspace(
+        pending_requests=request_counts["pending"],
+        approved_requests=request_counts["approved"],
+        active_loans=loan_counts["active"],
+        overdue_loans=loan_counts["overdue"],
+        recent_requests=tuple(request_history(owner_id, "")[:5]),
+        due_loans=tuple(
+            loans.filter(is_active=True).select_related("request").order_by("due_date", "pk")[:5]
+        ),
+    )
 
 
 def loan_history(owner_id: int) -> QuerySet[Loan]:

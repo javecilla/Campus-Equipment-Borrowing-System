@@ -1,0 +1,19 @@
+{% if page.has_other_pages %}
+    <nav aria-label="{{ label }}"
+         data-testid="{{ testid|default:'pagination' }}"
+         class="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-5 text-sm">
+        <p>Page {{ page.number }} of {{ page.paginator.num_pages }}</p>
+        <div class="flex flex-wrap gap-2">
+            {% if page.has_previous %}
+                <a href="{% querystring page=page.previous_page_number %}"
+                   data-testid="{{ previous_testid|default:'pagination-prev' }}"
+                   class="ui-button ui-button--outline">Previous</a>
+            {% endif %}
+            {% if page.has_next %}
+                <a href="{% querystring page=page.next_page_number %}"
+                   data-testid="{{ next_testid|default:'pagination-next' }}"
+                   class="ui-button ui-button--outline">Next</a>
+            {% endif %}
+        </div>
+    </nav>
+{% endif %}

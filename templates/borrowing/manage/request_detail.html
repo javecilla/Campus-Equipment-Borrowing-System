@@ -7,7 +7,9 @@
                class="text-sm font-semibold text-accent underline underline-offset-4">Back to requests</a>
             <p class="mt-4 text-xs font-semibold tracking-widest text-accent uppercase">Administrator workspace</p>
             <h1 class="font-heading font-semibold">Request #{{ borrow_request.pk }}</h1>
-            <p class="mt-3 text-sm text-slate-600">Status: <strong data-testid="request-status">{{ borrow_request.get_status_display }}</strong></p>
+            <div class="mt-3">
+                {% include "components/request_status.html" with borrow_request=borrow_request only %}
+            </div>
         </header>
         <dl class="grid gap-4 border-t border-slate-200 pt-6 text-sm sm:grid-cols-2">
             <div>
@@ -42,10 +44,12 @@
             </div>
         </dl>
         {% if borrow_request.status == "PENDING" %}
-            <div class="flex gap-4" data-testid="request-actions">
+            <div class="flex flex-wrap gap-4" data-testid="request-actions">
                 <a href="{% url 'borrowing_manage:request-approve' borrow_request.pk %}"
+                   data-testid="request-approve-link"
                    class="ui-button ui-button--primary">Approve</a>
                 <a href="{% url 'borrowing_manage:request-reject' borrow_request.pk %}"
+                   data-testid="request-reject-link"
                    class="ui-button ui-button--outline">Reject</a>
             </div>
         {% endif %}

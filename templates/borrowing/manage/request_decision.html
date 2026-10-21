@@ -26,7 +26,14 @@
                 {% for field in form %}
                     {% include "operations/manage/form_field.html" with field=field only %}
                 {% endfor %}
-                <button type="submit" class="ui-button ui-button--primary">{{ button }}</button>
+                <div class="flex flex-wrap gap-3">
+                    <button type="submit"
+                            data-testid="request-decision-submit"
+                            class="ui-button ui-button--primary">{{ button }}</button>
+                    <a href="{% url 'borrowing_manage:request-detail' borrow_request.pk %}"
+                       data-testid="request-decision-back"
+                       class="ui-button ui-button--outline">Keep request unchanged</a>
+                </div>
             </form>
         {% else %}
             <p class="text-sm text-slate-600" data-testid="request-not-pending">This request is {{ borrow_request.get_status_display|lower }}, so it can no longer be decided.</p>

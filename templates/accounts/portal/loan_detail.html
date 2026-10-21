@@ -13,11 +13,7 @@
                     class="mt-2 font-heading font-semibold">Loan #{{ loan.pk }}</h1>
                 <p class="mt-1 text-sm text-slate-600">Request #{{ loan.request_id }}</p>
             </div>
-            {% if not loan.is_active %}
-                <span class="inline-flex w-fit rounded-full bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700">Returned</span>
-            {% else %}
-                <span class="inline-flex w-fit rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-800">Active</span>
-            {% endif %}
+            {% include "components/loan_status.html" with loan=loan only %}
         </div>
         {% if loan.is_overdue %}
             <p role="status"
