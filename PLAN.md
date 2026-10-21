@@ -23,9 +23,9 @@ Keep task status in the backlog and current readiness in HANDOFF.md. Update this
 
 ## Current starting point
 
-Equipment inventory and borrower accounts progress alongside each other: Kenneth's T08 consumes accepted, integrated T07; Ellyssa's T09 consumes integrated T04. The [backlog](docs/tasks.md#verified-task-evidence) and [current handoff](HANDOFF.md) own current task status, merged revisions, review findings and readiness. Verify those records before starting work rather than treating this execution map as a second status board.
+Select the next task from the [backlog](docs/tasks.md#verified-task-evidence) and [current handoff](HANDOFF.md), which own current status, blockers and integration evidence. For the existing UI interfaces and prerequisite checks consumed by T20, use [DEV.md's consumer handoff](DEV.md#t20-readiness-and-consumer-handoff). This plan defines sequencing and handoff gates rather than maintaining a second status board.
 
-The original T01–T03 local-batch exception is completed and does not relax later integration gates. T09 can proceed independently of T08; T10/T11 require both tasks to be accepted and integrated. A merged implementation with an unresolved acceptance failure does not satisfy that gate. Branch and private-repository access instructions remain in DEV.md. Documentation review does not authorize implementation or publication.
+The original T01–T03 local-batch exception is completed and does not relax later integration gates. A merged implementation with an unresolved acceptance failure does not satisfy a prerequisite. Branch and private-repository access instructions remain in DEV.md. Documentation review does not authorize implementation or publication.
 
 ## Delivery stages and handoff gates
 

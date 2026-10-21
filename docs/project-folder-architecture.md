@@ -69,12 +69,12 @@ Campus-Equipment-Borrowing-System/
 │   ├── locking.py                               [existing] shared lock helpers and order
 │   ├── validation.py                            [existing] pure item/limit/date validation
 │   ├── services.py                              [existing] audited settings update
-│   ├── queries.py                               [existing] loan-limit, audit and T18 dashboard reads; reporting comes later
+│   ├── queries.py                               [existing] loan-limit, audit, T18 dashboard and T19 report reads
 ?   ??? context_processors.py                    [existing; UI-12] active-admin navigation badge context
 │   ├── tests/                                   [existing] foundation integration checks
 │   ├── views.py                                 [existing] settings/audit/profile handlers and T18 live dashboard
-│   ├── workspace_views.py                       [existing] pending report presentation
-│   ├── forms.py                                 [existing] settings and audit filter inputs
+│   ├── workspace_views.py                       [existing] T19 report pages and CSV export handlers
+│   ├── forms.py                                 [existing] settings, audit filters and T19 issue-date filters
 │   ├── templatetags/assets.py                      [existing] content-versioned compiled asset URLs
 │   └── urls.py                                  [existing] settings/audit/profile and protected dashboard/report routes
 │
@@ -96,7 +96,7 @@ Campus-Equipment-Borrowing-System/
 │   ├── borrowing/                               [existing] submission and administrator request review/decision pages
 │   │   ├── manage/                              [existing/planned] request/decision, integrated T15 pages and integrated T17 returns present
 │   │   └── portal/                              [existing] borrower request/loan history and cancellation
-│   └── operations/manage/                       [existing/planned] settings/audit and T18 dashboard pages; reports planned
+│   └── operations/manage/                       [existing] settings/audit, T18 dashboard and T19 report pages
 │
 ├── static/                                      [existing] shared source static files
 │   ├── css/fonts.css                            [existing] local font declarations and typography
@@ -146,6 +146,7 @@ T13 request review/decisions and corrected T16 are integrated. T13's subsequent 
 | Edit operational settings | `operations/views.py` | `templates/operations/manage/settings_form.html` | `operations:settings` |
 | View audit history | `operations/views.py` | `templates/operations/manage/audit_list.html` | `operations:audit-list` |
 | View the admin dashboard | `operations/views.py` | `templates/operations/manage/dashboard.html` | `operations:dashboard` |
+| View/export loan and overdue reports (T19) | `operations/workspace_views.py` | `templates/operations/manage/report.html`; CSV exports use no template | `operations:loan-report`, `loan-export`, `overdue-report`, `overdue-export` |
 
 When rendering the unit list, the template name passed to Django would be `inventory/manage/unit_list.html`, without the leading `templates/`. [config/settings.py](../config/settings.py) already searches the root `templates/` directory. Its `APP_DIRS=True` also supports app-local templates, but this shared map uses one root layout to keep team page locations consistent.
 
