@@ -1897,6 +1897,9 @@ Run a specific module's tests:
 
 # Live administrator dashboard cards and charts (T18)
 .\.venv\Scripts\python.exe manage.py test operations.tests.test_dashboard --noinput
+
+# Administrator loan/overdue reports and CSV exports (T19)
+.\.venv\Scripts\python.exe manage.py test operations.tests.test_reports --noinput
 ```
 
 All tests must pass before handover; the combined PR #49 T19/authentication/UI checkout passed 315 PostgreSQL tests in 57.317s on October 21. T01–T19 are integrated. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
