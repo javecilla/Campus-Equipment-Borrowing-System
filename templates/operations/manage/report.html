@@ -1,0 +1,159 @@
+{% extends "operations/manage/base.html" %}
+{% block title %}{{ report_title }} · Campus Equipment{% endblock %}
+{% block workspace_content %}
+    <section class="ui-page space-y-8" data-testid="{{ report_key }}">
+        <header class="ui-page-header">
+            <p class="text-xs font-semibold tracking-widest text-accent uppercase">Administrator workspace</p>
+            <div class="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                    <h1 class="font-heading font-semibold">{{ report_title }}</h1>
+                    <p class="mt-3 max-w-3xl text-sm text-slate-600">{{ report_description }}</p>
+                </div>
+                <a href="{% url alternate_route %}"
+                   data-testid="{{ report_key }}-alternate"
+                   class="ui-button ui-button--outline">{{ alternate_label }}</a>
+            </div>
+        </header>
+        <section class="border-t border-slate-200 py-6">
+            <form method="get"
+                  action="{% url report_route %}"
+                  data-testid="{{ report_key }}-filters"
+                  class="space-y-4">
+                {% if form.errors %}
+                    <div role="alert"
+                         data-testid="{{ report_key }}-errors"
+                         class="text-sm text-rose-700">
+                        <p>Correct the issue-date filters to view or export matching records.</p>
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+                <div class="ui-filter-grid">
+                    {% for field in form %}
+                        {% include "operations/manage/form_field.html" with field=field only %}
+                    {% endfor %}
+                </div>
+                <div class="flex flex-wrap items-center justify-end gap-4">
+                    <a href="{% url report_route %}"
+                       data-testid="{{ report_key }}-clear"
+                       class="text-sm font-semibold text-accent underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">Clear filters</a>
+                    <button type="submit"
+                            data-testid="{{ report_key }}-submit"
+                            class="ui-button ui-button--tonal">Filter report</button>
+                </div>
+            </form>
+        </section>
+        {% if filters_valid %}
+            <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+                     aria-label="Filtered report totals"
+                     data-testid="{{ report_key }}-totals">
+                <article class="ui-surface p-5">
+                    <p class="text-sm text-slate-600">Loans</p>
+                    <p class="mt-2 font-heading text-2xl font-semibold"
+                       data-testid="{{ report_key }}-loan-count">{{ totals.loan_count }}</p>
+                </article>
+                <article class="ui-surface p-5">
+                    <p class="text-sm text-slate-600">Issued units</p>
+                    <p class="mt-2 font-heading text-2xl font-semibold">{{ totals.issued_quantity }}</p>
+                </article>
+                <article class="ui-surface p-5">
+                    <p class="text-sm text-slate-600">Returned units</p>
+                    <p class="mt-2 font-heading text-2xl font-semibold">{{ totals.returned_quantity }}</p>
+                </article>
+                <article class="ui-surface p-5">
+                    <p class="text-sm text-slate-600">Outstanding units</p>
+                    <p class="mt-2 font-heading text-2xl font-semibold">{{ totals.outstanding_quantity }}</p>
+                </article>
+            </section>
+            <div class="flex justify-end">
+                <a href="{% url export_route %}{% querystring page=None %}"
+                   data-testid="{{ report_key }}-export"
+                   class="ui-button ui-button--primary">Download CSV</a>
+            </div>
+            <section class="ui-table-surface">
+                <div class="overflow-x-auto"
+                     role="region"
+                     aria-label="{{ report_title }} rows"
+                     tabindex="0"
+                     data-testid="{{ report_key }}-table-scroll">
+                    <table class="ui-data-table min-w-full text-sm"
+                           data-testid="{{ report_key }}-table">
+                        <caption class="sr-only">{{ report_title }} rows and filtered totals</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Loan</th>
+                                <th scope="col">Request</th>
+                                <th scope="col">Borrower</th>
+                                <th scope="col">Purpose</th>
+                                <th scope="col">Issued</th>
+                                <th scope="col">Due</th>
+                                <th scope="col">Request status</th>
+                                <th scope="col">Loan status</th>
+                                <th scope="col">Issued units</th>
+                                <th scope="col">Returned</th>
+                                <th scope="col">Outstanding</th>
+                                {% if show_overdue_days %}<th scope="col">Overdue days</th>{% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loan in page %}
+                                <tr data-testid="{{ report_key }}-row-{{ loan.pk }}">
+                                    <td class="whitespace-nowrap">#{{ loan.pk }}</td>
+                                    <td class="whitespace-nowrap">#{{ loan.request_id }}</td>
+                                    <td class="whitespace-nowrap">{{ loan.request.owner.username }}</td>
+                                    <td class="min-w-64 [overflow-wrap:anywhere]">{{ loan.request.purpose }}</td>
+                                    <td class="whitespace-nowrap">{{ loan.issued_on|date:"M j, Y" }}</td>
+                                    <td class="whitespace-nowrap">{{ loan.due_date|date:"M j, Y" }}</td>
+                                    <td class="whitespace-nowrap">{{ loan.request.get_status_display }}</td>
+                                    <td class="whitespace-nowrap">
+                                        {% if loan.is_overdue %}
+                                            <span class="font-semibold text-rose-700">Overdue</span>
+                                        {% elif loan.is_active %}
+                                            Active
+                                        {% else %}
+                                            Closed
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ loan.issued_quantity }}</td>
+                                    <td>{{ loan.returned_quantity }}</td>
+                                    <td>{{ loan.outstanding_quantity }}</td>
+                                    {% if show_overdue_days %}<td>{{ loan.overdue_days }}</td>{% endif %}
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="{{ column_count }}"
+                                        class="py-8 text-center text-slate-600"
+                                        data-testid="{{ report_key }}-empty">{{ empty_message }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="border-t border-slate-200 font-semibold">
+                                <th scope="row" colspan="8" class="text-right">Filtered totals · {{ totals.loan_count }} loan{{ totals.loan_count|pluralize }}</th>
+                                <td>{{ totals.issued_quantity }}</td>
+                                <td>{{ totals.returned_quantity }}</td>
+                                <td>{{ totals.outstanding_quantity }}</td>
+                                {% if show_overdue_days %}<td aria-label="Not totaled">—</td>{% endif %}
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <nav aria-label="{{ report_title }} pages"
+                     class="flex items-center justify-between gap-4 border-t border-slate-200 px-4 py-4">
+                    <span class="text-sm text-slate-500">Page {{ page.number }} of {{ page.paginator.num_pages }} ({{ page.paginator.count }} total)</span>
+                    <div class="flex gap-3">
+                        {% if page.has_previous %}
+                            <a href="{% querystring page=page.previous_page_number %}"
+                               data-testid="{{ report_key }}-previous"
+                               class="ui-button ui-button--outline">Previous</a>
+                        {% endif %}
+                        {% if page.has_next %}
+                            <a href="{% querystring page=page.next_page_number %}"
+                               data-testid="{{ report_key }}-next"
+                               class="ui-button ui-button--outline">Next</a>
+                        {% endif %}
+                    </div>
+                </nav>
+            </section>
+        {% endif %}
+    </section>
+{% endblock %}
