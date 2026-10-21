@@ -1,0 +1,10 @@
+<div data-testid="{{ testid }}"
+     class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+    <h2 class="font-heading text-lg font-semibold">{{ heading }}</h2>
+    <p class="mt-2 text-sm leading-6 text-slate-600">{{ description }}</p>
+    {% if action_route %}
+        <a href="{% url action_route %}"
+           data-testid="{{ testid }}-action"
+           class="ui-button ui-button--outline mt-4">{{ action_label }}</a>
+    {% endif %}
+</div>

@@ -12,7 +12,7 @@
                 <h1 id="request-detail-heading"
                     class="mt-2 font-heading font-semibold">Request #{{ borrow_request.pk }}</h1>
             </div>
-            <span class="inline-flex w-fit rounded-full bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700">{{ borrow_request.get_status_display }}</span>
+            {% include "components/request_status.html" with borrow_request=borrow_request only %}
         </div>
         <div class="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <h2 class="font-heading text-lg font-semibold text-slate-900">Request summary</h2>

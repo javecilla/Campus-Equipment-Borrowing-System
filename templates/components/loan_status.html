@@ -1,0 +1,2 @@
+<span data-testid="loan-status"
+      class="inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap {% if loan.is_overdue %}bg-rose-50 text-rose-800{% elif loan.is_active %}bg-emerald-50 text-emerald-800{% else %}bg-slate-100 text-slate-700{% endif %}">{% if loan.is_overdue %}Overdue{% elif loan.is_active %}Active{% else %}Closed{% endif %}</span>

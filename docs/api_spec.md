@@ -2,9 +2,9 @@
 
 ## Status and interface choice
 
-Feature contracts for the server-rendered application in [architecture.md](architecture.md). T01-T19 are implemented and integrated; the [backlog](tasks.md#verified-task-evidence) owns acceptance and merge evidence. T20 cross-workflow UI integration and full system acceptance remain pending. This document specifies HTML form and download interfaces; there is no separate REST/OpenAPI backend in this scope.
+Feature contracts for the server-rendered application in [architecture.md](architecture.md). T01-T19 are implemented and integrated; T20 UI integration is implemented locally on `ralph` awaiting review/main integration. The [backlog](tasks.md#verified-task-evidence) owns acceptance and merge evidence. Full system acceptance remains pending. This document specifies HTML form and download interfaces; there is no separate REST/OpenAPI backend in this scope.
 
-The implemented management interface includes account, catalog/unit, maintenance, request/decision, release/loan/slip/return, settings/audit and live dashboard pages. UI-07 supplies the shared role shells. T19 replaces the report placeholder with active-ADMIN loan/overdue reports and CSV exports, integrated through PR #49 at `e8f2a19`, source `16e1d4c`. All four report/export endpoints are GET-only; HEAD and other unsupported methods return 405. The borrower home (`portal:home`) remains a protected T20 placeholder; equipment, request, loan and profile pages already exist. Feature owners preserve contracted names and the shared layout; see [T20 consumer guidance](../DEV.md#t20-readiness-and-consumer-handoff).
+The implemented management interface includes account, catalog/unit, maintenance, request/decision, release/loan/slip/return, settings/audit and live dashboard pages. UI-07 supplies the shared role shells. T19 replaces the report placeholder with active-ADMIN loan/overdue reports and CSV exports, integrated through PR #49 at `e8f2a19`, source `16e1d4c`. All four report/export endpoints are GET-only; HEAD and other unsupported methods return 405. T20 locally replaces the borrower home placeholder with an owner-scoped summary, recent requests and active loans due earliest first. Feature owners preserve contracted names and the shared layout; see [T20 consumer guidance](../DEV.md#t20-readiness-and-consumer-handoff).
 
 UI-09's integrated navigation refinement replaces UI-08's account dropdown with a direct top-bar profile link showing the supplied avatar, display name and role. `operations:profile` at `/manage/profile/` remains GET/HEAD-only and read-only; POST returns 405. T09 replaces the borrower profile placeholder at `/portal/profile/` (`portal:profile`) with GET/POST editing for active BASIC_USER accounts. Both profiles derive identity from the signed-in account, ignoring submitted account identifiers. Log out remains the existing CSRF-protected POST action, displayed as a red bottom-sidebar row on desktop and beside the brand on compact screens; endpoint contracts are unchanged.
 
@@ -67,7 +67,7 @@ T09's profile POST derives the target from the signed-in user, locks and recheck
 
 | Method | Path | URL name | Inputs / result |
 | --- | --- | --- | --- |
-| GET | `/portal/` | `portal:home` | Own summary and navigation |
+| GET, HEAD | `/portal/` | `portal:home` | Own Pending/Approved request counts, active/overdue loan counts, five recent requests, five active loans due earliest first, and existing feature navigation; ignores supplied owner IDs |
 | GET, POST | `/portal/profile/` | `portal:profile` | Only `first_name`, `last_name`, `email`, `contact_number`; account identity/authorization unchanged |
 | GET, HEAD | `/portal/equipment/` | `portal:equipment-list` | `q`, `category`, `page`; active catalog and allowed quantity fields |
 | GET, HEAD | `/portal/equipment/<id>/` | `portal:equipment-detail` | Active item description, serviceable total, availability |
@@ -80,6 +80,8 @@ T09's profile POST derives the target from the signed-in user, locks and recheck
 | GET | `/portal/loans/<id>/` | `portal:loan-detail` | Own loan's due date, asset codes, and individual return status |
 
 T11 validates the complete formset before calling the atomic submission service; owner, status, timestamps and limit snapshots come from server-side state. Success redirects to the request section with a confirmation. No allocation or approval occurs on submission. T12 scopes every request/loan query to the signed-in borrower; foreign IDs return 404. Request filters accept only persisted status choices, and request history uses 6-row pages and loan history uses 25-row pages; invalid page numbers return 404. Cancellation GET renders a confirmation without writes; only a CSRF-protected POST can cancel a Pending/Approved request. Cancellation rechecks state under shared locks, releases all approved reservations atomically, and writes the cancellation audit in that transaction. Ineligible or changed states return 409 with no partial changes.
+
+T20's home counts loans rather than physical units; active/overdue values reuse the return-aware calculations in BR-11. Due today is not overdue, partial returns remain active, and final returns leave the due preview. Recent requests sort by submission time then ID descending; active loans sort by due date then ID ascending. Each preview is capped at five, while counts include all of the owner's matching records. Pending/Approved cards use the existing request-status filter, Active opens the full loan history, and Overdue jumps to the earliest-due preview. No new loan filter, write action, JSON endpoint or persisted counter is added. Shared pagination preserves GET filters. Invalid request-status filters show errors and a recovery link, independently of a valid empty result.
 
 ### New request form
 

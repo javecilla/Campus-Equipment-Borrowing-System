@@ -6,10 +6,8 @@
 {% endblock %}
 {% block navigation %}
     {% comment %}
-        T09/T10 and T11/T12 pages extend this layout and fill workspace_content.
-        Keep light mode and shared POST/CSRF logout. Pending routes are GET-only;
-        they do not provide profile updates, inventory, or borrowing actions.
-        Owners and prerequisites remain canonical in docs/tasks.md.
+        All borrower home, feature, detail and confirmation pages fill workspace_content.
+        Keep light mode, active parent navigation and shared POST/CSRF logout.
     {% endcomment %}
     {% include "components/navigation_link.html" with route="portal:home" label="Home" testid="nav-portal-home" current=request.resolver_match.url_name section="home" only %}
     {% include "components/navigation_link.html" with route="portal:equipment-list" label="Equipment" testid="nav-portal-equipment" current=active_portal_tab|default:request.resolver_match.url_name section="equipment-list" only %}

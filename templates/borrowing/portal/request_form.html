@@ -26,22 +26,8 @@
                      data-testid="request-errors">{{ form.non_field_errors }}</div>
             {% endif %}
             <div class="space-y-5">
-                <div>
-                    <label for="{{ form.purpose.id_for_label }}"
-                           class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.purpose.label }}</label>
-                    {{ form.purpose }}
-                    {% if form.purpose.errors %}
-                        <p class="mt-1.5 text-xs text-rose-700">{{ form.purpose.errors }}</p>
-                    {% endif %}
-                </div>
-                <div>
-                    <label for="{{ form.desired_due_date.id_for_label }}"
-                           class="mb-1.5 block text-xs font-medium text-slate-600">{{ form.desired_due_date.label }}</label>
-                    {{ form.desired_due_date }}
-                    {% if form.desired_due_date.errors %}
-                        <p class="mt-1.5 text-xs text-rose-700">{{ form.desired_due_date.errors }}</p>
-                    {% endif %}
-                </div>
+                {% include "components/form_field.html" with field=form.purpose only %}
+                {% include "components/form_field.html" with field=form.desired_due_date only %}
             </div>
             <fieldset class="space-y-4">
                 <legend class="font-heading text-xl font-semibold text-slate-900">Requested equipment</legend>
@@ -59,23 +45,8 @@
                             <div class="text-sm text-rose-700"
                                  role="alert">{{ item_form.non_field_errors }}</div>
                         {% endif %}
-                        <div>
-                            <label for="{{ item_form.catalog_item.id_for_label }}"
-                                   class="mb-1.5 block text-xs font-medium text-slate-600">{{ item_form.catalog_item.label }}</label>
-                            {{ item_form.catalog_item }}
-                            {% if item_form.catalog_item.errors %}
-                                <p class="mt-1.5 text-xs text-rose-700">{{ item_form.catalog_item.errors }}</p>
-                            {% endif %}
-                        </div>
-                        <div>
-                            <label for="{{ item_form.quantity.id_for_label }}"
-                                   class="mb-1.5 block text-xs font-medium text-slate-600">{{ item_form.quantity.label }}</label>
-                            {{ item_form.quantity }}
-                            {% if item_form.quantity.errors %}
-                                <p class="mt-1.5 text-xs text-rose-700">{{ item_form.quantity.errors }}</p>
-                            {% endif %}
-                            <p class="mt-1.5 text-xs text-slate-500">{{ item_form.quantity.help_text }}</p>
-                        </div>
+                        {% include "components/form_field.html" with field=item_form.catalog_item only %}
+                        {% include "components/form_field.html" with field=item_form.quantity only %}
                     </div>
                 {% endfor %}
             </fieldset>

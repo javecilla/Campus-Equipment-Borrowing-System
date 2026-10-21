@@ -1,0 +1,2 @@
+<span data-testid="request-status"
+      class="inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap {% if borrow_request.status == 'PENDING' %}bg-amber-50 text-amber-800{% elif borrow_request.status == 'REJECTED' %}bg-rose-50 text-rose-800{% elif borrow_request.status == 'APPROVED' or borrow_request.status == 'ISSUED' or borrow_request.status == 'PARTIALLY_RETURNED' %}bg-emerald-50 text-emerald-800{% else %}bg-slate-100 text-slate-700{% endif %}">{{ borrow_request.get_status_display }}</span>

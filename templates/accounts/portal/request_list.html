@@ -18,6 +18,7 @@
         <section class="mt-8 border-t border-slate-200 py-6">
             <form method="get"
                   action="{% url 'portal:request-list' %}"
+                  data-testid="request-filters"
                   class="space-y-4">
                 <div class="ui-filter-grid">
                     <div>
@@ -49,11 +50,12 @@
                             <div class="min-w-0">
                                 <h2 class="font-heading text-lg font-semibold text-slate-900">
                                     <a class="rounded-sm hover:text-accent focus-visible:outline-2 focus-visible:outline-accent"
+                                       data-testid="portal-request-{{ borrow_request.pk }}"
                                        href="{% url 'portal:request-detail' request_id=borrow_request.pk %}">Request #{{ borrow_request.pk }}</a>
                                 </h2>
                                 <p class="mt-1 text-sm text-slate-600">{{ borrow_request.purpose }}</p>
                             </div>
-                            <span class="inline-flex w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">{{ borrow_request.get_status_display }}</span>
+                            {% include "components/request_status.html" with borrow_request=borrow_request only %}
                         </div>
                         <ul class="mt-4 space-y-1 text-sm text-slate-700">
                             {% for item in borrow_request.items.all %}
@@ -83,36 +85,15 @@
                     </article>
                 {% endfor %}
             </div>
-            {% if page.paginator.num_pages > 1 %}
-                <nav aria-label="Request history pages"
-                     class="mt-6 flex items-center justify-between text-sm">
-                    {% if page.has_previous %}
-                        <a class="rounded px-2 py-2 text-accent underline focus-visible:outline-2 focus-visible:outline-accent"
-                           href="?status={{ form.status.value|urlencode }}&amp;page={{ page.previous_page_number }}">Previous</a>
-                    {% else %}
-                        <span class="px-2 py-2 text-slate-400">Previous</span>
-                    {% endif %}
-                    <span class="text-slate-600">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
-                    {% if page.has_next %}
-                        <a class="rounded px-2 py-2 text-accent underline focus-visible:outline-2 focus-visible:outline-accent"
-                           href="?status={{ form.status.value|urlencode }}&amp;page={{ page.next_page_number }}">Next</a>
-                    {% else %}
-                        <span class="px-2 py-2 text-slate-400">Next</span>
-                    {% endif %}
-                </nav>
-            {% endif %}
+            {% include "components/pagination.html" with label="Request history pages" %}
         {% else %}
-            <div data-testid="request-empty-state"
-                 class="mt-7 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
-                <h2 class="font-heading text-lg font-semibold text-slate-900">No requests found</h2>
-                <p class="mt-2 text-sm leading-6 text-slate-600">
-                    {% if form.is_valid and form.cleaned_data.status %}
-                        You have no requests with this status.
-                    {% else %}
-                        Requests you submit will appear here.
-                    {% endif %}
-                </p>
-            </div>
+            {% if form.errors %}
+                {% include "components/empty_state.html" with testid="request-invalid-filters" heading="Check your filters" description="Choose a valid request status above, or clear the filters to see your requests." action_route="portal:request-list" action_label="Clear filters" only %}
+            {% elif form.cleaned_data.status %}
+                {% include "components/empty_state.html" with testid="request-empty-state" heading="No requests found" description="You have no requests with this status. Clear the filters to see all your requests." action_route="portal:request-list" action_label="View all requests" only %}
+            {% else %}
+                {% include "components/empty_state.html" with testid="request-empty-state" heading="No requests yet" description="Requests you submit will appear here." action_route="portal:request-create" action_label="Create a request" only %}
+            {% endif %}
         {% endif %}
     </section>
 {% endblock %}
