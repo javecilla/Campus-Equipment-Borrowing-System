@@ -84,17 +84,17 @@ Campus-Equipment-Borrowing-System/
 │   ├── dev/index.html                            [existing] historical development navigation
 │   ├── operations/manage/base.html              [existing] custom administrator navigation layout
 │   ├── accounts/portal/base.html                [existing] basic-user navigation layout
-│   ├── components/                              [existing] workspace/navigation/messages/brand/logout
+│   ├── components/                              [existing] workspace/navigation/messages/brand/logout; shared T20 fields/statuses/pagination/empty states
 │   ├── accounts/                                [existing] login and account feature pages
 │   │   ├── login.html                           [existing]
 │   │   ├── manage/                              [existing] T05 account management pages
 │   │   ├── register.html                        [existing] T09 public borrower registration
-│   │   └── portal/                              [existing] protected home/profile and T12 request/loan history
+│   │   └── portal/                              [existing] T20 borrower home, profile and T12 request/loan history
 │   ├── inventory/                               [existing] catalog/unit/portal and maintenance pages
 │   │   ├── manage/                              [existing] catalog/photo/restore/unit and maintenance pages
 │   │   └── portal/                              [existing] equipment browsing list/detail pages
 │   ├── borrowing/                               [existing] submission and administrator request review/decision pages
-│   │   ├── manage/                              [existing/planned] request/decision, integrated T15 pages and integrated T17 returns present
+│   │   ├── manage/                              [existing] request/decision, T15 release/loan/slip and T17 return pages
 │   │   └── portal/                              [existing] borrower request/loan history and cancellation
 │   └── operations/manage/                       [existing] settings/audit, T18 dashboard and T19 report pages
 │
@@ -125,11 +125,12 @@ A **view** is a Python request handler in the relevant app's `views.py`. The pag
 
 The role prefix selects the audience; the feature app selects the Python module. Real basic-user equipment handlers belong in `inventory/`, and borrowing handlers in `borrowing/`. T10 equipment handlers are in `inventory/portal_views.py`, mounted through `accounts/portal_urls.py`. T11 request creation and T12 borrower request/loan history, detail and cancellation handlers live in `borrowing/views.py`; owner-scoped read helpers live in `borrowing/queries.py` and the atomic cancellation workflow in `borrowing/services.py`. The portal URLs are mounted through `accounts/portal_urls.py`. Feature pages extend the existing `operations/manage/base.html` or `accounts/portal/base.html` and fill `workspace_content`; both inherit `components/workspace.html` and the `base.html` document/asset shell. The [coding guide](coding-standards.md#tailwind-styling-pattern) defines the shared layout pattern.
 
-T13 request review/decisions and corrected T16 are integrated. T13's subsequent Unicode-search and reservation-display fixes are integrated through PR #35 at `cf50d0c`; smaller coding-convention follow-ups remain. PR #37 at `5381c83` integrates T14 [separate-connection approval tests](../borrowing/tests/test_approval_concurrency.py). T15 / Jerome is integrated through PR #42 at `744bc39`; its release/date/loan/slip paths below exist. T17 returns are integrated through PR #43 at `55899d0`, source `bd62ed7`. The standalone printable slip extends `base.html` and reuses `loan_summary.html`; ordinary feature pages retain their role shell. See [current evidence](tasks.md#verified-task-evidence). These page placements include existing pages and explicitly planned borrowing examples; route names come from the HTTP contract:
+T13 request review/decisions and corrected T16 are integrated. T13's subsequent Unicode-search and reservation-display fixes are integrated through PR #35 at `cf50d0c`; smaller coding-convention follow-ups remain. PR #37 at `5381c83` integrates T14 [separate-connection approval tests](../borrowing/tests/test_approval_concurrency.py). T15 / Jerome is integrated through PR #42 at `744bc39`; its release/date/loan/slip paths below exist. T17 returns are integrated through PR #43 at `55899d0`, source `bd62ed7`. The standalone printable slip extends `base.html` and reuses `loan_summary.html`; ordinary feature pages retain their role shell. See [current evidence](tasks.md#verified-task-evidence). The page placements below are implemented, including the T20 borrower home; route names come from the HTTP contract:
 
 | Page | Python view location | Template location | Contracted URL name |
 | --- | --- | --- | --- |
 | Sign in | `accounts/views.py` | `templates/accounts/login.html` | `accounts:login` |
+| View borrower workspace (T20) | `accounts/views.py`; `borrowing/queries.py` | `templates/accounts/portal/home.html` | `portal:home` |
 | Register a borrower | `accounts/views.py` | `templates/accounts/register.html` | `accounts:register` |
 | Edit own profile | `accounts/portal_views.py` | `templates/accounts/portal/profile.html` | `portal:profile` |
 | Manage physical units | `inventory/views.py` | `templates/inventory/manage/unit_list.html` | `inventory_manage:unit-list` |

@@ -1763,123 +1763,190 @@ Use this read-only command to recheck card and series sizes without exposing bor
 
 ## Module 18 — Administrator loan and overdue reporting (T19)
 
-**Status:** Done and integrated through PR #49 at fetched main `e8f2a19`, source `16e1d4c`. Fresh review passes **315 PostgreSQL tests in 57.317s**; source/merge tree equality and T17/T18 ancestry are verified. Ralph's T20 is verified locally on `ralph`, awaiting review/main integration. Module 19 records its cross-workflow browser subset; spreadsheet-opening and remaining Module 18 cases stay explicit. See [integration review](../handoffs/t19-main-review-and-local-merge-conflict-resolution-10-21-2026.md).
+**What you are testing:** an administrator can view loans, filter by issue date and download the same results as CSV. T19 is integrated through PR #49; the current reviewed checkout is `6f18116` (PR #51).
 
-**Entry URLs:**
+### Before you start
 
-- Loan report: `/manage/reports/loans/`
-- Overdue report: `/manage/reports/overdue/`
-- Loan CSV: `/manage/reports/loans/export/`
-- Overdue CSV: `/manage/reports/overdue/export/`
+1. Start the app using [the everyday startup steps](../DEV.md#everyday-startup). Open `http://127.0.0.1:8000/accounts/login/` and sign in with your existing **administrator** test account.
+2. Follow T19-01 through T19-05 in order. Record your results in [the checklist](#t19-and-t20---your-test-checklist).
+3. If a case needs records you do not have, write **Not run - needs test data**. An empty report can be correct.
 
-**Required role:** Active `ADMIN`. Use only fictional records in an isolated database. Filters use the stored Asia/Manila issue date, include both supplied boundaries, and may leave either side unbounded.
+**Verified local example, October 21, 2026, 16:38 Asia/Manila:** a read-only check found these two loans. These are a dated starting point; this guide did not create them. If someone changes loans/returns, use current loan details instead of expecting these old totals.
 
-### T19-01 - Access, methods, validation and empty states
+| Loan | Issued on | Due date | Issued units | Returned | Outstanding | Loan status on October 21 |
+| --- | --- | --- | --- | --- | --- | --- |
+| #1 | 2026-10-20 | 2026-10-24 | 1 | 1 | 0 | Closed |
+| #2 | 2026-10-20 | 2026-10-23 | 3 | 0 | 3 | Active |
+| **Totals: 2 loans** | | | **4** | **1** | **3** | |
 
-1. Visit all four URLs anonymously. Each request must redirect to login with a safe same-origin `next` value.
-2. Sign in as an active `BASIC_USER` and visit all four URLs directly. Each request must return 403.
-3. Sign in as an administrator, deactivate that account from a separate active-admin session, and revisit all four URLs. Each request must return 403 and invalidate the inactive session.
-4. As an active administrator, send GET requests to all four URLs, then try HEAD and POST. GET returns the report/CSV; HEAD and POST return 405 and create no records.
-5. Submit `date_from=not-a-date`, then `date_from=2026-10-21&date_to=2026-10-20`, on both HTML reports and both export URLs. Each response must show the bound issue-date error as HTML, expose no unfiltered rows, and download no CSV.
-6. Repeat on an isolated empty database. Both reports show zero totals and their report-specific empty message.
+Neither loan is overdue on October 21, so an **empty Overdue report with zero totals is correct**. Overdue means the due date is **before today** and units are still outstanding. Due today is not overdue. Date filters use **Issued on**, not Due date.
 
-### T19-02 - Inclusive filters, statuses, quantities and pagination
+### T19-01 - Open both reports
 
-Prepare fictional issued loans whose stored issue dates fall before, exactly on, within and after a chosen range. Include one active loan, one partially returned loan, one fully returned loan, one outstanding overdue loan and enough additional loans to exceed 25 rows.
+| Step | What to do | What should happen |
+| --- | --- | --- |
+| 1 | Open `/manage/reports/loans/`. Click **Clear filters**. | Loan report opens; Reports is selected in navigation. |
+| 2 | Compare rows and totals with current loan details. | For the unchanged example: 2 loans, 4 issued, 1 returned, 3 outstanding. #1 is Closed; #2 is Active. |
+| 3 | Click **View overdue report**. | Only outstanding loans due before today appear. For the October 21 example: no rows and zero totals. |
+| 4 | Click **View all loans**. | You return to Loan report. Viewing reports changes no transactions. |
 
-| Check | Expected result |
+**Pass when:** both pages open and match current records. An empty Overdue report is a pass when no loan is overdue.
+
+### T19-02 - Filter by issue date
+
+On Loan report, enter each row below and click **Filter report**. If the database changed, substitute an actual issue date from a visible loan.
+
+| Issue date from | Issue date through | Expected for the verified example |
+| --- | --- | --- |
+| 2026-10-20 | 2026-10-20 | Both loans appear. The boundary dates are included. |
+| 2026-10-21 | 2026-10-21 | No loans; zero totals. |
+| Leave blank | 2026-10-20 | Both loans; no lower date limit. |
+| 2026-10-20 | Leave blank | Both loans; no upper date limit. |
+
+Repeat on Overdue report: the same issue-date rules apply, but non-overdue loans must stay excluded. Click **Clear filters** afterward.
+
+**Pass when:** dates select the correct loans and **issued - returned = outstanding** for each row. Summary totals cover all matching records, not just the visible page.
+
+### T19-03 - Download and compare CSV
+
+1. On Loan report, set both dates to `2026-10-20` (or a current issue date you checked). Click **Filter report**.
+2. Write down the four summary totals. Click **Download CSV** and open `loan-report.csv` in Excel or another spreadsheet application.
+3. Compare loan IDs, dates, statuses and quantities with the webpage. A spreadsheet may display dates in a different style.
+4. Check the final `TOTALS` row. For the unchanged example: **2 loans; 4 issued / 1 returned / 3 outstanding**. This totals row is not another loan.
+5. Repeat on Overdue report. It downloads `overdue-report.csv` with an **Overdue days** column. An empty report still downloads headings and a zero totals row.
+
+**Pass when:** both files open correctly and match the filtered reports. CSV includes **all matching loans**, including other pages. If no spreadsheet application is available, mark the opening check **Not run**.
+
+### T19-04 - Check phone width and keyboard use
+
+1. Open a report at desktop width, then at **390px** and **320px** using the browser's responsive/device toolbar.
+2. Check that labels/buttons remain readable. The table can scroll sideways inside its own area; the whole page should not scroll sideways.
+3. Use **Tab**, **Shift+Tab** and **Enter** to reach date fields, Clear filters, Filter report and Download CSV. Focus must stay visible.
+4. If Next/Previous appears, use it: date filters must stay in the address bar. With 25 or fewer matching loans, record pagination **Not run - needs more than 25 loans**.
+
+### T19-05 - Check errors and restricted access
+
+| What to do | Expected result |
 | --- | --- |
-| Inclusive dates | Loans issued exactly on `date_from` and `date_to` appear; outside loans do not. Missing either bound leaves that side unbounded. |
-| Loan report | Active, partially returned, fully returned and overdue loans appear in newest issue-date/time/ID order. |
-| Overdue report | Only loans with at least one outstanding LoanUnit and `due_date` before the current campus date appear. Fully returned and due-today loans do not. |
-| Quantities | Issued equals stored LoanUnits; returned equals LoanUnits with a ReturnRecord; outstanding equals issued minus returned. |
-| Status | Outstanding overdue loans show Overdue; other outstanding loans show Active; fully returned loans show Closed. |
-| Totals | Every loan contributes once and every physical unit contributes once, even when several return relationships exist. |
-| Pagination | Page 2 retains both issue-date query parameters; invalid, zero and out-of-range pages return 404. |
+| Enter From `2026-10-21`, Through `2026-10-20`; click Filter report on both reports. | Date-range error; no unfiltered rows or download action. |
+| Open `/manage/reports/loans/export/?date_from=2026-10-21&date_to=2026-10-20`; repeat with `/manage/reports/overdue/export/`. | HTML error page instead of a CSV download. |
+| Sign out; open all four report/export URLs below. | Each sends you to login. |
+| Sign in as a basic user; open the same four URLs directly. | Each shows Access denied (403); no report data or download. |
 
-### T19-03 - Matching and safe CSV exports
+Protected URLs: `/manage/reports/loans/`, `/manage/reports/overdue/`, `/manage/reports/loans/export/`, `/manage/reports/overdue/export/`. A correctly blocked request is a **Pass**.
 
-1. Filter each HTML report and record its ordered loan IDs plus loan, issued, returned and outstanding totals.
-2. Follow that page's Download CSV link. Confirm the CSV contains every matching row, not only the current page, in the same order, with identical quantities and one matching totals row.
-3. Confirm `Content-Type: text/csv; charset=utf-8`, UTF-8 BOM encoding, attachment filenames `loan-report.csv` and `overdue-report.csv`, and the documented column headers. The overdue CSV additionally includes Overdue days.
-4. Use fictional borrower/purpose text containing Unicode, commas, double quotes and a newline. Open the CSV in a spreadsheet and confirm fields remain one logical row with the original text.
-5. Separately use fictional text beginning with `=`, `+`, `-`, `@`, a tab and a carriage return. Confirm every exported cell is prefixed with an apostrophe and is displayed as text rather than evaluated as a formula.
-6. Refresh both HTML reports and confirm that viewing/exporting did not create, update, return, cancel, release or delete any record.
+### T19 additional checks - need prepared data or developer tools
 
-### T19-04 - Responsive and keyboard review
+Record missing setup as **Not run**. Do not edit stored dates or your computer clock just to force a case.
 
-- At desktop width, `390px` and `320px`, confirm the shared administrator navigation remains usable, totals stack cleanly, filters remain labeled and the wide table scrolls inside its labeled region without viewport overflow.
-- Use only the keyboard to reach Loan report, Overdue report, both date fields, Clear filters, Filter report, Download CSV, the scrollable table region and pagination links. Every interactive control must show visible focus.
-- Confirm the Reports navigation item remains active on both reports and exports are reachable without relying on color alone.
+| Setup needed | Expected result |
+| --- | --- |
+| Overdue, partially returned, fully returned and due-today loans | Only outstanding loans due before today appear in Overdue. Partial returns reduce Outstanding; final returns make Closed and remove the loan from Overdue. Use [Module 16](#module-16--per-unit-returns-and-overdue-t17) for return steps. |
+| More than 25 matching loans | Page 2 preserves filters; CSV includes all matching rows in newest issue-date/time/ID order. Invalid pages (`0`, `abc`, out of range) return 404. |
+| Disposable fictional text containing Unicode, commas, quotes and newlines | CSV keeps text in the correct cells. Text beginning with `=`, `+`, `-`, `@`, tab or carriage return is apostrophe-prefixed and treated as text, not a formula. |
+| Developer tools / existing report integration suite | GET works; HEAD/POST and unsupported methods return 405 on all four routes. `date_from=not-a-date` gives HTML errors, including exports. CSV uses UTF-8 BOM and `text/csv; charset=utf-8`. Report reads/exports write no business data. |
+| Existing [report integration suite](../operations/tests/test_reports.py), using its isolated test database | The inactive-admin test verifies denial/session removal on all four routes. The account-management UI only deactivates BASIC_USER accounts; it cannot prepare an inactive administrator. Run the existing automated case instead of changing a live admin account. |
 
 ### T19 verification
 
-- **October 21 integration review:** PR #49 at `e8f2a19` exactly matches source `16e1d4c`; all 315 PostgreSQL tests pass in 57.317s. Build, lint, schema/migrations, affected-file formatting, npm format/audit (zero vulnerabilities) and pip checks pass. Full formatting still flags three unrelated Ruff files (`accounts/views.py`, `inventory/tests/test_portal_equipment.py`, the archived borrower-portal handoff) and one djLint template (`templates/inventory/portal/equipment_list.html`). Browser/mobile/keyboard/spreadsheet checks remain Not run; see [review](../handoffs/t19-main-review-and-local-merge-conflict-resolution-10-21-2026.md).
-- **Automated:** focused T19 passed with shuffle seeds `1919` and `20261020`, reverse order, and the strengthened final seed run (11 tests in 1.576s). The final assertions include PATCH/OPTIONS denial and exact borrower/request/date/status/quantity CSV mapping. Reversed operations/borrowing passed all 130 tests in 26.833s; a fresh shuffled complete PostgreSQL database passed all 309 tests in 71.614s. After synchronizing with `c052900`, 22 overlapping report/navigation/dashboard tests passed in 5.791s and the complete 315-test PostgreSQL suite passed in 73.795s. Coverage also includes access, inclusive and invalid ranges, active/partial/closed/overdue rows, exact nonmultiplying quantities/totals, pagination/filter retention, empty states, HTML/CSV parity, CSV escaping/formula protection/headers and read-only behavior.
-- **Checks:** Django database, migration drift/applied migration, Ruff lint, changed-Python Ruff format, changed-template djLint, npm format/build/audit, pip consistency and whitespace checks pass. npm audit reports zero vulnerabilities.
-- **Unrelated findings:** repository-wide Ruff formatting would reformat a Python example in `handoffs/borrower-portal-ui-improvements-10-20-2026.md`; repository-wide djLint would split a long tag in `templates/inventory/portal/equipment_list.html`. Neither file belongs to T19 and neither was modified.
-- **Isolated data check:** a temporary fictional PostgreSQL database produced 27 loan rows totaling 31 issued, 3 returned and 28 outstanding units, plus one overdue row totaling 3 issued, 1 returned and 2 outstanding. The temporary server/database and clipboard value were removed. A later preparation session created `T19-DEMO-*` records in the ignored local development database through existing services; no report/browser result is claimed from them and they are excluded from Git.
-- **Browser and populated local data:** Not run. The computer-use runtime exposed no browser surface, so administrator/BASIC_USER workflows, populated-report behavior, downloaded-spreadsheet inspection, desktop/390/320 layouts and keyboard focus are not claimed.
+**Previous evidence:** [T19 review](../handoffs/t19-main-review-and-local-merge-conflict-resolution-10-21-2026.md): 315 PostgreSQL tests passed. [Later T20 integration review](../handoffs/t20-main-integration-review-and-documentation-10-21-2026.md): 322 passed, including all 11 report tests. [Ralph's delivery](../handoffs/ralph-t20-role-workspace-integration-10-21-2026.md) records report browser checks at five widths, CSV downloads and parsed totals. Detailed commands, fixtures and limitations remain in those handoffs.
+
+**This guide update:** read-only data inspection only; no new browser/spreadsheet run. Spreadsheet opening, screen-reader and extra-browser checks remain pending. Fill in your own results below.
 
 ## Module 19 — Integrated role workspaces (T20)
 
-**Delivery:** Ralph's local, uncommitted work on `ralph`, based on main `f8b1c5b`; not integrated into main. Rebuild assets, then open `/portal/` as an active BASIC_USER or `/manage/` as an active ADMIN. Existing feature contracts, role checks and workflow services remain authoritative. These cases exercise T20 and do not complete T22/T23 acceptance sessions.
+**What you are testing:** borrower Home shows that user's real records, and both roles have consistent navigation, forms, messages and usable small-screen pages. T20 is integrated through PR #51 at `6f18116`, source `b43fb99`.
 
-**Local read-only check, October 21, 2026, 15:56 Asia/Manila:** one active account per role, three catalog items, four units, five requests and two loans. Settings are seven maximum loan days and three units per item. These totals do not establish the eligibility or ownership of any particular request; recheck the signed-in user's pages before selecting one. No live rows were created or modified for this guide. Populated browser execution used a separate disposable PostgreSQL database with fictional accounts, overdue/approved/pending requests, a foreign owner's request, an empty borrower and a deliberately long catalog name. Its IDs do not identify records in the live database.
+### Before you start
+
+- Use existing fictional **basic-user** and **administrator** test accounts. Use two separate browser profiles, or one normal window and one private/incognito window. Ordinary windows and tabs in the same profile share a session; multiple private windows also share their private session.
+- The app should be running at `http://127.0.0.1:8000`. If styling is missing, follow [asset setup](../DEV.md#fonts-and-static-assets).
+- October 21, 16:38 read-only check: three active basic users, one active admin; limits **7 loan days / 3 units per item**. Home counts vary by owner.
+- **T20-02 creates and cancels one fictional request.** Use an account you are permitted to change. The other basic walkthrough steps inspect pages.
 
 ### T20-01: Home summary, ownership and empty states
 
-| Field / action | Value |
-| --- | --- |
-| Entry | `/portal/`, active BASIC_USER |
-| Ownership tampering | Add `?owner_id=999999&user_id=999999`; summary must remain the signed-in user's |
-| Pending / Approved card | Open each card; the existing request list retains `status=PENDING` / `status=APPROVED` |
-| Active loans card | Opens the full own-loan history |
-| Overdue loans card | Keyboard activation moves to Equipment to return |
-| Preview limits | At most five recent requests and five active loans; full-history links remain available |
-| New/empty borrower | Zero counts, Nothing to return and No requests yet; existing browse/create actions work |
+Sign in as a **basic user** and open `/portal/`.
 
-**Expected:** newest requests sort by submission time/ID descending. Active loans sort by due date/ID ascending. Counts include all matching owned records. Loans due today are not overdue; partial returns remain active and final returns disappear from the due preview. Foreign details return 404. ADMIN opening `/portal/` receives 403; anonymous visitors go to login; inactive sessions receive 403 and end. Home GET/HEAD does not change transaction history; POST returns 405.
+| Step | What to do | What should happen |
+| --- | --- | --- |
+| 1 | Look at the four cards. | Pending requests, Approved requests, Active loans and Overdue loans count this account's records only. Zero is allowed. |
+| 2 | Open Pending requests; return Home and open Approved requests. | My requests opens with the matching Status selected. Count matching requests across all pages to compare with each card. |
+| 3 | Open Active loans. | Full own-loan history opens. It can include Closed loans; the card counts only loans with outstanding units. |
+| 4 | Return Home; click Overdue loans. | Focus moves to Equipment to return on this page. This is a preview shortcut, not an overdue-only list. |
+| 5 | Check Equipment to return and Recent requests. | At most five active loans, earliest due first; five requests, newest first. View all links open full histories. |
+| 6 | Open a preview detail, Browse equipment and My profile. | The existing pages work; details belong to this borrower and the correct parent navigation stays selected. |
+
+**Empty account:** expect zero cards and Nothing to return / No requests yet. Try its browse/create links; mark populated-preview checks **Not run - account has no records**. Pass when counts/links agree with this user's histories.
 
 ### T20-02: Forms, filters, confirmations and status text
 
-Use current local records you are permitted to change, or an isolated test database. A GET confirmation or its back-out action must leave the stored request unchanged.
+As the basic user, note the Pending requests count, then click **Create a request**.
 
 | Field | Value |
 | --- | --- |
 | Purpose | `T20 classroom equipment check` |
-| Desired return, October 21 example | `2026-10-23`; recompute as campus today + 2 days |
-| Catalog item | Select one active item from the form; recheck its category and intended availability before administrator approval |
-| Quantity | `1`; leave unused item rows blank |
-| Invalid purpose | Empty; submit and check associated error text and preserved other inputs |
-| Invalid desired return | Campus today, or today + current maximum days + 1 |
-| Invalid quantity | Current maximum + 1 (`4` with the checked settings) |
-| Invalid request status filter | `/portal/requests/?status=INVALID` |
-| Valid status pagination | `/portal/requests/?status=PENDING`; with more than six results, use Next then Previous |
+| Desired return date | `2026-10-23` for October 21; on another day use campus today + 2 days within current limits |
+| Equipment item | One active item actually offered in the form |
+| Quantity | `1` |
+| Other equipment rows | Leave both item and quantity blank |
 
-**Expected:** invalid forms return bound errors without a new request; invalid filters show Check your filters and Clear filters, rather than a successful empty-history message. Pagination retains the status. Valid submission redirects with a status-region confirmation. Open request cancellation, choose Keep request, then reopen and confirm only if intended. Confirmed cancellation updates the request and displays a success status region. Review/approval and release also offer back-out actions. Shared statuses use text as well as color; Active/Overdue/Closed loan state remains distinct from Pending/Approved/Issued/Partially returned/Returned request state. A partial return keeps the loan active; returning the final damaged unit closes the loan and opens maintenance through the existing service. Follow Modules 12/15/16 for the precise administrative inputs and stored checks.
+1. Fill the table, but leave Purpose blank for the first submission. Submit: a browser/field error should appear and **no request** should be created.
+2. Enter the Purpose and submit again: expect a success message on My requests. Find `T20 classroom equipment check`, open it and note its ID.
+3. Return Home: Pending should increase by **one**, and the request should appear in Recent requests (assuming nobody else changed this account's records).
+4. Open that request's cancellation action; choose **Keep request**. It stays Pending. Opening a confirmation changes nothing.
+5. Reopen cancellation; click **Confirm cancellation**. Expect a success message and Cancelled status. Pending returns to its original count; the request stays in history.
+6. Open `/portal/requests/?status=INVALID`. Expect a filter error and recovery content. Click **Clear filters** to restore the normal list.
+
+**Pass when:** invalid submission creates nothing; valid submission creates one request; Keep preserves it; confirmation updates status/message/count. A correct validation error is a pass.
 
 ### T20-03: Responsive, keyboard, downloads and recovery
 
-| Field / action | Value |
-| --- | --- |
-| Viewports | 1440, 1024, 768, 390 and 320px |
-| Pages | Both homes; catalog; profile; request/loan histories and details; new request; cancellation; administrator approval/release/return; both reports |
-| Keyboard | Tab to Skip to content, Enter, then navigate controls; keep focus visible and labels associated |
-| Wide table | Focus the named local scroll region and use arrow keys; the document itself must not overflow |
-| Reports | Download both CSVs through their existing links; preserve report access and filter contracts |
-| JavaScript disabled | Sign in, open an empty borrower home, follow Create your first request, and POST logout |
-| Access recovery | Open a foreign owner's detail (404) or the other role's workspace (403), then use the existing return-home action |
+| Step | What to do | What should happen |
+| --- | --- | --- |
+| 1 | As borrower, visit Home, Equipment, My requests, My loans and My profile. | Consistent layout, working links and correct active parent navigation, including details. |
+| 2 | As admin in the separate profile or private window, visit `/manage/`, requests, loans and both reports. | Admin navigation and the shared field/status/message styles work. Test downloads using T19-03. |
+| 3 | Repeat representative pages at desktop, 390px and 320px widths. | Readable controls; wide tables scroll within their area, not the whole page. |
+| 4 | Use Tab, Shift+Tab and Enter, including Skip to content and confirmations. | Visible focus, usable labels/controls and readable status text, not color alone. |
+| 5 | As borrower, open `/manage/`; as admin, open `/portal/`. | Access denied (403); return-home recovery leads to the correct role Home. |
+| 6 | Use **Log out** in each role, then reopen its protected Home. | Login is required again. Use the real logout control. |
 
-**Expected:** one meaningful h1 per page, correct active parent navigation on details/confirmations, visible direct profile link and native POST logout, readable status labels, local table scrolling and usable compact controls. No script exception or implementation detail should appear in product flows. These checks do not constitute a full screen-reader assessment or spreadsheet-application review.
+### T20 additional checks - run when records are ready
+
+| Setup needed | What to check |
+| --- | --- |
+| Second borrower with a known request/loan ID | First borrower gets 404 for that foreign detail. Home `?owner_id=999999&user_id=999999` still shows the signed-in user's records. |
+| More than six Pending requests | Filter My requests to Pending; Next/Previous retain Status. |
+| More than five requests/active loans | Previews stay capped at five; counts cover all matching records. |
+| Request eligible for approval/release | Follow [Module 12](#module-12--administrator-request-review-and-decisions-t13) and [Module 15](#module-15--release-due-date-revision-and-borrowing-slip-t15). Back-out preserves state; approval moves Pending to Approved; release removes Approved and adds an Active loan. |
+| Multi-unit loan eligible for return | Follow [Module 16](#module-16--per-unit-returns-and-overdue-t17). Partial return keeps the loan Active with fewer outstanding units; final return removes it from Active. A final damaged return also creates maintenance. |
+| Overdue / due-today loans | Only outstanding loans due before today count as Overdue; due today is not overdue. Do not alter dates/clock to force it. |
+| Empty borrower / JavaScript disabled | Empty-state browse/create links and native logout work without JavaScript. Re-enable JavaScript afterward. |
+| Developer tools / disposable inactive account | Home GET/HEAD is read-only; POST is 405; inactive sessions are denied/ended. Invalid return dates (today or today + maximum + 1) and quantity maximum + 1 (4 under checked settings) create no request. |
 
 ### T20 executed results
 
-- Full PostgreSQL suite: **322 tests passed in 87.253s**, including seven new workspace checks for real workflow progression, due-today boundaries, isolation, bounded previews, safe methods, filter retention and confirmation/CSRF behavior.
-- Isolated Edge/Chromium execution: 17 routes at five widths passed document bounds, h1 and active-navigation checks. Native request validation/submission, approval/release back-out, partial/final damaged returns, cancellation back-out/confirmation, 403/404, both CSV downloads, both-role logout and JavaScript-disabled empty-state navigation passed with zero page-script exceptions.
-- Keyboard skip link, visible focus and overdue anchor passed. Final screenshots and keyboard table scrolling are recorded in the [T20 handoff](../handoffs/ralph-t20-role-workspace-integration-10-21-2026.md).
-- Final workspace/navigation/report regression: 24 tests passed in 7.034s. Both downloaded CSVs parse successfully and their issued/returned/outstanding totals equal their row sums. The disposable browser database was removed after checks; the live database was preserved.
-- **Not run:** screen-reader evaluation, Firefox/Safari, opening CSVs in spreadsheet software, actual user acceptance sessions and the complete maintenance repair lifecycle. Existing Module 18 spreadsheet cases and T22/T23 remain pending.
+**Previous evidence:** [merged-source review](../handoffs/t20-main-integration-review-and-documentation-10-21-2026.md): **322 PostgreSQL tests passed in 127.102s**, including seven workspace tests. [Ralph's handoff](../handoffs/ralph-t20-role-workspace-integration-10-21-2026.md) records his earlier 322-test/87.253s run, 24 focused checks, 17 routes at five widths, keyboard checks, request/return/cancellation flows, CSV downloads and JavaScript-disabled navigation.
+
+**This guide update:** no new browser run or user acceptance session. Screen-reader, Firefox/Safari, spreadsheet opening and complete maintenance-repair browser coverage remain pending. T21/T22/T23 retain their completion gates.
+
+### T19 and T20 - your test checklist
+
+Fill this after testing. For a failure, note the step and a screenshot or fictional record ID. Keep passwords/private details out. Blank entries below do not replace earlier execution evidence.
+
+| Case | What it checks | Your result: Pass / Fail / Not run | Notes / record ID |
+| --- | --- | --- | --- |
+| T19-01 | Both report pages, rows and totals | Not run | |
+| T19-02 | Issue-date filters and quantities | Not run | |
+| T19-03 | CSV downloads and spreadsheet comparison | Not run | |
+| T19-04 | Phone width, keyboard and available pagination | Not run | |
+| T19-05 | Invalid ranges and restricted access | Not run | |
+| T20-01 | Own home counts, previews and links | Not run | |
+| T20-02 | Validation, submission, Keep request and cancellation | Not run | |
+| T20-03 | Both layouts, phone width, keyboard, access and logout | Not run | |
+| Additional checks | Name each extra check actually run | Not run | |
+
+Use **Not run - needs test data** when appropriate. Record browser/version, date and revision with your results using the shared format below.
 
 ## Recording manual results
 
@@ -1898,19 +1965,15 @@ Report the purpose marker/request ID and the smallest reproduction steps for a f
 
 ---
 
-## What is not testable yet
+## Remaining validation and demonstration work
 
-T13 including both query fixes is integrated (Module 12); T14 concurrency tests are integrated through PR #37 (Module 13). T15 release/date/slip pages are integrated through PR #42 at `744bc39` (Module 15). T17 is Done and integrated through PR #43 at `55899d0` (Module 16). T18 is Done and integrated through PR #45 at `26b1ee5` (Module 17). T19 is Done and integrated through PR #49 at `e8f2a19` (Module 18); its browser and spreadsheet checks remain pending. The following task remains **Not started**:
-
-| Task | Feature | Owner |
-| --- | --- | --- |
-| T20 | Implemented and verified locally on `ralph`; review/main integration pending. Screen-reader and additional-browser coverage remain Not run | Ralph |
+T01-T20 are integrated. T20's borrower home and shared UI are available through PR #51 at `6f18116`; see Module 19 for Ralph's executed browser cases and remaining limits. T21's coherent demonstration dataset is Not started. T22 system verification and T23 actual user acceptance await T21; existing automated/browser checks do not complete those tasks. Screen-reader evaluation, Firefox/Safari, opening CSVs in spreadsheet software and the complete maintenance repair lifecycle remain unrun follow-ups.
 
 ---
 
 ## Running the automated test suite
 
-The combined PR #49 T19/authentication/UI checkout passes **315 PostgreSQL tests in 57.317s** on October 21, including all 11 T19 report tests. The preceding PR #46 authentication/UI checkout passed 304 tests in 74.818s. The integrated T18 baseline at `26b1ee5` previously passed 298 tests in 56.385s. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
+The integrated PR #51 checkout at `6f18116` passes **322 PostgreSQL tests in 127.102s** on October 21, including all seven T20 workspace tests and 11 T19 report tests. The earlier PR #49 checkout passed 315 tests in 57.317s. The preceding PR #46 authentication/UI checkout passed 304 tests in 74.818s. The integrated T18 baseline at `26b1ee5` previously passed 298 tests in 56.385s. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput
@@ -1919,6 +1982,9 @@ The combined PR #49 T19/authentication/UI checkout passes **315 PostgreSQL tests
 Run a specific module's tests:
 
 ```powershell
+# Integrated borrower workspace (T20)
+.\.venv\Scripts\python.exe manage.py test accounts.tests.test_workspace --noinput
+
 # Per-unit returns, overdue and overlapping returns (T17)
 .\.venv\Scripts\python.exe manage.py test borrowing.tests.test_returns borrowing.tests.test_return_concurrency --noinput
 
@@ -1962,8 +2028,8 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests.test_reports --noinput
 ```
 
-All tests must pass before handover; the combined PR #49 T19/authentication/UI checkout passed 315 PostgreSQL tests in 57.317s on October 21. T01–T19 are integrated. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
+All tests must pass before handover; the integrated PR #51 checkout passed 322 PostgreSQL tests in 127.102s on October 21. T01–T20 are integrated. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
 
 ---
 
-*Manual testing guide - scope: T01–T19 integrated; Modules 15–18 distinguish automated evidence and pending browser checks. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
+*Manual testing guide - scope: T01–T20 integrated; Modules 15–19 distinguish automated evidence, Ralph's executed T20 browser checks and remaining manual cases. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
