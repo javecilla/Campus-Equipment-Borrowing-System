@@ -1,10 +1,10 @@
-"""Read operational settings, audit history, and live dashboard summaries."""
+"""Read operational settings, audit history, dashboards, and loan reports."""
 
 from dataclasses import dataclass
 from datetime import date
 
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import CharField, Count, F, QuerySet, Value
+from django.db.models import CharField, Count, F, Q, QuerySet, Value
 from django.db.models.functions import Cast, Concat, TruncMonth
 
 from borrowing.models import BorrowRequest, Loan, LoanUnit, RequestStatus
@@ -33,6 +33,14 @@ class DashboardSnapshot:
     cards: DashboardCards
     monthly_issued_loans: tuple[ChartPoint, ...]
     category_issued_units: tuple[ChartPoint, ...]
+
+
+@dataclass(frozen=True)
+class ReportTotals:
+    loan_count: int
+    issued_quantity: int
+    returned_quantity: int
+    outstanding_quantity: int
 
 
 def monthly_issued_loans(today: date) -> tuple[ChartPoint, ...]:
@@ -82,6 +90,49 @@ def dashboard_snapshot(today: date) -> DashboardSnapshot:
         ),
         monthly_issued_loans=monthly_issued_loans(today),
         category_issued_units=category_issued_units,
+    )
+
+
+def loan_report_rows(
+    date_from: date | None,
+    date_to: date | None,
+    today: date,
+) -> QuerySet[Loan]:
+    """Return date-filtered loans once each with nonmultiplying unit totals."""
+    loans: QuerySet[Loan] = with_loan_progress(
+        Loan.objects.select_related("request__owner", "issued_by"), today
+    )
+    if date_from is not None:
+        loans = loans.filter(issued_on__gte=date_from)
+    if date_to is not None:
+        loans = loans.filter(issued_on__lte=date_to)
+    return loans.order_by("-issued_on", "-issued_at", "-pk")
+
+
+def overdue_report_rows(
+    date_from: date | None,
+    date_to: date | None,
+    today: date,
+) -> QuerySet[Loan]:
+    """Return currently outstanding overdue loans within the issue-date range."""
+    return loan_report_rows(date_from, date_to, today).filter(
+        outstanding_quantity__gt=0,
+        due_date__lt=today,
+    )
+
+
+def report_totals(loans: QuerySet[Loan]) -> ReportTotals:
+    """Aggregate the exact filtered report rows without repeating loan-unit joins."""
+    unit_values: dict[str, int] = LoanUnit.objects.filter(loan_id__in=loans.values("pk")).aggregate(
+        issued_quantity=Count("pk"),
+        returned_quantity=Count("pk", filter=Q(return_record__isnull=False)),
+        outstanding_quantity=Count("pk", filter=Q(return_record__isnull=True)),
+    )
+    return ReportTotals(
+        loan_count=loans.count(),
+        issued_quantity=unit_values["issued_quantity"],
+        returned_quantity=unit_values["returned_quantity"],
+        outstanding_quantity=unit_values["outstanding_quantity"],
     )
 
 

@@ -4,7 +4,7 @@
 
 Kenneth, Margareth and Ellyssa now focus on validation, documentation and manual testing under the [current responsibilities](tasks.md#current-ownership-and-support-responsibilities). Run available cases and record actual outcomes; unimplemented flows remain Not run. Report T15/T16 defects to Jerome, T17/T20 defects to Ralph and T18/T19 defects to Alex. Diagram preparation stays on standby until Jerome's go signal after system completion, subject to T25 prerequisites.
 
-This guide covers T01-T14/T16 integrated in main, including T13 query fixes through PR #35 and T14 concurrency proof through PR #37 at `5381c83` ([Module 13](#module-13--postgresql-competing-approvals-t14)). T15 is integrated through PR #42 at `744bc39`; [Module 15](#module-15--release-due-date-revision-and-borrowing-slip-t15) records release/date/slip checks. T17 returns are integrated through PR #43 at `55899d0`, source `bd62ed7`; [Module 16](#module-16--per-unit-returns-and-overdue-t17) records the isolated browser checks. Broader T12/T13/T16 browser results remain Not run until supplied.
+This guide covers T01-T14/T16 integrated in main, including T13 query fixes through PR #35 and T14 concurrency proof through PR #37 at `5381c83` ([Module 13](#module-13--postgresql-competing-approvals-t14)). T15 is integrated through PR #42 at `744bc39`; [Module 15](#module-15--release-due-date-revision-and-borrowing-slip-t15) records release/date/slip checks. T17 returns are integrated through PR #43 at `55899d0`, source `bd62ed7`; [Module 16](#module-16--per-unit-returns-and-overdue-t17) records the isolated browser checks. T19 reports are integrated through PR #49 at `e8f2a19`, source `16e1d4c`; [Module 18](#module-18--administrator-loan-and-overdue-reporting-t19) records the exact pending browser cases. Broader T12/T13/T16 browser results remain Not run until supplied.
 
 The shared M3 UI refresh (UI-09) is integrated through PR #39 at `a35e0f1`, source `043822e`, preserved in main `866eb7e`; [Module 14](#module-14--shared-m3-layout-and-controls-ui-09) records its actual layout/accessibility smoke checks separately from the workflow cases below.
 
@@ -1650,7 +1650,7 @@ For an actual loan ID, inspect its ReturnRecord `loan_unit_id`, `received_by_id`
 
 ## Module 17 — Live administration dashboard (T18)
 
-**Status:** Done and integrated through PR #45 at `26b1ee5`, source `54380fd`. Fresh merged-source review passes all 298 PostgreSQL tests in 56.385s; see the [review receipt](../handoffs/t18-main-integration-review-and-t19-readiness-10-20-2026.md). Alex / T19 has accepted, integrated T17/T18 prerequisites; T19 reports remain Not started and unavailable.
+**Status:** Done and integrated through PR #45 at `26b1ee5`, source `54380fd`. Fresh merged-source review passes all 298 PostgreSQL tests in 56.385s; see the [review receipt](../handoffs/t18-main-integration-review-and-t19-readiness-10-20-2026.md). Alex / T19 used these accepted prerequisites and is now integrated through PR #49 at `e8f2a19`.
 
 **Entry URL:** `/manage/`
 
@@ -1761,6 +1761,66 @@ Use this read-only command to recheck card and series sizes without exposing bor
 - **UI-11 browser fixture:** Cards `11 / 1 / 3 / 1`; May–October 2026 monthly counts `1 / 3 / 0 / 2 / 0 / 2`; category counts `6 / 6 / 4`, including returned units. These are isolated verification records, not the live snapshot or T21 demonstration dataset.
 - **Not run:** Firefox/Safari, complete screen-reader evaluation, performance measurement, many-category vertical scrolling, live transaction mutations in a browser and system-wide acceptance. Alex's earlier Not run browser state remains historical in his handoff.
 
+## Module 18 — Administrator loan and overdue reporting (T19)
+
+**Status:** Done and integrated through PR #49 at fetched main `e8f2a19`, source `16e1d4c`. Fresh review passes **315 PostgreSQL tests in 57.317s**; source/merge tree equality and T17/T18 ancestry are verified. Ralph / T20 has all prerequisites satisfied and remains Not started. Browser/mobile/keyboard/spreadsheet checks remain Not run. See [integration review](../handoffs/t19-main-review-and-local-merge-conflict-resolution-10-21-2026.md).
+
+**Entry URLs:**
+
+- Loan report: `/manage/reports/loans/`
+- Overdue report: `/manage/reports/overdue/`
+- Loan CSV: `/manage/reports/loans/export/`
+- Overdue CSV: `/manage/reports/overdue/export/`
+
+**Required role:** Active `ADMIN`. Use only fictional records in an isolated database. Filters use the stored Asia/Manila issue date, include both supplied boundaries, and may leave either side unbounded.
+
+### T19-01 - Access, methods, validation and empty states
+
+1. Visit all four URLs anonymously. Each request must redirect to login with a safe same-origin `next` value.
+2. Sign in as an active `BASIC_USER` and visit all four URLs directly. Each request must return 403.
+3. Sign in as an administrator, deactivate that account from a separate active-admin session, and revisit all four URLs. Each request must return 403 and invalidate the inactive session.
+4. As an active administrator, send GET requests to all four URLs, then try HEAD and POST. GET returns the report/CSV; HEAD and POST return 405 and create no records.
+5. Submit `date_from=not-a-date`, then `date_from=2026-10-21&date_to=2026-10-20`, on both HTML reports and both export URLs. Each response must show the bound issue-date error as HTML, expose no unfiltered rows, and download no CSV.
+6. Repeat on an isolated empty database. Both reports show zero totals and their report-specific empty message.
+
+### T19-02 - Inclusive filters, statuses, quantities and pagination
+
+Prepare fictional issued loans whose stored issue dates fall before, exactly on, within and after a chosen range. Include one active loan, one partially returned loan, one fully returned loan, one outstanding overdue loan and enough additional loans to exceed 25 rows.
+
+| Check | Expected result |
+| --- | --- |
+| Inclusive dates | Loans issued exactly on `date_from` and `date_to` appear; outside loans do not. Missing either bound leaves that side unbounded. |
+| Loan report | Active, partially returned, fully returned and overdue loans appear in newest issue-date/time/ID order. |
+| Overdue report | Only loans with at least one outstanding LoanUnit and `due_date` before the current campus date appear. Fully returned and due-today loans do not. |
+| Quantities | Issued equals stored LoanUnits; returned equals LoanUnits with a ReturnRecord; outstanding equals issued minus returned. |
+| Status | Outstanding overdue loans show Overdue; other outstanding loans show Active; fully returned loans show Closed. |
+| Totals | Every loan contributes once and every physical unit contributes once, even when several return relationships exist. |
+| Pagination | Page 2 retains both issue-date query parameters; invalid, zero and out-of-range pages return 404. |
+
+### T19-03 - Matching and safe CSV exports
+
+1. Filter each HTML report and record its ordered loan IDs plus loan, issued, returned and outstanding totals.
+2. Follow that page's Download CSV link. Confirm the CSV contains every matching row, not only the current page, in the same order, with identical quantities and one matching totals row.
+3. Confirm `Content-Type: text/csv; charset=utf-8`, UTF-8 BOM encoding, attachment filenames `loan-report.csv` and `overdue-report.csv`, and the documented column headers. The overdue CSV additionally includes Overdue days.
+4. Use fictional borrower/purpose text containing Unicode, commas, double quotes and a newline. Open the CSV in a spreadsheet and confirm fields remain one logical row with the original text.
+5. Separately use fictional text beginning with `=`, `+`, `-`, `@`, a tab and a carriage return. Confirm every exported cell is prefixed with an apostrophe and is displayed as text rather than evaluated as a formula.
+6. Refresh both HTML reports and confirm that viewing/exporting did not create, update, return, cancel, release or delete any record.
+
+### T19-04 - Responsive and keyboard review
+
+- At desktop width, `390px` and `320px`, confirm the shared administrator navigation remains usable, totals stack cleanly, filters remain labeled and the wide table scrolls inside its labeled region without viewport overflow.
+- Use only the keyboard to reach Loan report, Overdue report, both date fields, Clear filters, Filter report, Download CSV, the scrollable table region and pagination links. Every interactive control must show visible focus.
+- Confirm the Reports navigation item remains active on both reports and exports are reachable without relying on color alone.
+
+### T19 verification
+
+- **October 21 integration review:** PR #49 at `e8f2a19` exactly matches source `16e1d4c`; all 315 PostgreSQL tests pass in 57.317s. Build, lint, schema/migrations, affected-file formatting, npm format/audit (zero vulnerabilities) and pip checks pass. Full formatting still flags three unrelated Ruff files (`accounts/views.py`, `inventory/tests/test_portal_equipment.py`, the archived borrower-portal handoff) and one djLint template (`templates/inventory/portal/equipment_list.html`). Browser/mobile/keyboard/spreadsheet checks remain Not run; see [review](../handoffs/t19-main-review-and-local-merge-conflict-resolution-10-21-2026.md).
+- **Automated:** focused T19 passed with shuffle seeds `1919` and `20261020`, reverse order, and the strengthened final seed run (11 tests in 1.576s). The final assertions include PATCH/OPTIONS denial and exact borrower/request/date/status/quantity CSV mapping. Reversed operations/borrowing passed all 130 tests in 26.833s; a fresh shuffled complete PostgreSQL database passed all 309 tests in 71.614s. After synchronizing with `c052900`, 22 overlapping report/navigation/dashboard tests passed in 5.791s and the complete 315-test PostgreSQL suite passed in 73.795s. Coverage also includes access, inclusive and invalid ranges, active/partial/closed/overdue rows, exact nonmultiplying quantities/totals, pagination/filter retention, empty states, HTML/CSV parity, CSV escaping/formula protection/headers and read-only behavior.
+- **Checks:** Django database, migration drift/applied migration, Ruff lint, changed-Python Ruff format, changed-template djLint, npm format/build/audit, pip consistency and whitespace checks pass. npm audit reports zero vulnerabilities.
+- **Unrelated findings:** repository-wide Ruff formatting would reformat a Python example in `handoffs/borrower-portal-ui-improvements-10-20-2026.md`; repository-wide djLint would split a long tag in `templates/inventory/portal/equipment_list.html`. Neither file belongs to T19 and neither was modified.
+- **Isolated data check:** a temporary fictional PostgreSQL database produced 27 loan rows totaling 31 issued, 3 returned and 28 outstanding units, plus one overdue row totaling 3 issued, 1 returned and 2 outstanding. The temporary server/database and clipboard value were removed. A later preparation session created `T19-DEMO-*` records in the ignored local development database through existing services; no report/browser result is claimed from them and they are excluded from Git.
+- **Browser and populated local data:** Not run. The computer-use runtime exposed no browser surface, so administrator/BASIC_USER workflows, populated-report behavior, downloaded-spreadsheet inspection, desktop/390/320 layouts and keyboard focus are not claimed.
+
 ## Recording manual results
 
 Use one row per actual test run. Expected outcomes in this guide do not count as passes. Keep evidence fictional and do not include passwords, session/CSRF tokens or private environment values.
@@ -1772,6 +1832,7 @@ Use one row per actual test run. Expected outcomes in this guide do not count as
 | Example: T12-01 | `170cc38`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request/loan ID; no private data |
 | Example: T16-01 | `23c1ad9` including integrated T16 fixes, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional asset code/maintenance ID; no private data |
 | Example: T18-02 | `26b1ee5`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request/loan/category markers; no private data |
+| Example: T19-03 | `e8f2a19` (PR #49), browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional report range/loan IDs and CSV filename; no borrower-private data |
 
 Report the purpose marker/request ID and the smallest reproduction steps for a failure. Retain test records rather than deleting history to make counts match. Save real findings in the current handoff or the team's review record when supplied.
 
@@ -1779,18 +1840,17 @@ Report the purpose marker/request ID and the smallest reproduction steps for a f
 
 ## What is not testable yet
 
-T13 including both query fixes is integrated (Module 12); T14 concurrency tests are integrated through PR #37 (Module 13). T15 release/date/slip pages are integrated through PR #42 at `744bc39` (Module 15). T17 is Done and integrated through PR #43 at `55899d0` (Module 16). T18 is Done and integrated through PR #45 at `26b1ee5` (Module 17). The following tasks remain **Not started**; their full workflows are not implemented:
+T13 including both query fixes is integrated (Module 12); T14 concurrency tests are integrated through PR #37 (Module 13). T15 release/date/slip pages are integrated through PR #42 at `744bc39` (Module 15). T17 is Done and integrated through PR #43 at `55899d0` (Module 16). T18 is Done and integrated through PR #45 at `26b1ee5` (Module 17). T19 is Done and integrated through PR #49 at `e8f2a19` (Module 18); its browser and spreadsheet checks remain pending. The following task remains **Not started**:
 
 | Task | Feature | Owner |
 | --- | --- | --- |
-| T19 | Loan/overdue reports and CSV export | Alex |
 | T20 | Full cross-workflow UI/accessibility acceptance; shared role layouts already exist | Ralph |
 
 ---
 
 ## Running the automated test suite
 
-The combined PR #46 authentication and integrated UI-11/UI-12 checkout passes **304 PostgreSQL tests in 74.818s**, including five dashboard and six navigation checks. The integrated T18 baseline at `26b1ee5` previously passed 298 tests in 56.385s. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
+The combined PR #49 T19/authentication/UI checkout passes **315 PostgreSQL tests in 57.317s** on October 21, including all 11 T19 report tests. The preceding PR #46 authentication/UI checkout passed 304 tests in 74.818s. The integrated T18 baseline at `26b1ee5` previously passed 298 tests in 56.385s. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput
@@ -1839,8 +1899,8 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests.test_dashboard --noinput
 ```
 
-All tests must pass before handover; the combined PR #46 authentication/UI checkout passed 304 PostgreSQL tests in 74.818s on October 20. T01–T18 are integrated. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
+All tests must pass before handover; the combined PR #49 T19/authentication/UI checkout passed 315 PostgreSQL tests in 57.317s on October 21. T01–T19 are integrated. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
 
 ---
 
-*Manual testing guide - scope: T01–T18 integrated; Modules 15–17 record actual checks. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
+*Manual testing guide - scope: T01–T19 integrated; Modules 15–18 distinguish automated evidence and pending browser checks. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
