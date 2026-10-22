@@ -2,7 +2,7 @@
 
 ## Current state
 
-- **README/SUBMISSION refreshed for Part 5/6:** copyable local environment/migration/seed/server commands, implementation evidence and package/demo checks now explain purpose and limitations. Neon is optional centralized team testing infrastructure; online deployment is not required. Fresh read-only local counts meet every minimum; dashboard active/pending/available cards are subsets. Full catalog/maintenance replay from an empty database remains a T29/T30 gap. This documentation is uncommitted/Not integrated; full T29/T30 remain Not started. See [readiness handoff](handoffs/readme-submission-and-demo-data-readiness-10-22-2026.md) and [dataset explanation](SUBMISSION.md#minimum-demonstration-data).
+- **README/SUBMISSION refreshed for Part 5/6:** copyable local environment/migration/seed/server commands, implementation evidence and package/demo checks now explain purpose and limitations. Neon is optional centralized team testing infrastructure; online deployment is not required. Fresh read-only local counts meet every minimum; dashboard active/pending/available cards are subsets. Full catalog/maintenance replay from an empty database remains a T29/T30 gap. This documentation is committed/pushed as `2defe7d` with Codex credit and integrated through user-merged PR #66 at `1ab0f07`; source ancestry and exact merge-tree equality verified. Full T29/T30 remain Not started. See [publication/integration receipt](handoffs/readme-and-submission-publication-10-22-2026.md). See [readiness handoff](handoffs/readme-submission-and-demo-data-readiness-10-22-2026.md) and [dataset explanation](SUBMISSION.md#minimum-demonstration-data).
 
 - **Screenshot gallery available:** [System screenshots](docs/system-screenshots.md) displays all 72 existing PNGs with short page-purpose descriptions in eight sections. README and SUBMISSION link the gallery; screenshots, application behavior and database configuration are unchanged by this documentation follow-up. Gallery changes are published in source `c3fb6bb` and integrated through user-merged PR #64 at `8dda8c9`; see the [publication receipt](handoffs/database-switch-and-screenshot-publication-10-22-2026.md) and [gallery handoff](handoffs/system-screenshot-gallery-10-22-2026.md). T30 packaging remains Not started.
 
@@ -93,6 +93,7 @@ Developers and AI agents write work snapshots in the project-root `handoffs/` fo
 
 | Date | Work | Author | Handoff |
 | --- | --- | --- | --- |
+| October 22, 2026 | Publish README/submission and verify user-merged PR #66 | Jerome authorization; Codex co-author credit | [Publication receipt](handoffs/readme-and-submission-publication-10-22-2026.md) |
 | October 22, 2026 | README setup, Part 5/6 submission mapping and read-only demo-data readiness | Jerome with Codex assistance | [Readiness handoff](handoffs/readme-submission-and-demo-data-readiness-10-22-2026.md) |
 | October 22, 2026 | Verify user-merged PR #64 database selector and screenshot delivery | Jerome with Codex assistance | [integration receipt](handoffs/database-switch-and-screenshot-main-integration-10-22-2026.md) |
 | October 22, 2026 | Publish database selector, screenshots and illustrated gallery | Jerome authorization; Codex co-author credit | [Publication receipt](handoffs/database-switch-and-screenshot-publication-10-22-2026.md) |
