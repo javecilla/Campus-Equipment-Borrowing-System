@@ -2029,7 +2029,7 @@ The local import ran atomically after a private database backup. Before commit, 
 
 ## Module 21 — Automated system acceptance (T22)
 
-T22 validates the integrated workflows using PostgreSQL and actual Django HTTP requests. T14/T19/T20/T21 prerequisites are integrated; T21 source `e3402bf` and publication receipt `ae6b147` are included in PR #53 at main `b828945`. The local `jerome` checkout was fast-forwarded to that merge before this work. [DEV.md](../DEV.md#t22-automated-system-acceptance) owns the complete, focused, concurrency and saved-output commands. New T22 checks are local/uncommitted until separately published/integrated.
+T22 validates the integrated workflows using PostgreSQL and actual Django HTTP requests. T14/T19/T20/T21 prerequisites are integrated; T21 source `e3402bf` and publication receipt `ae6b147` are included in PR #53 at main `b828945`. The local `jerome` checkout was fast-forwarded to that merge before this work. [DEV.md](../DEV.md#t22-automated-system-acceptance) owns the complete, focused, concurrency and saved-output commands. T22 source `a7ce0a2` is committed and pushed on `jerome`, Not integrated into main; see [publication receipt](../handoffs/t22-automated-acceptance-publication-10-22-2026.md).
 
 ### T22-01: Run complete automated acceptance
 
@@ -2071,7 +2071,7 @@ The focused command runs its own fictional fixtures; these values are not instru
 
 ### T22 execution and limits
 
-**T22 is Done locally and Not integrated.** All **339 PostgreSQL tests passed in 96.345s**; the documented three-test focused command passed in 1.470s and eight-test concurrency command in 3.319s. The [T22 handoff](../handoffs/t22-automated-system-acceptance-10-22-2026.md) records the branch/revision, failures corrected and checks not run. The photo-download test now uses temporary media and consumes its streaming response, preventing leftover files and Windows file-lock cleanup errors. Formatting that owned test also resolves its earlier mixed-line-ending finding. Remaining unrelated formatting findings are reported separately.
+**T22 is Done and published on `jerome` at `a7ce0a2`, Not integrated into main.** All **339 PostgreSQL tests passed in 96.345s**; the documented three-test focused command passed in 1.470s and eight-test concurrency command in 3.319s. The [T22 handoff](../handoffs/t22-automated-system-acceptance-10-22-2026.md) records the branch/revision, failures corrected and checks not run. The photo-download test now uses temporary media and consumes its streaming response, preventing leftover files and Windows file-lock cleanup errors. Formatting that owned test also resolves its earlier mixed-line-ending finding. Remaining unrelated formatting findings are reported separately.
 
 No browser, keyboard, phone, screen-reader, spreadsheet-opening or real participant session is implied by these automated HTTP checks. T23 still requires actual users and feedback; T24 still requires measurements and a demonstrated restore. T22 completion does not complete those tasks or authorize new commits/main integration.
 
@@ -2095,13 +2095,13 @@ Report the purpose marker/request ID and the smallest reproduction steps for a f
 
 ## Remaining validation and demonstration work
 
-T01-T21 are integrated; PR #53 at `b828945` contains the August-October dataset. T22 automated SRS minimum-scenario acceptance is Done locally with 339 passing PostgreSQL tests, including the complete HTTP repair lifecycle; see Module 21 for executed evidence. T23 prerequisites are satisfied but actual participant sessions/feedback remain pending. T24 awaits T22 main integration and measured operational evidence. Earlier browser coverage remains attributed to Module 19; screen-reader evaluation, Firefox/Safari, spreadsheet opening and complete browser maintenance-lifecycle checks remain unrun follow-ups.
+T01-T21 are integrated; PR #53 at `b828945` contains the August-October dataset. T22 automated SRS minimum-scenario acceptance is published on `jerome` at `a7ce0a2` with 339 passing PostgreSQL tests, including the complete HTTP repair lifecycle; see Module 21 for executed evidence. T23 prerequisites are satisfied but actual participant sessions/feedback remain pending. T24 awaits T22 main integration and measured operational evidence. Earlier browser coverage remains attributed to Module 19; screen-reader evaluation, Firefox/Safari, spreadsheet opening and complete browser maintenance-lifecycle checks remain unrun follow-ups.
 
 ---
 
 ## Running the automated test suite
 
-The current T22 checkout on `jerome` over integrated main `b828945` passes **339 PostgreSQL tests in 96.345s** on October 22, including three new system acceptance tests. The preceding T21 source passed 336 tests before integration through PR #53; its five account-seed, seven history/cleanup and two physical-unit tests remain included. The earlier 327-test account-only stage is historical in its dated handoff. The integrated PR #51 checkout at `6f18116` passed **322 PostgreSQL tests in 127.102s** on October 21, including all seven T20 workspace tests and 11 T19 report tests. The earlier PR #49 checkout passed 315 tests in 57.317s. The preceding PR #46 authentication/UI checkout passed 304 tests in 74.818s. The integrated T18 baseline at `26b1ee5` previously passed 298 tests in 56.385s. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
+T22 source `a7ce0a2`, published on `jerome` over integrated main `b828945`, passes **339 PostgreSQL tests in 96.345s** on October 22, including three new system acceptance tests. The preceding T21 source passed 336 tests before integration through PR #53; its five account-seed, seven history/cleanup and two physical-unit tests remain included. The earlier 327-test account-only stage is historical in its dated handoff. The integrated PR #51 checkout at `6f18116` passed **322 PostgreSQL tests in 127.102s** on October 21, including all seven T20 workspace tests and 11 T19 report tests. The earlier PR #49 checkout passed 315 tests in 57.317s. The preceding PR #46 authentication/UI checkout passed 304 tests in 74.818s. The integrated T18 baseline at `26b1ee5` previously passed 298 tests in 56.385s. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput
