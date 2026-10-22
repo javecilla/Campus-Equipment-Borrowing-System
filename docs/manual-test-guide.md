@@ -2229,7 +2229,7 @@ The coordinator-only photo importer was exercised against actual Neon storage: 2
 
 ## Module 24 - Explicit database selection and screenshot evidence (HOST-02)
 
-**Delivery:** local, uncommitted and Not integrated. [DEV connection switching](../DEV.md#switch-between-local-and-shared-databases) owns the setup instructions; [SUBMISSION.md](../SUBMISSION.md#screenshots-checklist) owns the captured-page checklist. Existing fictional local data/photos were inspected October 22, 2026: 9 accounts, 29 catalog items, 46 units, 30 requests, 20 loans and 10 maintenance records; every assigned image existed locally.
+**Delivery:** source `c3fb6bb` is committed/pushed on `origin/jerome`; Not integrated. See the [publication receipt](../handoffs/database-switch-and-screenshot-publication-10-22-2026.md). [DEV connection switching](../DEV.md#switch-between-local-and-shared-databases) owns the setup instructions; [SUBMISSION.md](../SUBMISSION.md#screenshots-checklist) owns the captured-page checklist. Existing fictional local data/photos were inspected October 22, 2026: 9 accounts, 29 catalog items, 46 units, 30 requests, 20 loans and 10 maintenance records; every assigned image existed locally.
 
 | Field | Local example | Shared example |
 | --- | --- | --- |
