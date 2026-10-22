@@ -4,9 +4,13 @@
 
 T23's preparation, R01 report and startup asset enhancement E01 are integrated through user-merged PR #56 at main `17873b6` (source `cc00a93`), October 22, 2026, 13:26:59 Asia/Manila. Fresh review verifies exact source/merge-tree equality and preservation of T20/T21/T22 and HOST-01. Ralph owns the delivery with Codex assistance; Ralph/Ellyssa remain usability coordinators. See [integration review](../handoffs/t23-main-integration-review-and-t24-readiness-10-22-2026.md).
 
-**Implementation integrated; acceptance evidence follow-up In progress.** R01 is a limited user report that both roles work. Ralph's [delivery snapshot](../handoffs/t23-acceptance-and-startup-asset-feedback-enhancement-10-22-2026.md) also reports a real missing-build symptom (R02/F02) and E01 implementation, but the merged canonical record omitted that evidence and its referenced tests. This review supplies the missing technical checks and attributed record below. It does not reconstruct an unavailable original traceback or invent participant metadata. Ralph's reported local Done outcome remains in the historical snapshot; full participant-session acceptance and the human recheck cannot be independently substantiated from this checkout.
+**Done, with limited user-reported acceptance evidence.** R01 records the user's working BASIC_USER and ADMIN flows; R02/F02 records the user-reported missing-build problem through Ralph's delivery; E01 implements the feedback-driven startup check and its real-file/startup checks pass. These satisfy the backlog's acceptance/feedback/enhancement deliverables. The earlier review kept the task In progress while seeking richer session metadata and a human enhancement recheck; neither a fixed participant count, independent observation, retained original traceback nor mandatory human recheck is specified by T23 or the course brief. That follow-up was stricter than the stated completion criteria.
 
-T20 source `b43fb99`, T21 source `e3402bf`, and T22 source `a7ce0a2`/publication `7d0043d` are main ancestors. T23's entry gate and T24's independent T22 gate are satisfied. T24 measurements/restore remain Not started and can proceed alongside participant-evidence follow-up.
+This status correction adds no participant, test session, quotation, rating or new human recheck. The original traceback/session metadata remain unavailable, and post-enhancement human recheck remains Not run. Those limits bound the result; completion does not imply representative campus usability research. See the [closure/readiness handoff](../handoffs/t23-acceptance-closure-and-t25-readiness-10-22-2026.md).
+
+The original implementation is integrated through PR #56; the review's added tests/document corrections are now integrated through user-merged PR #57 at `87098a6`, preserving source `9a491c6` exactly. The publication receipt `a9fff7e` remains member-branch documentation.
+
+T20 source `b43fb99`, T21 source `e3402bf`, and T22 source `a7ce0a2`/publication `7d0043d` are main ancestors. T23's entry gate and T24's independent T22 gate are satisfied. T24 [lab measurements/recovery](operational-verification.md) pass locally and await main integration. [T25 readiness](../DEV.md#t25-readiness-and-consumer-handoff) records that integration gate and the separate diagram go signal.
 
 ## Local setup checked before sessions
 
@@ -88,6 +92,15 @@ The check detects absent entry files, not stale contents or every generated chun
 
 ## Completion gate and next action
 
-T23 remains In progress for acceptance-evidence follow-up: Ralph/Ellyssa should reconcile the reported completion with the retained session/source record and seek a participant recheck where practical. Keep unspecified task outcomes, environment and assistance explicit; no extra participants or satisfaction scores are invented. E01 is integrated and technically verified, so the outstanding work is evidence/participant follow-up rather than another enhancement.
+| Completion criterion | Retained evidence / outcome |
+| --- | --- |
+| T20/T21 accepted and integrated | Verified main ancestry; satisfied |
+| Both role perspectives accepted | R01's actual user-reported borrower/admin working result; limited self-report, no task-level observations invented |
+| Actual issue/finding and disposition | R02/F02's reported missing dashboard bundle; attributed delivery evidence and explicit source limits retained |
+| Feedback-driven improvement implemented and verified | E01 is integrated; real-file missing-build/recovery checks and ordinary CLI startup rejection pass |
+| Unresolved known source issue | Missing-build failure is addressed; check limits are documented, with no new blocking runtime defect identified |
+| Optional richer metadata / human recheck | Unavailable / Not run; retained as evidence limits, not invented results or mandatory completion gates |
 
-**Next action:** Jerome may start T24 because its sole prerequisite is integrated T22. Ralph/Ellyssa continue the T23 evidence follow-up in parallel. T26 research and T25 diagrams remain separate; diagrams still need T23/T24 completion and Jerome's go signal.
+**T23 is Done and its implementation/review fixes are integrated.** Existing role acceptance and the verified enhancement meet the recorded scope; wider participant research remains separate under T26. No change to the task's deliverable or course requirement was needed.
+
+**Next action:** review/publish/integrate T24's local work before starting dependent T25 execution. Jerome must still explicitly confirm system completion and give the diagram go signal. T25 remains Not started; use the [consumer handoff](../DEV.md#t25-readiness-and-consumer-handoff). No new human check or diagram work was performed for this status reconciliation.

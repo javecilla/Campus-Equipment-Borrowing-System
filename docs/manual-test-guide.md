@@ -1930,7 +1930,7 @@ As the basic user, note the Pending requests count, then click **Create a reques
 
 **Previous evidence:** [merged-source review](../handoffs/t20-main-integration-review-and-documentation-10-21-2026.md): **322 PostgreSQL tests passed in 127.102s**, including seven workspace tests. [Ralph's handoff](../handoffs/ralph-t20-role-workspace-integration-10-21-2026.md) records his earlier 322-test/87.253s run, 24 focused checks, 17 routes at five widths, keyboard checks, request/return/cancellation flows, CSV downloads and JavaScript-disabled navigation.
 
-**This guide update:** no new browser run or user acceptance session. Screen-reader, Firefox/Safari, spreadsheet opening and complete maintenance-repair browser coverage remain pending. T21/T22/T23 retain their completion gates.
+**This guide update:** no new browser run or user acceptance session. Screen-reader, Firefox/Safari, spreadsheet opening and complete maintenance-repair browser coverage remain pending. Subsequent T21/T22/T23 deliveries are Done/integrated; that does not turn these unrun browser checks into passes.
 
 ### T19 and T20 - your test checklist
 
@@ -2073,11 +2073,11 @@ The focused command runs its own fictional fixtures; these values are not instru
 
 **T22 is Done and published on `jerome` at `a7ce0a2`, Not integrated into main.** All **339 PostgreSQL tests passed in 96.345s**; the documented three-test focused command passed in 1.470s and eight-test concurrency command in 3.319s. The [T22 handoff](../handoffs/t22-automated-system-acceptance-10-22-2026.md) records the branch/revision, failures corrected and checks not run. The photo-download test now uses temporary media and consumes its streaming response, preventing leftover files and Windows file-lock cleanup errors. Formatting that owned test also resolves its earlier mixed-line-ending finding. Remaining unrelated formatting findings are reported separately.
 
-No browser, keyboard, phone, screen-reader, spreadsheet-opening or real participant session is implied by these automated HTTP checks. T23 still requires actual users and feedback; T24 still requires measurements and a demonstrated restore. T22 completion does not complete those tasks or authorize new commits/main integration.
+No browser, keyboard, phone, screen-reader, spreadsheet-opening or real participant session is implied by these automated HTTP checks. T23 is Done on its retained limited acceptance record; subsequent [T24 operational results](operational-verification.md) now record measurements and a demonstrated local restore. T22 completion alone does not complete those tasks or authorize new commits/main integration.
 
 ## Module 22 — Participant usability sessions (T23)
 
-**Status: implementation integrated through PR #56 at `17873b6`; participant-evidence follow-up In progress.** The [canonical T23 record](usability-acceptance.md) retains R01's limited both-role functional report and attributed R02/E01 missing-build delivery evidence. E01 is technically verified; full task-level participant sessions and human recheck are not independently substantiated. T20/T21 prerequisites are integrated. The original preparation tasks below remain facilitator references, with historical local inputs; automated/browser checks do not prove representative participant acceptance.
+**Status: Done with limited user-reported acceptance; implementation/review fixes integrated through PR #56/#57.** The [canonical T23 criteria/evidence](usability-acceptance.md#completion-gate-and-next-action) maps R01's actual both-role report and attributed R02/F02/E01 feedback/fix to the required deliverables. Missing session metadata and Not-run human recheck are retained limits, not mandatory additional gates. No new participant run is claimed. The original preparation tasks below remain facilitator references with historical inputs; completion does not imply a representative campus sample.
 
 ### T23-01: Prepare the session
 
@@ -2141,6 +2141,40 @@ E01 is integrated through PR #56, source `cc00a93`. [R02/F02](usability-acceptan
 
 **Fresh review execution:** registered missing-chart/recovery and complete-missing-build checks pass in the full isolated suite; ordinary CLI startup was independently rejected using a temporary real build missing charts. See [review receipt](../handoffs/t23-main-integration-review-and-t24-readiness-10-22-2026.md) for full results. Ralph's earlier Edge/Chromium results remain attributed to his [delivery snapshot](../handoffs/t23-acceptance-and-startup-asset-feedback-enhancement-10-22-2026.md); this review did not repeat those browser sessions or a human recheck. The check does not detect stale content or every generated chunk.
 
+## Module 23 — Performance and recovery (T24)
+
+**Done locally on `jerome`, uncommitted and Not integrated.** October 22, 2026, Asia/Manila; baseline `a9fff7e`, T22 prerequisite integrated through PR #54. [DEV replay commands](../DEV.md#t24-readiness-and-consumer-handoff) and [canonical results](operational-verification.md) define the exact procedure, measured scope and limitations. These are operational HTTP/ORM checks, not human/browser usability evidence.
+
+### T24-01: Verify isolation before writing
+
+| Field | Verified rehearsal value / expected boundary |
+| --- | --- |
+| Ordinary app database | Shared `neondb`; unchanged `.env.local`, no schema/seed/workflow writes for T24 |
+| Benchmark | `campus_t24_benchmark`, loopback `127.0.0.1:55424`, PostgreSQL 18.6, local media |
+| Restore | Fresh empty `campus_t24_restore` on the same dedicated local server; separate restored-media directory |
+| Regression suite | Existing local PostgreSQL 17 `test_campus_equipment`; explicit empty `DATABASE_URL` / local media child override |
+| Private configuration | Ignored `.env.t24.local`; do not copy passwords or raw dumps into Git |
+
+Use DEV's connection printout before migration/fixture/restore commands. Expected: guarded local target, or an explicit refusal before mutation. A populated fixture/restore target and reused output path must fail instead of being cleared. **Executed:** both benchmark and restore guards were invoked against configured Neon and rejected it. Local benchmark migrations were applied only after its name/loopback target was checked.
+
+### T24-02: Measure the actual scale
+
+Follow DEV's fresh-cluster performance replay. Expected: exactly 1,000 physical units and 5,000 requests, five authenticated sessions for each role, successful warm-up, ten workers participating in each of 260 request waves. Read `latency.json`: all 2,600 measured GETs should be 200; nearest-rank p95 <= 2 seconds for lists/details and <= 3 seconds for dashboards/reports. Inspect retained raw statuses if a request fails; missing or partial output is not a pass.
+
+**Executed:** 2,600/2,600 HTTP 200, no latency miss; worst concrete-route p95 0.483s, largest single response 0.593s. Query profiles and real EXPLAIN plans cover 20 representative routes, 3 to 9 ORM queries each; largest sampled plan 15.442ms. No production query/index/cache change was needed. See the canonical route table for sample counts and hardware/workload limits.
+
+### T24-03: Back up and restore current data plus photos
+
+Follow DEV's read-only Neon backup and fresh local restore. Expected: dump SHA-256 matches its manifest; every restored table count and complete-content hash matches the exported snapshot **before** sign-in/session checks; every referenced image is restored to separate local media and matches its hash. Never restore over the shared database or preserved development database. The target's empty `public` schema is removed without CASCADE because this archive recreates it; populated targets are refused.
+
+**Executed:** 22 exact table fingerprints, all 23 photo hashes, both-role CSRF/password login and role denial, reports/CSV and protected photo bytes passed in 58 HTTP checks. A recovered submit -> approve -> release -> return cycle also passed and its verification transaction rolled back. Dump: 5.431s; complete backup/media verification: 19.989s; native restore: 0.414s; restore/media/hash/HTTP verification: 4.852s. Initial empty-schema conflict was diagnosed and corrected; no restore error remains unresolved.
+
+### T24-04: Retain evidence and close the rehearsal
+
+Expected: raw measurements/SQL plans/dump/media/manifest remain private under ignored `output/`, while public results contain only configuration, aggregate timings/counts and limitations. Stop the temporary HTTP process and dedicated portable database cluster; keep the original PostgreSQL service and ordinary Neon configuration intact. Record the actual result in the [dated handoff](../handoffs/t24-performance-and-recovery-verification-10-22-2026.md).
+
+**Executed:** temporary HTTP server and isolated PostgreSQL cluster stopped, private artifact exclusions verified. Full isolated regression suite: **344 PostgreSQL tests passed in 147.179s**. Two pre-existing unrelated format findings remain. Cloud load, production hosting, cold-cache/static-image/browser timing, sustained concurrent writes, every report filter/export throughput, cross-service atomic snapshots, scheduled/off-site recovery and restore back into Neon were **Not run**. These lab results are not an RPO/RTO or production latency guarantee.
+
 ## Recording manual results
 
 Use one row per actual test run. Expected outcomes in this guide do not count as passes. Keep evidence fictional and do not include passwords, session/CSRF tokens or private environment values.
@@ -2194,7 +2228,7 @@ The coordinator-only photo importer was exercised against actual Neon storage: 2
 
 ## Remaining validation and demonstration work
 
-T01-T21 are integrated; PR #53 at `b828945` contains the August-October dataset. T22 source `a7ce0a2` is integrated through PR #54, with its 339-test delivery including the complete HTTP repair lifecycle; see Module 21. T23 E01 is integrated through PR #56 and technically verified; participant-evidence follow-up remains In progress in the canonical record. T24's T22 integration gate is satisfied; [performance/restore work](../DEV.md#t24-readiness-and-consumer-handoff) remains Not started. Earlier browser coverage remains attributed to Module 19; screen-reader evaluation, Firefox/Safari, spreadsheet opening and complete browser maintenance-lifecycle checks remain unrun follow-ups.
+T01-T21 are integrated; PR #53 at `b828945` contains the August-October dataset. T22 source `a7ce0a2` is integrated through PR #54, with its 339-test delivery including the complete HTTP repair lifecycle; see Module 21. T23 is Done with its limited self-report and verified E01 retained; review fixes are integrated through PR #57. T24 [performance/recovery verification](operational-verification.md) is Done locally and Not integrated; T23 is independently Done on its recorded evidence, and diagram execution still waits for T24 main integration and Jerome's explicit go signal. Earlier browser coverage remains attributed to Module 19; screen-reader evaluation, Firefox/Safari, spreadsheet opening and complete browser maintenance-lifecycle checks remain unrun follow-ups.
 
 ---
 
@@ -2257,8 +2291,8 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests.test_reports --noinput
 ```
 
-All tests must pass before handover; the integrated PR #51 checkout passed 322 PostgreSQL tests in 127.102s on October 21. T01–T20 are integrated. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
+All tests must pass before handover; the T24 checkout passed **344 PostgreSQL tests in 147.179s** on October 22 using the isolated local override. T01-T22 are integrated; T24 is Done locally and Not integrated. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
 
 ---
 
-*Manual testing guide - scope: T01–T20 integrated; Modules 15–19 distinguish automated evidence, Ralph's executed T20 browser checks and remaining manual cases. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
+*Manual testing guide - scope: T01-T22 integrated; T23 Done/integrated with evidence limits retained; T24 operational checks pass locally and await integration. T25 readiness is prepared and awaits T24 main integration plus the diagram go signal. Earlier browser results remain separately attributed. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
