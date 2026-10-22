@@ -26,7 +26,7 @@ No PPT/slides needed. Bring a **printed project rubric in two copies** on demo d
 
 ## Screenshots checklist
 
-View the [system screenshot gallery](docs/system-screenshots.md) for all 72 images displayed with short page descriptions.
+View the [system screenshot gallery](docs/system-screenshots.md) for all 72 images displayed with short page descriptions. Source `c3fb6bb` is published on `origin/jerome`; [publication receipt](handoffs/database-switch-and-screenshot-publication-10-22-2026.md) verifies remote equality and Codex credit. Main integration remains pending.
 
 The instructor confirmed screenshots of the system are the required evidence format.
 Captured October 22, 2026, Asia/Manila: **72 actual browser PNGs** in `screenshots/`, using a disposable copy of the local fictional dataset and local photos. Desktop viewport: 1440 x 1000; two mobile captures: 390 x 844. All 39 checklist entries below have evidence. This completes screenshot collection, not T30 ZIP assembly or clean-machine verification.
