@@ -2143,7 +2143,7 @@ E01 is integrated through PR #56, source `cc00a93`. [R02/F02](usability-acceptan
 
 ## Module 23 — Performance and recovery (T24)
 
-**Done locally on `jerome`, uncommitted and Not integrated.** October 22, 2026, Asia/Manila; baseline `a9fff7e`, T22 prerequisite integrated through PR #54. [DEV replay commands](../DEV.md#t24-readiness-and-consumer-handoff) and [canonical results](operational-verification.md) define the exact procedure, measured scope and limitations. These are operational HTTP/ORM checks, not human/browser usability evidence.
+**Done and integrated through PR #58 at `478eab3`, source `49d5538`.** October 22, 2026, Asia/Manila; baseline `a9fff7e`, T22 prerequisite integrated through PR #54. [DEV replay commands](../DEV.md#t24-readiness-and-consumer-handoff) and [canonical results](operational-verification.md) define the exact procedure, measured scope and limitations. These are operational HTTP/ORM checks, not human/browser usability evidence.
 
 ### T24-01: Verify isolation before writing
 
@@ -2195,7 +2195,7 @@ Report the purpose marker/request ID and the smallest reproduction steps for a f
 
 ## Module 22 - Shared Neon database and photos (HOST-01)
 
-**Delivery:** local, uncommitted `jerome`; Not integrated into main. Use [DEV teammate setup](../DEV.md#shared-neon-database-and-photos) as the canonical command/configuration guide. Credentials are sent privately by Jerome; do not record them here. Existing Django roles and page behavior remain authoritative.
+**Delivery:** integrated through PR #55 at `29003cf`, source `6dcad58`. Use [DEV teammate setup](../DEV.md#shared-neon-database-and-photos) as the canonical command/configuration guide. Credentials are sent privately by Jerome; do not record them here. Existing Django roles and page behavior remain authoritative.
 
 ### HOST-01-01 - Connect an existing team dataset
 
@@ -2228,7 +2228,7 @@ The coordinator-only photo importer was exercised against actual Neon storage: 2
 
 ## Remaining validation and demonstration work
 
-T01-T21 are integrated; PR #53 at `b828945` contains the August-October dataset. T22 source `a7ce0a2` is integrated through PR #54, with its 339-test delivery including the complete HTTP repair lifecycle; see Module 21. T23 is Done with its limited self-report and verified E01 retained; review fixes are integrated through PR #57. T24 [performance/recovery verification](operational-verification.md) is Done locally and Not integrated; T23 is independently Done on its recorded evidence, and diagram execution still waits for T24 main integration and Jerome's explicit go signal. Earlier browser coverage remains attributed to Module 19; screen-reader evaluation, Firefox/Safari, spreadsheet opening and complete browser maintenance-lifecycle checks remain unrun follow-ups.
+T01-T21 are integrated; PR #53 at `b828945` contains the August-October dataset. T22 source `a7ce0a2` is integrated through PR #54, with its 339-test delivery including the complete HTTP repair lifecycle; see Module 21. T23 is Done with its limited self-report and verified E01 retained; review fixes are integrated through PR #57. T24 [performance/recovery verification](operational-verification.md) is Done/integrated through PR #58; T25 prerequisite integration is satisfied and diagram execution still waits for Jerome's explicit go signal. Earlier browser coverage remains attributed to Module 19; screen-reader evaluation, Firefox/Safari, spreadsheet opening and complete browser maintenance-lifecycle checks remain unrun follow-ups.
 
 ---
 
@@ -2291,8 +2291,8 @@ Run a specific module's tests:
 .\.venv\Scripts\python.exe manage.py test operations.tests.test_reports --noinput
 ```
 
-All tests must pass before handover; the T24 checkout passed **344 PostgreSQL tests in 147.179s** on October 22 using the isolated local override. T01-T22 are integrated; T24 is Done locally and Not integrated. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
+All tests must pass before handover; the T24 checkout passed **344 PostgreSQL tests in 147.179s** on October 22 using the isolated local override. T01-T22 are integrated; T24 is Done/integrated through PR #58. Record actual count/timing in the handoff; [DEV.md](../DEV.md#before-handing-over-work) owns the full check list.
 
 ---
 
-*Manual testing guide - scope: T01-T22 integrated; T23 Done/integrated with evidence limits retained; T24 operational checks pass locally and await integration. T25 readiness is prepared and awaits T24 main integration plus the diagram go signal. Earlier browser results remain separately attributed. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*
+*Manual testing guide - scope: T01-T22 integrated; T23 Done/integrated with evidence limits retained; T24 operational checks are integrated through PR #58. T25 prerequisite integration is satisfied; diagrams still await the explicit go signal. Earlier browser results remain separately attributed. Maintained alongside [HANDOFF.md](../HANDOFF.md) and [docs/tasks.md](tasks.md). Record browser outcomes only after execution.*

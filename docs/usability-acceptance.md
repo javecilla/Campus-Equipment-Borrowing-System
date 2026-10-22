@@ -8,9 +8,9 @@ T23's preparation, R01 report and startup asset enhancement E01 are integrated t
 
 This status correction adds no participant, test session, quotation, rating or new human recheck. The original traceback/session metadata remain unavailable, and post-enhancement human recheck remains Not run. Those limits bound the result; completion does not imply representative campus usability research. See the [closure/readiness handoff](../handoffs/t23-acceptance-closure-and-t25-readiness-10-22-2026.md).
 
-The original implementation is integrated through PR #56; the review's added tests/document corrections are now integrated through user-merged PR #57 at `87098a6`, preserving source `9a491c6` exactly. The publication receipt `a9fff7e` remains member-branch documentation.
+The original implementation is integrated through PR #56; the review's added tests/document corrections are now integrated through user-merged PR #57 at `87098a6`, preserving source `9a491c6` exactly. The publication receipt `a9fff7e` is also integrated through PR #58 source ancestry.
 
-T20 source `b43fb99`, T21 source `e3402bf`, and T22 source `a7ce0a2`/publication `7d0043d` are main ancestors. T23's entry gate and T24's independent T22 gate are satisfied. T24 [lab measurements/recovery](operational-verification.md) pass locally and await main integration. [T25 readiness](../DEV.md#t25-readiness-and-consumer-handoff) records that integration gate and the separate diagram go signal.
+T20 source `b43fb99`, T21 source `e3402bf`, and T22 source `a7ce0a2`/publication `7d0043d` are main ancestors. T23's entry gate and T24's independent T22 gate are satisfied. T24 [lab measurements/recovery](operational-verification.md) are Done/integrated through PR #58 at `478eab3`. [T25 readiness](../DEV.md#t25-readiness-and-consumer-handoff) records the satisfied prerequisite integration gate and the still-pending diagram go signal.
 
 ## Local setup checked before sessions
 
@@ -86,7 +86,7 @@ Use [SRS U1-U4 and NFR-04](SRS.md#functional-requirements) and the affected admi
 | Fresh verification | `operations/tests/test_assets.py` now covers registered checks using real build copies, missing build and recovery. Ordinary CLI missing-chart startup independently rejects with `operations.E001`. Full results are in the integration review |
 | Earlier browser verification | Ralph reports Edge/Chromium borrower/admin flows at four widths in disposable databases; see his delivery snapshot. Not independently rerun here |
 | Participant recheck / limits | Not run. One brief both-role functional report; original missing-build report and session metadata unavailable |
-| Integration | Fresh fetched main equals local `jerome` at `17873b6`; exact source/merge tree verified before review edits |
+| Integration | Original source/PR #56 tree equality was verified; current main PR #58 at `478eab3` also integrates review source `9a491c6` and T24 source `49d5538` |
 
 The check detects absent entry files, not stale contents or every generated chunk. WSGI/ASGI hosts that skip checks must run `manage.py check --tag staticfiles` separately. Automated checks establish the enhancement's technical behavior, not a representative usability sample.
 
@@ -103,4 +103,4 @@ The check detects absent entry files, not stale contents or every generated chun
 
 **T23 is Done and its implementation/review fixes are integrated.** Existing role acceptance and the verified enhancement meet the recorded scope; wider participant research remains separate under T26. No change to the task's deliverable or course requirement was needed.
 
-**Next action:** review/publish/integrate T24's local work before starting dependent T25 execution. Jerome must still explicitly confirm system completion and give the diagram go signal. T25 remains Not started; use the [consumer handoff](../DEV.md#t25-readiness-and-consumer-handoff). No new human check or diagram work was performed for this status reconciliation.
+**Next action:** T22/T23/T24 are Done/integrated; Jerome must still explicitly confirm system completion and give the diagram go signal before T25 execution. T25 remains Not started; use the [consumer handoff](../DEV.md#t25-readiness-and-consumer-handoff). No new human check or diagram work was performed for this status reconciliation.
