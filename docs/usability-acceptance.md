@@ -2,6 +2,8 @@
 
 ## Current outcome and ownership
 
+Preparation is committed and pushed on `origin/ralph` as `5d5ca49`, with Codex co-author credit; see [publication receipt](../handoffs/ralph-t23-preparation-publication-10-22-2026.md). It is not integrated into main, and publication does not complete the participant acceptance work below.
+
 **In progress: session preparation only. No participant sessions or findings are recorded, and no feedback-driven enhancement has been selected or implemented.** Ralph and Ellyssa coordinate; all members can help facilitate, observe and verify. This is the canonical T23 session/results and improvement record. Use [Module 22](manual-test-guide.md#module-22--participant-usability-sessions-t23) for the executable walkthrough and [the T26 collection guide](user-needs-evidence-guide.md#collecting-feedback) for interview/consent guidance; link findings between topics rather than copying source notes.
 
 Baseline checked October 22, 2026: `ralph` was fast-forwarded to fetched main `6e6f594`. T20 source `b43fb99` and T21 source `e3402bf` are main ancestors, satisfying T23's entry gate. T22 source `a7ce0a2` and publication `7d0043d` are also included through PR #54; its merge tree exactly equals the publication tree. The earlier 339-test result belongs to that delivery; no acceptance suite or participant session was rerun for this preparation.
