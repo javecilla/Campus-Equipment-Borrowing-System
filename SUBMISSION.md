@@ -14,7 +14,7 @@ No PPT/slides needed. Bring a **printed project rubric in two copies** on demo d
 | --- | ------------------------------------------------------------ | ----------------------------------------------- | ----------- |
 | 1   | Application (T01–T24): all workflows implemented and tested  | Team                                            | Done        |
 | 2   | System diagrams — editable (Lucidchart or similar) T25       | Kenneth / Ellyssa / Margareth                   | In Progress |
-| 3   | User needs, options comparison, emerging-tech evaluation T26 | Jerome / Alex + everyone                        | In Progress |
+| 3   | [User needs, options comparison, emerging-tech evaluation T26](docs/user-needs-evidence-guide.md) | Jerome / Alex + everyone                        | Done (branch) |
 | 4   | Professional judgment, AI/reuse/policy disclosure T27        | Alex coordinates + everyone                     | In Progress |
 | 5   | Team participation and individual contribution evidence T28  | Everyone — rotate leadership                    | In Progress |
 | 6   | Verified user / admin / technical guides T29                 | Ellyssa+Ralph / Margareth+Kenneth / Jerome+Alex | Not Started |
@@ -98,7 +98,7 @@ Organize them in a `screenshots/` folder inside the ZIP. Name files clearly (e.g
 - [ ] Seed command documented (see `README.md` / `DEV.md` — `seed_demo_data`)
 - [ ] `screenshots/` folder — all screenshots from the checklist above
 - [ ] T25 diagram exports (images/PDFs from Lucidchart or equivalent)
-- [ ] T26 user needs evidence document
+- [ ] T26 [user-needs evidence and recommendations](docs/user-needs-evidence-guide.md) accepted record (T26 Done on `jerome`; include in the final ZIP)
 - [ ] T27 professional judgment / AI/reuse disclosure document
 - [ ] T28 team participation evidence
 - [ ] T29 user guide (borrower) and admin guide
@@ -147,7 +147,7 @@ Every member must have an identifiable part.
 | --- | --------------------------- | --------------------------------------------------------------------------------------------- | --------- | ----------- |
 | 1   | Authentication and access   | Sign-in for both roles; inactive-user block; role-based redirect                              | —         | ~1 min      |
 | 2   | Equipment catalog and units | Categories, items, physical units, status counts                                              | —         | ~1 min      |
-| 3   | Borrower workflow           | Browse catalog, submit a borrowing request                                                    | —         | ~1 min      |
+| 3   | Borrower workflow           | Browse catalog, submit a borrowing request                                                    | —         | ~1 min      || Done (branch) |
 | 4   | Request review              | Admin views queue, approves (with unit allocation), rejects with reason                       | —         | ~2 min      |
 | 5   | Equipment release           | Admin releases approved request; borrowing slip generated                                     | —         | ~1 min      |
 | 6   | Returns                     | Borrower view of active loan; admin records partial return, damaged return; maintenance opens | —         | ~2 min      |
