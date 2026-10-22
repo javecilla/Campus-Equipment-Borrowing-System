@@ -2093,6 +2093,39 @@ Report the purpose marker/request ID and the smallest reproduction steps for a f
 
 ---
 
+## Module 22 - Shared Neon database and photos (HOST-01)
+
+**Delivery:** local, uncommitted `jerome`; Not integrated into main. Use [DEV teammate setup](../DEV.md#shared-neon-database-and-photos) as the canonical command/configuration guide. Credentials are sent privately by Jerome; do not record them here. Existing Django roles and page behavior remain authoritative.
+
+### HOST-01-01 - Connect an existing team dataset
+
+Use these values after installing the reviewed source, locked dependencies and built frontend assets:
+
+| Field | Value |
+| --- | --- |
+| Database | Private pooled Neon URL from email, selecting `neondb` with TLS required |
+| Media backend | `MEDIA_STORAGE=neon`; private emailed S3 values; bucket `assets` |
+| Local Django host | `127.0.0.1:8000` |
+| Admin username | `andrea.mendoza` |
+| Basic-user username | `miguel.santos` |
+| Application password | Existing seeded login password from private email; never the database/storage password |
+
+1. Run the read-only connection and migration checks in DEV. Expect `neondb`, client TLS `True`, and no pending migrations. Do not seed or clear anything.
+2. Start Django and sign in as the admin. Open Dashboard, Equipment, Physical units, and both report pages/CSV downloads. Expect existing data and no missing-photo errors.
+3. Open an existing photographed item. Its image must load through `/manage/items/<id>/photo/`; the original file's relative path remains stored on the catalog item.
+4. Sign out, sign in as Miguel, and browse Equipment and an item's photo. Expect portal access, with `/manage/` returning 403.
+5. Sign out and reopen a protected image URL. Expect a login redirect. An unsigned URL to an existing private bucket object must return 403.
+
+**Read-only data check, October 22, 2026:** Neon had 9 users, 12 categories, 29 items, 46 units, 10 maintenance records, 30 requests, 20 loans, 28 returns and 23 referenced photos. Later team transactions can change these counts; do not delete records to match this snapshot.
+
+**Executed:** a temporary local Django server on port 8011 used the actual pooled Neon connection. Real HTTP sessions passed both role logins, dashboard, catalog, stock, reports/CSV, all 23 administrator photo downloads with SHA-256 equality to local originals, borrower photo access, role denial, anonymous redirects and CSRF logout. A temporary object passed Django storage save/read/delete and unsigned HTTP 403; it was removed. Browser rendering, a second teammate workstation and a new image upload through the browser chooser are **Not run** for this delivery.
+
+### HOST-01-02 - Keep automated tests isolated
+
+Configure local PostgreSQL `DB_*` alongside Neon and run [the exact isolated test command](../DEV.md#isolated-tests-while-using-neon). Expect a separate `test_campus_equipment` database and `OK`, leaving the central dataset intact. Do not run the direct test commands below against the shared Neon URL. Local originals and the cloud's domain-record counts were retained during verification.
+
+The coordinator-only photo importer was exercised against actual Neon storage: 23 uploaded and verified, followed by zero uploaded / 23 matching on repetition. Its documented command is not an onboarding step. Missing-source and mismatched-object errors must be resolved before repeating an import; it does not overwrite conflicting objects.
+
 ## Remaining validation and demonstration work
 
 T01-T21 are integrated; PR #53 at `b828945` contains the August-October dataset. T22 automated SRS minimum-scenario acceptance is published on `jerome` at `a7ce0a2` with 339 passing PostgreSQL tests, including the complete HTTP repair lifecycle; see Module 21 for executed evidence. T23 prerequisites are satisfied but actual participant sessions/feedback remain pending. T24 awaits T22 main integration and measured operational evidence. Earlier browser coverage remains attributed to Module 19; screen-reader evaluation, Firefox/Safari, spreadsheet opening and complete browser maintenance-lifecycle checks remain unrun follow-ups.
@@ -2100,6 +2133,8 @@ T01-T21 are integrated; PR #53 at `b828945` contains the August-October dataset.
 ---
 
 ## Running the automated test suite
+
+With shared Neon enabled, use [the isolated local command](../DEV.md#isolated-tests-while-using-neon). Direct commands in this section assume local database/media configuration.
 
 T22 source `a7ce0a2`, published on `jerome` over integrated main `b828945`, passes **339 PostgreSQL tests in 96.345s** on October 22, including three new system acceptance tests. The preceding T21 source passed 336 tests before integration through PR #53; its five account-seed, seven history/cleanup and two physical-unit tests remain included. The earlier 327-test account-only stage is historical in its dated handoff. The integrated PR #51 checkout at `6f18116` passed **322 PostgreSQL tests in 127.102s** on October 21, including all seven T20 workspace tests and 11 T19 report tests. The earlier PR #49 checkout passed 315 tests in 57.317s. The preceding PR #46 authentication/UI checkout passed 304 tests in 74.818s. The integrated T18 baseline at `26b1ee5` previously passed 298 tests in 56.385s. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
 

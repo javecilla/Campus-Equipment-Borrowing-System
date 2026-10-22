@@ -2,9 +2,10 @@
 
 import os
 from pathlib import Path
-from typing import TypedDict
+from typing import NotRequired, TypedDict
 
-from config.environment import ApplicationEnvironment, read_environment
+from config.environment import ApplicationEnvironment, read_environment, read_environment_values
+from config.media_storage import StorageBackend, media_storage
 
 
 class TemplateOptions(TypedDict):
@@ -20,6 +21,8 @@ class TemplateBackend(TypedDict):
 
 class DatabaseOptions(TypedDict):
     connect_timeout: int
+    sslmode: NotRequired[str]
+    channel_binding: NotRequired[str]
 
 
 class DatabaseConnection(TypedDict):
@@ -30,6 +33,7 @@ class DatabaseConnection(TypedDict):
     HOST: str
     PORT: int
     OPTIONS: DatabaseOptions
+    DISABLE_SERVER_SIDE_CURSORS: bool
 
 
 BASE_DIR: Path = Path(__file__).resolve().parent.parent
@@ -92,7 +96,18 @@ DATABASES: dict[str, DatabaseConnection] = {
         "HOST": environment.database_host,
         "PORT": environment.database_port,
         "OPTIONS": {"connect_timeout": 5},
+        "DISABLE_SERVER_SIDE_CURSORS": True,
     },
+}
+
+if environment.database_sslmode is not None:
+    DATABASES["default"]["OPTIONS"]["sslmode"] = environment.database_sslmode
+if environment.database_channel_binding is not None:
+    DATABASES["default"]["OPTIONS"]["channel_binding"] = environment.database_channel_binding
+
+STORAGES: dict[str, StorageBackend] = {
+    "default": media_storage(read_environment_values(BASE_DIR / ".env.local", os.environ)),
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }
 
 AUTH_PASSWORD_VALIDATORS: list[dict[str, str]] = [

@@ -1,10 +1,10 @@
 # Team Development Guide
 
-[First-time setup](#first-time-setup) | [Everyday startup](#everyday-startup) | [Error pages](#preview-custom-error-pages) | [Reset local data](#reset-local-development-data) | [Frontend assets](#frontend-assets-tailwind-and-page-scripts) | [Formatting](#formatting-and-code-consistency) | [Migrations](#working-with-migrations) | [Checks](#before-handing-over-work) | [Manual browser tests](docs/manual-test-guide.md) | [Fonts](#fonts-and-static-assets) | [Team Git](#assigned-branches-and-main-integration) | [Optional MCP](#configure-your-mcp-client) | [Troubleshooting](#troubleshooting)
+[First-time setup](#first-time-setup) | [Shared Neon setup](#shared-neon-database-and-photos) | [Everyday startup](#everyday-startup) | [Error pages](#preview-custom-error-pages) | [Reset local data](#reset-local-development-data) | [Frontend assets](#frontend-assets-tailwind-and-page-scripts) | [Formatting](#formatting-and-code-consistency) | [Migrations](#working-with-migrations) | [Checks](#before-handing-over-work) | [Manual browser tests](docs/manual-test-guide.md) | [Fonts](#fonts-and-static-assets) | [Team Git](#assigned-branches-and-main-integration) | [Optional MCP](#configure-your-mcp-client) | [Troubleshooting](#troubleshooting)
 
-Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv`, `.env.local`, and local PostgreSQL database. Git shares source and migrations, not credentials or database contents.
+Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv` and ignored `.env.local`. For team development, follow [shared Neon setup](#shared-neon-database-and-photos): members connect to the same database and private photos. Isolated development and automated tests use a separate local PostgreSQL database. Git shares source and migrations, not credentials, database contents or uploaded images.
 
-**Current phase: T01–T17 are integrated; T17 source `bd62ed7` reached main through PR #43 at `55899d0`.** T15 source `74924dd` is integrated through PR #42 at `744bc39`. The merged source passed a fresh 294-test PostgreSQL review in 107.414s, including 21 T17 checks. Chrome partial/damaged/final-return checks passed in an isolated database. Existing unrelated formatting findings remain; see [current handoff](HANDOFF.md) and [T17 manual cases](docs/manual-test-guide.md#module-16--per-unit-returns-and-overdue-t17).
+For current implementation, verification and main-integration status, read [HANDOFF.md](HANDOFF.md) and [verified task evidence](docs/tasks.md#verified-task-evidence). Shared Neon setup is locally implemented on `jerome` and awaits publication/review; it is not yet available by pulling main.
 
 **UI-09 is Done and integrated through PR #39 at `a35e0f1`, source `043822e`, preserved in main `866eb7e`.** Its shared M3 presentation does not change workflow APIs or T15 ownership. Read the [canonical component rules](docs/coding-standards.md#shared-m3-roles-and-components-ui-09) before adding feature templates.
 
@@ -14,7 +14,7 @@ Copy your member prompt from [Team AI work prompts](docs/team-agent-prompts.md) 
 
 ## First-time setup
 
-Follow these steps once, in order. Keep an existing environment, database, or private configuration.
+Follow these steps once, in order. Keep an existing environment, database, or private configuration. For shared Neon development, prepare Python/frontend dependencies below, then use [the Neon steps](#shared-neon-database-and-photos); skip local database creation unless you also need isolated tests.
 
 ### Tools to download
 
@@ -106,11 +106,97 @@ Generate a secret locally, then paste the result into `.env.local`:
 .\.venv\Scripts\python.exe -c "import secrets; print(secrets.token_urlsafe(64))"
 ```
 
-[.env.example](.env.example) is the full key inventory. All `DB_*` and `DJANGO_*` values are required. `DJANGO_DEBUG` accepts exactly `True` or `False`; quote passwords containing `#` or whitespace. Django reads literal values without variable expansion, and explicit process environment values override the file. Missing, blank, malformed, or duplicate configuration fails clearly. Keep `.env.local` private and out of Git.
+[.env.example](.env.example) is the full key inventory. Django requires all `DJANGO_*` values and either a nonblank TLS `DATABASE_URL` or all `DB_*` values. `DJANGO_DEBUG` accepts exactly `True` or `False`; quote passwords containing `#` or whitespace. Django reads literal values without variable expansion, and explicit process environment values override the file. Missing, blank, malformed, or duplicate configuration fails clearly. Keep `.env.local` private and out of Git.
+
+## Shared Neon database and photos
+
+Neon supplies PostgreSQL and private S3-compatible Object Storage for shared team development. The project is `Campus-Equipment-Borrowing-System`, branch `production`, region Singapore (`ap-southeast-1`), database `neondb`, bucket `assets`. Each developer still runs the existing Django app locally. PostgreSQL stores records and photo paths; Object Storage stores image bytes. Django retains authentication, authorization, ORM, migrations, workflow services and all custom pages. Neon Auth, Functions, AI Gateway and Realtime are not wired into this app. Internet access and the Neon services are required in this configuration; local static assets still come from the npm build.
+
+### Teammate setup, step by step
+
+1. Clone the repository, select [your assigned member branch](#first-checkout-of-your-member-branch), and bring in the reviewed shared-Neon source using [the team Git workflow](#bring-main-into-your-work-before-starting). Until that source reaches main, use the reviewed `jerome` delivery by team agreement. Older source does not understand `DATABASE_URL` or shared media.
+2. Install Python 3.13 and Node/npm, then run these commands from the project root. Create `.venv` only once:
+
+    ```powershell
+    py -3.13 -m venv .venv
+    .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+    npm.cmd ci
+    npm.cmd run build
+    ```
+
+    This installs `django-storages[s3]`/boto3 alongside the existing Django/Psycopg stack. Local PostgreSQL is unnecessary just to use the shared app; install it separately for [isolated automated tests](#isolated-tests-while-using-neon).
+3. Ask Jerome for the **pooled database connection URL, storage endpoint, storage access key ID and secret, region, bucket name, and seeded application login password**. Jerome sends these privately by email. A database password, storage secret and Django user's login password have different purposes. Do not put that email, screenshots of credentials, or populated environment files in Git, issues, handoffs or the submission ZIP.
+4. If `.env.local` does not exist, create it without overwriting an existing file:
+
+    ```powershell
+    New-Item -Path .env.local -ItemType File -Value (Get-Content -LiteralPath .env.example -Raw) -ErrorAction Stop
+    ```
+
+    Generate your own `DJANGO_SECRET_KEY` using [the command above](#create-and-edit-envlocal). Edit each existing key once, replacing the placeholders below with the private emailed values:
+
+    ```dotenv
+    DJANGO_SECRET_KEY="<your own generated secret>"
+    DJANGO_DEBUG=True
+    DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+    DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
+    DATABASE_URL="<pooled PostgreSQL URL from Jerome, including sslmode=require&channel_binding=require>"
+    MEDIA_STORAGE=neon
+    AWS_ENDPOINT_URL_S3="<storage HTTPS endpoint from Jerome>"
+    AWS_ACCESS_KEY_ID="<private storage access key ID>"
+    AWS_SECRET_ACCESS_KEY="<private storage secret>"
+    AWS_REGION=ap-southeast-1
+    AWS_STORAGE_BUCKET_NAME=assets
+    ```
+
+    Keep the supplied URL intact, including its encoded password and TLS parameters. A nonblank `DATABASE_URL` takes precedence over `DB_*`; invalid URLs fail rather than silently using another database. Keep `DB_*` for your own local test database if you have one. `DATABASE_URL_UNPOOLED` is an optional direct URL for coordinator backup/import tools; Django uses `DATABASE_URL`. Leave optional `MCP_DATABASE_URL` blank unless independently configuring read-only MCP; it does not configure Django. `SEED_ACCOUNT_PASSWORD` is only an input to account creation, so teammates do not need it to sign in to already stored accounts.
+5. Check the configured connection and existing migrations without changing shared records:
+
+    ```powershell
+    .\.venv\Scripts\python.exe manage.py check --database default
+    .\.venv\Scripts\python.exe manage.py shell -c "from django.db import connection; connection.ensure_connection(); print('Database:', connection.settings_dict['NAME']); print('Client TLS:', connection.connection.pgconn.ssl_in_use)"
+    .\.venv\Scripts\python.exe manage.py migrate --check
+    ```
+
+    Expect database `neondb`, `Client TLS: True`, and exit code 0 from the migration check. An unapplied migration means the coordinator needs to review/apply it; joining members do not initialize a second dataset.
+6. Start your local app:
+
+    ```powershell
+    .\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
+    ```
+
+    Open <http://127.0.0.1:8000/accounts/login/>. Use a username/email in [the nine-account table](#seed-the-t21-demonstration-dataset) and the application password emailed by Jerome. Andrea Mendoza (`andrea.mendoza`) is the admin; Miguel Santos (`miguel.santos`) and the other seven listed users are basic users. Changing your local `SEED_ACCOUNT_PASSWORD` does not change these stored passwords. Confirm the catalog and photos appear; restart Django after environment changes.
+
+All members now see the same records, including each other's submitted requests, approvals, returns and image updates. The October 22 migration copied **9 accounts, 12 categories, 29 catalog items, 46 units, 10 maintenance records, 30 requests, 20 loans, 28 returns and 23 referenced images**. Those are migration counts, not permanent dashboard totals.
+
+Do **not** rerun seeds, `upload_catalog_photos`, `flush`, transaction/unit cleanup or database recreation as part of teammate onboarding. These commands target the configured database, which is now shared. Coordinate schema changes, resets and fixture imports with Jerome; use a local database for destructive professor-demo rehearsals. There is one central dataset, so concurrent manual edits affect everyone.
+
+### Isolated tests while using Neon
+
+Create your own local PostgreSQL 17 `campus_equipment` database and fill the existing `DB_*` keys with its credentials. The local account needs permission to create/drop the separate `test_campus_equipment` database. Run the complete suite through a child process that explicitly selects local PostgreSQL and local media:
+
+```powershell
+.\.venv\Scripts\python.exe -c "import os, subprocess, sys; sys.exit(subprocess.call([sys.executable, 'manage.py', 'test', '--noinput'], env={**os.environ, 'DATABASE_URL': '', 'MEDIA_STORAGE': 'local'}))"
+```
+
+This leaves `.env.local` pointing at Neon for ordinary startup. The explicit empty URL is passed to the child even on Windows PowerShell versions where assigning an empty environment variable removes it. Do not use an unqualified `manage.py test --noinput` with the shared Neon configuration: it selects `test_neondb`, which other members could also use. Tests create their own fixtures and do not require seeding or clearing the populated development database. Never store valuable data in a `test_*` database.
+
+### Coordinator import and maintenance
+
+The existing local PostgreSQL database and `media/` originals are retained. The initial import used a private custom-format `pg_dump`, restored into an empty Neon database with `pg_restore --no-owner --no-acl --single-transaction --exit-on-error`. Both services were checked before switching `.env.local`; all 14 domain-model datasets matched the source field for field. Backups belong in ignored `output/private-backups/`, with credentials supplied privately rather than in command history. Use the direct connection URL for native backup/import tools, and a PostgreSQL client compatible with the server version (Neon was verified at 18.6; local test server at 17.5).
+
+For a future approved media import, place the matching originals under `MEDIA_ROOT` with their stored relative paths, configure Neon media and the matching database, then run:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py upload_catalog_photos
+```
+
+This copies only referenced catalog photos, compares SHA-256 bytes for existing objects, verifies uploads, and leaves source files and database paths unchanged. Missing local files or mismatched destination bytes fail explicitly; it never overwrites an existing mismatched object. The initial import uploaded 23 photos; repeating it verified 23 matching objects and uploaded zero. Interrupted imports can be rerun after resolving the reported failure. New app uploads go directly to the selected storage backend; this command is not a routine synchronization job.
+
+Keep database and media backups together: PostgreSQL dumps contain paths, not image bytes, and current Neon media must be backed up from Object Storage, not an old local folder. The bucket remains private; the app streams photos through its existing role-protected routes. The pooled connection disables server-side cursors for PgBouncer compatibility. This setup moves data services only; Django application hosting, measured performance and a complete operational recovery rehearsal remain separate work. Provider references: [Neon Django](https://neon.com/docs/guides/django), [private S3-compatible storage](https://neon.com/docs/storage/s3-compatibility), and [django-storages S3 backend](https://django-storages.readthedocs.io/en/stable/backends/amazon-S3.html).
 
 ## Application migrations, checks, and local server
 
-After first-time setup, check configuration and apply the shared migrations:
+For an isolated local database, check configuration and apply the shared migrations. With Neon active, follow [teammate setup](#teammate-setup-step-by-step) instead; the coordinator applies approved shared migrations once.
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py check --database default
@@ -183,7 +269,7 @@ The admin should reach `/manage/` and receive 403 at `/portal/`; the basic user 
 
 ### Seed the T21 demonstration dataset
 
-The demonstration commands have separate purposes: `seed_demo_data` creates the accounts below; [`seed_demo_units`](#seed-physical-units-for-existing-equipment) tops up stock in an existing catalog; [`seed_demo_transactions`](#seed-august-october-2026-transactions) imports the user-requested August-October history using existing equipment. The account command creates no inventory, requests, allocations, loans or returns. Equipment and uploaded photos remain local records. The [demo command runbook](#demo-command-runbook) lists the preparation order and cleanup choices.
+The demonstration commands have separate purposes: `seed_demo_data` creates the accounts below; [`seed_demo_units`](#seed-physical-units-for-existing-equipment) tops up stock in an existing catalog; [`seed_demo_transactions`](#seed-august-october-2026-transactions) imports the user-requested August-October history using existing equipment. The account command creates no inventory, requests, allocations, loans or returns. Equipment and photos remain in the configured database/storage; shared Neon already contains the migrated dataset. The [demo command runbook](#demo-command-runbook) lists the preparation order and cleanup choices.
 
 After existing migrations, set a Django-valid `SEED_ACCOUNT_PASSWORD` privately in ignored `.env.local`, then run once:
 
@@ -205,7 +291,7 @@ The command atomically creates one ADMIN and eight BASIC_USER accounts with Prof
 | Rafael Ramos | `rafael.ramos` | `rafael.ramos@example.invalid` | BASIC_USER | `.env.local` → `SEED_ACCOUNT_PASSWORD` |
 | Alyssa Flores | `alyssa.flores` | `alyssa.flores@example.invalid` | BASIC_USER | `.env.local` → `SEED_ACCOUNT_PASSWORD` |
 
-Sign in at <http://127.0.0.1:8000/accounts/login/> with any listed username or email. For the password, enter the actual value of `SEED_ACCOUNT_PASSWORD` from your private `.env.local` when you created the accounts. Explicit process environment values override the file during seeding. The admin reaches `/manage/`; basic users reach `/portal/`. Each developer supplies their own private seed value and runs the seed against their local database. Changing that environment value later does not change stored passwords; use `manage.py changepassword USERNAME` to reset an existing account. Share instructor demonstration credentials only through the designated private channel. This table documents the environment key; live passwords stay in private configuration.
+Sign in at <http://127.0.0.1:8000/accounts/login/> with any listed username or email. For the password, enter the actual value of `SEED_ACCOUNT_PASSWORD` from your private `.env.local` when you created the accounts. Explicit process environment values override the file during seeding. The admin reaches `/manage/`; basic users reach `/portal/`. For an isolated local database, each developer supplies their own private seed value. For shared Neon, use the existing accounts and application password emailed by Jerome; do not reseed. Changing that environment value later does not change stored passwords; use `manage.py changepassword USERNAME` to reset an existing account. Share instructor demonstration credentials only through the designated private channel. This table documents the environment key; live passwords stay in private configuration.
 
 Existing unrelated accounts, equipment, images, maintenance, settings and transactions remain unchanged by this seed. Case-insensitive username/email collisions fail before writes; invalid passwords or audit/database errors roll back all nine new accounts. There is no destructive reset mode. The one-time user-authorized local cleanup is recorded in [the cleanup handoff](handoffs/clean-demonstration-accounts-and-equipment-preservation-10-22-2026.md); it is separate from this safe account-creation command. Old sessions were cleared, so sign in again using the new accounts. The former `auth_demo_*` and `t21_*` accounts no longer exist in this local database.
 
@@ -281,6 +367,8 @@ Run the focused real PostgreSQL integration tests with:
 
 ### Demo command runbook
 
+**Shared Neon is already populated.** This runbook is for an isolated local database or an explicitly coordinated central reset/import. Seeds and purges use whichever database is configured; setting `DB_NAME` alone does not select local data while `DATABASE_URL` points at Neon.
+
 Run from the project root using your private `.env.local`. Every command targets its configured database; explicit process environment variables override that file. Run commands one at a time and stop if one fails. Seeds require migrations first. Your current populated local data does **not** need these commands rerun for an ordinary server restart.
 
 | Need | Command / procedure | Result |
@@ -324,6 +412,8 @@ The custom [403](templates/403.html) and [404](templates/404.html) share the pro
 `--insecure` serves local development assets when debug is disabled. Use it only for this local preview; it is not a production server or deployment configuration.
 
 ### Reset local development data
+
+If your `.env.local` uses Neon, first switch to your own local database and media (`DATABASE_URL` blank, `MEDIA_STORAGE=local`, valid local `DB_*`) and restart Django. Run the connection check in [teammate setup](#teammate-setup-step-by-step) to verify the actual target before cleanup. A centralized reset requires Jerome's coordination and current database/Object Storage backups; the local examples below are not teammate onboarding steps.
 
 Choose the smallest scope requested by your professor using the [command table](#demo-command-runbook). Cleanup is destructive and is **not part of everyday startup**. The cleanup commands below have been exercised in a separate PostgreSQL test database; the current local demonstration records have not been cleared for this runbook.
 
@@ -504,7 +594,7 @@ Load an actual page module through its template's scripts block, preserving `{{ 
 
 ### Apply existing migrations
 
-Use the migration files supplied by the team:
+Use the migration files supplied by the team. On shared Neon, only the coordinator applies approved migrations; other members use read-only `showmigrations`, `migrate --plan` and `migrate --check`:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py showmigrations
@@ -551,6 +641,8 @@ If `app.css` shows `{ expected` near `source(none)` or warnings on `@source` / `
 
 ## T22 automated system acceptance
 
+**With Neon active, use [the isolated local test command](#isolated-tests-while-using-neon).** The direct test commands below assume an isolated local configuration (`DATABASE_URL` blank, `MEDIA_STORAGE=local`, and local `DB_*`). Do not run them against the shared connection.
+
 Run the complete automated T22 acceptance checks from the project root:
 
 ```powershell
@@ -588,7 +680,7 @@ The ignored log is overwritten on each run; save dated copies if needed for evid
 
 ## Before handing over work
 
-Run the configured checks and any meaningful tests for your feature:
+Run the configured checks and any meaningful tests for your feature. The direct test command below assumes an isolated local configuration; with Neon active, substitute [the local child-process command](#isolated-tests-while-using-neon). Shared migrations are coordinator-owned.
 
 ```powershell
 npm.cmd run format:check
@@ -719,9 +811,9 @@ The historical [T19 review](handoffs/t19-main-review-and-local-merge-conflict-re
 
 The **New equipment item** form uses metadata on the left and an optional image/preview panel on the right at desktop widths; leaving the photo empty uses the default image. Selecting a file previews it locally without an upload. **Remove selected image** clears that pending selection, allowing another file to be chosen. The existing photo is changed only when a form is saved; confirmed removal of a saved photo remains a separate action. Creation with a photo saves the item, file reference and audit together, rolling everything back if the operation fails. For an existing item, open its detail page and choose **Manage photo**. Upload one JPEG, PNG or WebP, up to 5 MiB and 20 million pixels. The server rejects animated/invalid files, removes metadata, and saves a WebP fitting within 1600×1600 without cropping. Replace and confirmed removal are audited administrator actions.
 
-Uploads are created automatically in `media/equipment/` under the project root (Django's `MEDIA_ROOT`). PostgreSQL stores a relative path such as `equipment/<generated-id>.webp`; it does not store image bytes. The default `static/images/default-photo-equipment-270x360.webp` is a shared static asset and is used when no photo is assigned. A missing assigned upload is an error, rather than a silently replaced photo.
+With `MEDIA_STORAGE=local` (the template default), uploads are created in `media/equipment/` under Django's `MEDIA_ROOT`. With `MEDIA_STORAGE=neon`, they use the private shared `assets` bucket; see [setup and import](#shared-neon-database-and-photos). PostgreSQL stores a relative path such as `equipment/<generated-id>.webp`; it does not store image bytes. The default `static/images/default-photo-equipment-270x360.webp` is a shared static asset and is used when no photo is assigned. A missing assigned upload is an error, rather than a silently replaced photo.
 
-`media/` is ignored by Git. Every teammate has separate local uploads; pulling source does not copy equipment photos. Back up and restore this folder together with the database, preserving its relative paths. Review any files left unreferenced after an interrupted process before removing them; there is no automatic purge command.
+`media/` is ignored by Git. Isolated developers have separate local uploads; Neon-configured members share stored photos. Pulling source does not copy equipment photos. Back up the selected storage backend together with the database, preserving relative paths; local `media/` backups do not include new Neon uploads. Review any files left unreferenced after an interrupted process before removing them; there is no automatic purge command.
 
 Photos are delivered through the active-ADMIN-protected `inventory_manage:item-photo` route and the active-BASIC_USER-protected `portal:equipment-photo` route. The portal route additionally requires an active item and category. Both stream stored WebP with private/no-store caching. Do not use `item.photo.url` in templates or add a public `static(settings.MEDIA_URL, ...)` mapping: the media directory intentionally has no direct HTTP route. Protected delivery also works with `DEBUG=False`.
 
