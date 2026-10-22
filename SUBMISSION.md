@@ -10,23 +10,68 @@ No PPT/slides needed. Bring a **printed project rubric in two copies** on demo d
 
 ## Quick status overview
 
-| #   | Item                                                         | Owner                                           | Status      |
-| --- | ------------------------------------------------------------ | ----------------------------------------------- | ----------- |
-| 1   | Application (T01–T24): all workflows implemented and tested  | Team                                            | Done        |
-| 2   | System diagrams — editable (Lucidchart or similar) T25       | Kenneth / Ellyssa / Margareth                   | In Progress |
-| 3   | [User needs, options comparison, emerging-tech evaluation T26](docs/user-needs-evidence-guide.md) | Jerome / Alex + everyone                        | Done |
-| 4   | Professional judgment, AI/reuse/policy disclosure T27        | Alex coordinates + everyone                     | In Progress |
-| 5   | Team participation and individual contribution evidence T28  | Everyone — rotate leadership                    | In Progress |
-| 6   | Verified user / admin / technical guides T29                 | Ellyssa+Ralph / Margareth+Kenneth / Jerome+Alex | Not Started |
-| 7   | Screenshots of the system | Jerome with Codex assistance | Done (72 PNGs) |
-| 8   | Submission ZIP assembled and clean-machine tested T30        | Everyone                                        | Not Started |
-| 9   | Demo rehearsed; printed rubric ready T31                     | Everyone                                        | Not Started |
+| #   | Item                                                                                              | Owner                                           | Status         |
+| --- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------- | -------------- |
+| 1   | Application (T01–T24): all workflows implemented and tested                                       | Team                                            | Done           |
+| 2   | System diagrams — editable (Lucidchart or similar) T25                                            | Kenneth / Ellyssa / Margareth                   | In Progress    |
+| 3   | [User needs, options comparison, emerging-tech evaluation T26](docs/user-needs-evidence-guide.md) | Jerome / Alex + everyone                        | Done           |
+| 4   | Professional judgment, AI/reuse/policy disclosure T27                                             | Alex coordinates + everyone                     | In Progress    |
+| 5   | Team participation and individual contribution evidence T28                                       | Everyone — rotate leadership                    | In Progress    |
+| 6   | Verified user / admin / technical guides T29                                                      | Ellyssa+Ralph / Margareth+Kenneth / Jerome+Alex | Not Started    |
+| 7   | Screenshots of the system                                                                         | Jerome with Codex assistance                    | Done (72 PNGs) |
+| 8   | Submission ZIP assembled and clean-machine tested T30                                             | Everyone                                        | Not Started    |
+| 9   | Demo rehearsed; printed rubric ready T31                                                          | Everyone                                        | Not Started    |
 
 ---
 
+## Minimum demonstration data
+
+**All current local dataset minimums pass.** A read-only inspection of `campus_equipment` (PostgreSQL 17.5) on October 22, 2026 at 22:03 Asia/Manila verified the following. The transaction explicitly used `transaction_read_only=on`; no records, seeds or schema were changed. These are totals for this populated local database, not a promise that an empty installation already contains them.
+
+| Required data                                                      | Minimum | Verified total | Result |
+| ------------------------------------------------------------------ | ------- | -------------- | ------ |
+| Categories                                                         | 3       | 12             | Pass   |
+| Catalog items                                                      | 6       | 29             | Pass   |
+| Physical units                                                     | 18      | 46             | Pass   |
+| Admin accounts                                                     | 1       | 1              | Pass   |
+| Basic-user accounts                                                | 8       | 8              | Pass   |
+| Requests, all states                                               | 20      | 30             | Pass   |
+| Loans that have been issued, including subsequently returned loans | 8       | 20             | Pass   |
+| Maintenance records, open and closed                               | 4       | 10             | Pass   |
+
+Required scenarios are present: **2 rejected requests, 3 cancelled requests, 1 currently partially returned request, 1 damaged return linked to maintenance and 2 overdue outstanding loans**. The nine accounts match the fictional demo roster and use `example.invalid` emails; no extra account with a different email domain was found. The [seed roster](DEV.md#seed-the-t21-demonstration-dataset) and [transaction plan](operations/demo_transaction_plan.py) define their fictional identity/history provenance.
+
+The dashboard cards summarize current work; they are not the complete dataset counts:
+
+| Dashboard card   | Verified value | Meaning                                                                                                                                                                    |
+| ---------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Available units  | 30             | Ready to reserve. All unit states total **46 = 30 Available + 3 Reserved + 6 Issued + 5 Maintenance + 2 Retired**.                                                         |
+| Pending requests | 3              | Awaiting a decision, within 30 total requests.                                                                                                                             |
+| Active loans     | 4              | At least one unit remains outstanding: 3 Issued requests and 1 Partially returned request. Another 16 loans are fully returned, so **20 loans have been issued in total**. |
+| Overdue loans    | 2              | A subset of those 4 active loans, past their agreed due dates. This count changes with the actual calendar date.                                                           |
+
+**Replay gap for T29/T30:** `seed_demo_data` creates the nine accounts only. `seed_demo_units` needs an existing catalog; `seed_demo_transactions` needs the exact named items, serviceable stock, and an empty borrowing history. The importer adds only one damaged-return maintenance record; the other nine maintenance records and the catalog were prepared separately. Before claiming repeatable full minimum-data setup from the ZIP, provide a reviewed fictional catalog/maintenance fixture or equivalent seed and verify it on a fresh local database. No private database dump should be packaged as a shortcut. [README seed steps](README.md#5-seed-the-demonstration-data) and [DEV's runbook](DEV.md#demo-command-runbook) explain current commands and prerequisites. Do not reseed the current populated database to increase dashboard counters.
+
+## Part 5 and Part 6 evidence readiness
+
+[README Part 5](README.md#part-5-business-rules-and-technical-implementation) explains each of the six business rules, their purpose, source and tests; it also maps the required Django implementation, PostgreSQL concurrency strategy and limitations. [README local setup](README.md#run-locally) gives dependency, environment, migration, seed and server commands. A working local demonstration is sufficient. The team voluntarily uses Neon for centralized records during end-to-end testing; online deployment and external integrations are not course requirements.
+
+Use the following evidence groups when assembling the documentation/evidence folder. Available source/evidence does not close outstanding human reviews or individual records.
+
+| Evidence group        | Available references                                                                                                                                                                                                                                                                                                                                | Required completion before submission                                                                                                                                                                                                                           |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| User needs            | [Requirements](docs/SRS.md), [personas](docs/PRD.md#users-and-stakeholders), [T26 options/recommendation](docs/user-needs-evidence-guide.md), [acceptance, resolved issue and enhancement](docs/usability-acceptance.md)                                                                                                                            | Retain the limited proxy-feedback evidence honestly; finish verified maintenance guidance under T29. T26 is Done/integrated.                                                                                                                                    |
+| System                | [MTV/workflow references](docs/architecture.md), [database reference](docs/db_design.md), [manual/automated acceptance](docs/manual-test-guide.md), [operational results](docs/operational-verification.md), [screenshots](docs/system-screenshots.md)                                                                                              | T25 editable sources/exports, final source/test traceability and review; explain limitations/enhancements and cross-reference T27 standards/legal/ethical decisions.                                                                                            |
+| Technology            | [Django implementation map](README.md#required-django-implementation), [package justifications](README.md#third-party-packages-and-assets), [dependency inventory](docs/third-party-dependencies.md), Git/handoffs/test/configuration records, [emerging-technology evaluation](docs/user-needs-evidence-guide.md#evaluate-one-emerging-technology) | Keep effectiveness, compatibility, security, user-needs analysis and conditional adoption recommendation. Resolve formal AI/account/policy clearance through T27.                                                                                               |
+| Professional judgment | [T27 consumer handoff](DEV.md#t27-readiness-and-consumer-handoff), [existing technical contribution](handoffs/ralph-t17-per-unit-returns-and-overdue-10-20-2026.md#ralphs-t27-technical-contribution)                                                                                                                                               | Stakeholders/duties; privacy, intellectual property, security, accessibility, bias, conflicts of interest, public welfare; actual codes/laws/campus policies; defensible decisions, safeguards, risks, actions and accountable owners. T27 remains In progress. |
+| Team                  | [Original allocations](docs/Project-Members.txt), [current ownership](docs/tasks.md#current-ownership-and-support-responsibilities), [collaboration records](handoffs/)                                                                                                                                                                             | For every member: contributions, peer feedback, leadership rotation with goal-setting/assignment/coordination/monitoring, individual/team evaluations and improvements after feedback. T28 remains In progress.                                                 |
+| Communication         | [Technical setup](README.md#run-locally), [development guide](DEV.md), [demo plan](#t31--demo-day-checklist)                                                                                                                                                                                                                                        | Verified borrower/admin/maintenance guides (T29), each member's presentation segment and Q&A participation, recorded feedback and agreed actions (T31).                                                                                                         |
+
+The rubric assesses **all four indicators** for each of **PO-d, PO-e, PO-g, PO-h, PO-j and PO-n**, using the application, evidence, demo and Q&A. Every member needs identifiable individual evidence. T30 still depends on completed T22, T23 and T25-T29; screenshot completion alone does not satisfy packaging readiness.
+
 ## Screenshots checklist
 
-View the [system screenshot gallery](docs/system-screenshots.md) for all 72 images displayed with short page descriptions. Source `c3fb6bb` is published on `origin/jerome`; [publication receipt](handoffs/database-switch-and-screenshot-publication-10-22-2026.md) verifies remote equality and Codex credit. Main integration remains pending.
+View the [system screenshot gallery](docs/system-screenshots.md) for all 72 images displayed with short page descriptions. Source `c3fb6bb` is published on `origin/jerome`; [publication receipt](handoffs/database-switch-and-screenshot-publication-10-22-2026.md) verifies remote equality and Codex credit. User-merged PR #64 at `8dda8c9` exactly preserves the source tree; see the [integration receipt](handoffs/database-switch-and-screenshot-main-integration-10-22-2026.md).
 
 The instructor confirmed screenshots of the system are the required evidence format.
 Captured October 22, 2026, Asia/Manila: **72 actual browser PNGs** in `screenshots/`, using a disposable copy of the local fictional dataset and local photos. Desktop viewport: 1440 x 1000; two mobile captures: 390 x 844. All 39 checklist entries below have evidence. This completes screenshot collection, not T30 ZIP assembly or clean-machine verification.
@@ -117,47 +162,59 @@ These supplement the checklist with actual create/edit/detail, confirmation and 
 
 ### ZIP filename (must be exact)
 
-- [ ] `IT401W_ProjectA_Section_Group.zip` — confirm the exact Section and Group values with Jerome before assembling
+- [ ] `IT401W_ProjectA_BSIT4EG1_Group2.zip` — confirm the exact Section and Group values with Jerome before assembling
 
 ### Required contents
 
 - [ ] All application source code (`accounts/`, `borrowing/`, `inventory/`, `operations/`, `config/`, `templates/`, `static/`)
+- [ ] `scripts/` required by the npm asset build, plus `LICENSE` and third-party notices
 - [ ] `migrations/` folders (inside each app)
 - [ ] `requirements.txt` and `requirements-dev.txt`
 - [ ] `package.json` and `package-lock.json`
 - [ ] `README.md` — setup instructions for a clean machine
 - [ ] `DEV.md` — team and technical setup guide
-- [ ] `manage.py` and `setup.cfg` / `ruff.toml` / `.python-version`
+- [ ] `manage.py`, `pyproject.toml` and `.python-version` (the actual project configuration files)
 - [ ] `.env.example` — configuration key template (no real values)
-- [ ] Seed command documented (see `README.md` / `DEV.md` — `seed_demo_data`)
+- [ ] All existing account/unit/history seed commands and their prerequisites, following [README](README.md#5-seed-the-demonstration-data)
+- [ ] Repeatable reviewed fictional catalog/maintenance fixture or equivalent seed, sufficient to meet every minimum on an empty local database; currently missing
 - [ ] `screenshots/` folder — all screenshots from the checklist above
 - [ ] T25 diagram exports (images/PDFs from Lucidchart or equivalent)
 - [ ] T26 [user-needs evidence and recommendations](docs/user-needs-evidence-guide.md) accepted record (T26 integrated through PR #63; include in the final ZIP)
 - [ ] T27 professional judgment / AI/reuse disclosure document
 - [ ] T28 team participation evidence
 - [ ] T29 user guide (borrower) and admin guide
+- [ ] Documentation/evidence folder covering all six [Part 6 evidence groups](#part-5-and-part-6-evidence-readiness), including test records, limitations and maintenance guidance
+
+These checkboxes record **inclusion and review in the final ZIP**, not whether a file currently exists in the repository. T25/T27-T29 outputs and complete dataset replay remain outstanding.
 
 ### Must NOT be included
 
 - [ ] `.venv/` virtual environment
 - [ ] `node_modules/`
 - [ ] `.env.local` — contains real credentials, database URL, and secrets
-- [ ] `media/` — team's private cloud-stored photos (do not include)
+- [ ] Local `media/` uploads and any unreviewed/private photos; approved fictional assets require their T27 rights/provenance review before inclusion
 - [ ] `__pycache__/`, `.ruff_cache/`, `.playwright-cli/`
+- [ ] `.git/`, `.idea/`, `output/`, private database/media backups, browser profiles, session cookies, logs and test artifacts
+- [ ] Real identities, sensitive records and private database exports; include only reviewed fictional seed data
 - [ ] Any file with real passwords, tokens, or private keys
 
 ### Demo credentials (submit separately — NOT in the ZIP)
 
 - [ ] 1 admin account → submit through the instructor-designated channel
 - [ ] 2 basic-user accounts → submit through the instructor-designated channel
+- [ ] Coordinate the private seed password with those credentials; do not distribute Neon database/storage credentials to evaluators
 
 ### Final ZIP verification
 
 - [ ] Unzip on a clean machine with no project dependencies installed
 - [ ] Follow `README.md` Run locally steps from start to finish
 - [ ] Run migrations, seed demo data, start server — app loads
+- [ ] Reconstruct all [minimum demonstration data](#minimum-demonstration-data) without Neon access or a private database backup; verify required scenarios and record actual results/date
 - [ ] Both roles sign in with the demo credentials
 - [ ] All principal workflows operate without errors
+- [ ] Validate a three-item request with a failing row; confirm no partial save, ownership/role denial and POST/CSRF protection
+- [ ] Demonstrate competing last-unit approvals using [the isolated PostgreSQL test command](README.md#run-the-verification); only one succeeds
+- [ ] Inspect the actual ZIP for excluded secrets/private data and verify screenshots, diagram exports, guides and evidence links
 
 ---
 
@@ -181,18 +238,18 @@ Every member must have an identifiable part.
 | --- | --------------------------- | --------------------------------------------------------------------------------------------- | --------- | ----------- |
 | 1   | Authentication and access   | Sign-in for both roles; inactive-user block; role-based redirect                              | —         | ~1 min      |
 | 2   | Equipment catalog and units | Categories, items, physical units, status counts                                              | —         | ~1 min      |
-| 3   | Borrower workflow           | Browse catalog, submit a borrowing request                                                    | —         | ~1 min      || Done |
+| 3   | Borrower workflow           | Browse catalog; submit a request; show invalid-row validation                                 | —         | ~1 min      |
 | 4   | Request review              | Admin views queue, approves (with unit allocation), rejects with reason                       | —         | ~2 min      |
 | 5   | Equipment release           | Admin releases approved request; borrowing slip generated                                     | —         | ~1 min      |
 | 6   | Returns                     | Borrower view of active loan; admin records partial return, damaged return; maintenance opens | —         | ~2 min      |
-| 7   | Screenshots of the system | Jerome with Codex assistance | Done (72 PNGs) |
+| 7   | Reports and overdue         | Loan/overdue reports, filters, CSV totals and dashboard charts                                | —         | ~2 min      |
 | 8   | Settings and audit          | Change loan limits; audit log entries for all recorded actions                                | —         | ~1 min      |
-| 9   | Concurrency (optional)      | Competing approvals; only one succeeds (T14 evidence)                                         | —         | bonus       |
+| 9   | Concurrency                 | Show the real PostgreSQL last-unit race result; one succeeds and one conflicts                | —         | ~1 min      |
 
 ### Q&A — 3 minutes
 
 - [ ] Every member is prepared to explain any part of the submitted work
-- [ ] AI assistance (Codex as Primary/Kiro/Devin/Antigravity/Copilot), third-party packages, and reused code declared on request
+- [ ] Declare actual reused code, third-party assets and permitted AI assistance according to the BulSU AI Policy and instructor instructions; retain T27 evidence and be ready to explain the submitted work
 - [ ] Feedback from instructor and agreed action items recorded after the session
 
 ---
@@ -201,14 +258,19 @@ Every member must have an identifiable part.
 
 Required README content per [Part 5 of the course brief](docs/Project-Requirements.txt).
 
-- [x] Starts the application on a clean machine (Run locally section)
-- [x] Environment-variable guidance (`DEV.md` and `.env.example`)
-- [x] Migration command documented (`manage.py migrate`)
-- [x] Seed command documented (`seed_demo_data` with link to DEV.md)
+- [x] Project name, system overview, two roles and boundaries explained
+- [x] Copyable local dependency, database, environment, migration, seed and server instructions in [Run locally](README.md#run-locally)
+- [x] Explicit local/shared selector, separate media selection, restart behavior and shared-write guard documented
+- [x] Migration purpose/defaults explained; committed migration/check commands documented
+- [x] Separate account/unit/history seeds explained honestly, including required catalog and existing-history restrictions
 - [x] Tested dependency versions referenced (`requirements.txt`, `package-lock.json`)
-- [x] Project scope and two-role system described
+- [x] All six Part 5 rules mapped to implementation, purpose and tests; Django features/database limitations explained
+- [x] Part 6 evidence/package/demo requirements indexed with pending tasks distinguished
 - [x] Third-party packages declared and justified
-- [x] No committed credentials or application secrets
+- [x] Secret handling, private demo credential channel and package exclusions documented
+- [ ] Complete catalog/maintenance fixture or seed and verified minimum-data replay from an empty local database
+- [ ] Final clean-machine startup verified from the actual ZIP; documented commands alone are not this result
+- [ ] Final ZIP checked for credentials, secrets and private data
 - [ ] Confirm section/group name matches the ZIP filename before final submission
 
 ---
