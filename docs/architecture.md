@@ -36,6 +36,8 @@ The canonical [coding guide](coding-standards.md#http-endpoint-design) owns endp
 
 A separate SPA/backend would add endpoint and client-state work without meeting an additional required capability. Keep Django templates and forms. Django documents row locking, SQLite limitations, and the need for `TransactionTestCase` in its [QuerySet reference](https://docs.djangoproject.com/en/5.2/ref/models/querysets/#select-for-update).
 
+The [T26 evidence comparison](user-needs-evidence-guide.md#compare-two-suitable-options) evaluates PostgreSQL against an alternative MySQL/InnoDB design, including the adaptations needed for conditional uniqueness and the recommendation to retain PostgreSQL. It distinguishes researched feasibility from tested application support; this architecture retains the implemented PostgreSQL baseline.
+
 ## Model-template-view structure
 
 ```mermaid

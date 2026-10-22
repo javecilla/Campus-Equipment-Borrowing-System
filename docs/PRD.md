@@ -23,7 +23,7 @@ Provide one campus application that connects borrower requests to administrator 
 
 ## Users and stakeholders
 
-The following personas are design assumptions derived from the brief; they are not research or interview findings.
+The following personas originated as design assumptions from the brief. The [T26 assessment](user-needs-evidence-guide.md#recorded-feedback-and-persona-assessment), accepted for publication by Jerome on October 22, supports the two-role structure through limited coordinator-reported classmate testing. Detailed needs, campus processes and device/accessibility preferences remain unvalidated; no independent campus interviews are claimed.
 
 | Persona or stakeholder | Need | Product access |
 | --- | --- | --- |

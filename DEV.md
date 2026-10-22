@@ -851,6 +851,24 @@ Stop the dedicated portable cluster after inspection using the same verified dat
 
 T25 is Done only after reviewed diagrams/traceability match implementation, real editable sources/exports are linked, evidence/constraints/limitations are covered and the dated handoff is finalized. Mermaid reference review alone does not complete T25. T29 prerequisites are satisfied but it is not started by this request; T30 retains all original evidence/submission prerequisites.
 
+## T27 readiness and consumer handoff
+
+**Owner: everyone; Alex coordinates security/privacy, with Jerome coordinating delivery. T27 is In progress and ready to continue.** It has a before-real-data-use/before-submission gate, not a T26-main-integration prerequisite. T26's [accepted evidence](docs/user-needs-evidence-guide.md) is available on `jerome`; its main integration remains separately recorded in the [backlog](docs/tasks.md#verified-task-evidence). This readiness update does not execute the remaining T27 research or approve campus/real-data use.
+
+Read the [Part 6 requirement](docs/Project-Requirements.txt), [T27 acceptance](docs/tasks.md#course-evidence-and-delivery), [contribution/licensing rules](CONTRIBUTING.md) and the existing evidence before collecting new material. Resume Ralph's integrated [technical contribution](handoffs/ralph-t17-per-unit-returns-and-overdue-10-20-2026.md#ralphs-t27-technical-contribution); retain his attribution and its policy/retention limitations. A consolidated professional-judgment document has not yet been delivered. Create its canonical record when actual sources/decisions are collected, referencing existing technical evidence rather than copying it.
+
+| T27 input / remaining work | Current source and next action |
+| --- | --- |
+| Applicable codes/laws/campus and AI rules | Alex/Jerome obtain current primary sources and actual instructor/BulSU instructions, record scope/access date and explain applicability. No campus policy or permission is established by this checklist. |
+| Stakeholders, duties and accountability | Use [PRD stakeholders](docs/PRD.md#users-and-stakeholders), Ralph's technical contribution and actual module ownership; identify who makes each unresolved decision and who explains it. |
+| Privacy, access, retention and safe data use | Link [SRS security/confidentiality](docs/SRS.md#non-functional-requirements), actual access/workflow source and [shared-data restrictions](AGENTS.md#shared-database-and-media-safety). Establish the real purpose, permitted data/access, notice/permission, retention/deletion decisions and accountable owner; do not invent a retention period or mutate shared records to write the report. |
+| Intellectual property and asset provenance | Start from [dependency/asset inventory](docs/third-party-dependencies.md#supplied-assets-and-optional-inspection-tooling), existing notices and LICENSE. Source/permission for supplied role avatars/equipment placeholders remains missing; verify team-supplied photo/artwork rights too. Obtain evidence or propose replacement under an authorized change. |
+| Accessibility, bias, conflicts and public welfare | Use actual UI/manual-test evidence and [T26 limitations](docs/user-needs-evidence-guide.md#recorded-feedback-and-persona-assessment); record demonstrated findings separately from untested risks, safeguards and decisions. Proxy acceptance is not a campus accessibility audit. |
+| AI/reuse disclosure and service controls | Use the [T26 evaluation](docs/user-needs-evidence-guide.md#evaluate-one-emerging-technology), source/co-author records and CONTRIBUTING. Obtain the actual permitted-use/disclosure instructions and verify relevant account/service data controls; credit alone does not establish compliance, training settings or retention. |
+| Defensible final decisions | Tie each applicable requirement/risk to evidence, decision, safeguard, limitation, responsible person and review date. Leave missing institutional inputs explicit; do not mark T27 Done solely because technical tests pass. |
+
+Current T26/T23/T24 evidence can inform T27 immediately, while T25 diagrams and other delivery tasks continue separately. T27 is complete only when its actual acceptance evidence is recorded and reviewed. Follow the [project handoff convention](.agents/skills/project-handoff/SKILL.md); no new T27 implementation, external message, policy certification or data operation is authorized by this publication request.
+
 ## Before handing over work
 
 Run the configured checks and any meaningful tests for your feature. The direct test command below assumes an isolated local configuration; with Neon active, substitute [the local child-process command](#isolated-tests-while-using-neon). Shared migrations are coordinator-owned.
