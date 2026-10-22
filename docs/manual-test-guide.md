@@ -26,6 +26,8 @@ Visit `http://127.0.0.1:8000/`. Anonymous visitors go to login; signed-in accoun
 
 ### Test accounts
 
+For the populated T21 local dataset, use the [current nine-account roster](../DEV.md#seed-the-t21-demonstration-dataset). The optional AUTH-01 pair below is a separate development seed and was removed from the current local database during the authorized cleanup.
+
 The seed command defines these fictional accounts; this guide does not assert that they currently exist in every local database:
 
 | Username | Role | Active |
@@ -1948,6 +1950,83 @@ Fill this after testing. For a failure, note the step and a screenshot or fictio
 
 Use **Not run - needs test data** when appropriate. Record browser/version, date and revision with your results using the shared format below.
 
+## Module 20 — Fictional demonstration dataset (T21)
+
+T21 is **Done locally** and includes the user-requested **August-October 22, 2026 transaction history**, using the existing manually entered equipment and seeded accounts. Source `e3402bf` is committed and pushed on `jerome` over main `4f285cb`, not integrated into main; see the [publication receipt](../handoffs/t21-seeds-and-cleanup-publication-10-22-2026.md). [DEV.md](../DEV.md#seed-august-october-2026-transactions) owns the setup, expected dataset totals and repeat-run behavior; [the account table](../DEV.md#seed-the-t21-demonstration-dataset) lists every full name, username, email and private password source. These are realistic fictional demonstration events, not actual campus activity records.
+
+### T21-01: Review the dated local records
+
+The following read-only snapshot was verified **October 22, 2026, Asia/Manila**, after the transaction import. Settings remain **7 days / 3 units per item**. Recheck after any manual workflow action or date change; numeric IDs are workstation-specific, so identify records by borrower/purpose on another database.
+
+| Field / record | Verified value |
+| --- | --- |
+| Existing inventory and photos | 12 categories, 29 catalog items, 46 units; all 23 photo paths/file hashes preserved |
+| Accounts / Profiles | 1 ADMIN, 8 BASIC_USER accounts, 9 Profiles; same names/passwords as the DEV table |
+| Partial overdue loan | Loan 27, Miguel Santos (`miguel.santos`), issued October 18, due October 21; camera returned October 20, tripod outstanding |
+| Fully outstanding overdue loan | Loan 28, Sofia Reyes (`sofia.reyes`), laptop issued October 19, due October 21 |
+| Current loan | Loan 29, Gabriel Cruz (`gabriel.cruz`), speaker issued October 21, due October 24 |
+| Today's issue | Loan 30, Isabella Garcia (`isabella.garcia`), router/switch/cable issued October 22, due October 26 |
+| Earlier completed loan | Loan 11, Miguel Santos; speaker issued/returned August 7, loan closed |
+| Damaged return and repair | Loan 19; maintenance 10 on `CEL-LAB-DMM-001`, damaged lead returned October 6 at 14:05, repair closed October 8 at 15:00 |
+| Approved cancellations | Requests 49 and 50 retain ended/cancelled allocations; no issued loans |
+| Waiting for collection | Approved requests 51 and 52 |
+| Pending queue | Requests 53, 54 and 55 |
+
+All new submission/decision/reservation/issue/return/repair events fall in August through October 22. Due dates for outstanding loans extend through October 26. Original account/catalog entry times remain their real database import times; they can be later than these imported events. Physical-unit acquisition dates and historical allocation/maintenance windows were validated without changing existing inventory dates.
+
+### T21-02: Check dashboard and filtered reports
+
+1. Sign in as `andrea.mendoza` at `/accounts/login/` using the private seed password. Open `/manage/`. Expect monthly issued-loan bars **Aug 2026 = 3, Sep = 4, Oct = 13**, with category usage from the real catalog. Expected cards on October 22: **30 Available / 3 Pending / 4 active loans / 2 overdue loans**.
+2. Open `/manage/reports/loans/`. With empty date filters, expect **20 loans / 34 issued units / 28 returned / 6 outstanding**. Set the inclusive issue-date range to the following values and search:
+
+| Field | Value |
+| --- | --- |
+| From | `2026-10-01` |
+| To | `2026-10-22` |
+
+Expected October-only totals: **13 loans / 23 issued units / 17 returned / 6 outstanding**. Export the same filter and compare rows/totals. Requests are not the monthly chart's unit of counting; it counts issued loans.
+
+3. Open `/manage/reports/overdue/`. Expect only loans 27 and 28 on October 22, with **2 outstanding units** in total. Current loans 29 and 30 must be absent. Due dates change their overdue eligibility naturally as the campus date advances.
+4. Open `/manage/maintenance/10/`: expect the returned damaged multimeter lead linked to its source ReturnRecord, a completed repair action and Available outcome. Existing maintenance records 1-9 and their earlier remarks/dates remain intact.
+
+### T21-03: Borrower history and ownership
+
+1. Sign out and sign in as `miguel.santos`. Open `/portal/loans/27/`: expect one returned camera and one outstanding tripod, with an overdue label as of October 22. Open the fully returned August loan 11 and confirm its unit return and closed state.
+2. Attempt `/portal/loans/28/`; expect 404 because it belongs to Sofia. `/manage/reports/loans/` must return 403 for a basic user.
+3. Sign in as `sofia.reyes` and confirm her own overdue laptop loan/history. Use the other DEV-table accounts to inspect their own records. Equipment photos should still display; existing catalog descriptions and asset codes remain intact.
+
+### T21-04: Controlled import and preservation checks
+
+| Input / case | Expected outcome |
+| --- | --- |
+| Repeat `manage.py seed_demo_transactions` against this database | Explicit existing-history error; no duplicates, password resets or changed records |
+| Missing or duplicate required equipment name, isolated test | Specific equipment-name error; no partial history |
+| Unit acquired after its planned reservation, isolated test | Acquisition-date error; complete rollback |
+| PostgreSQL constraint rejects issue audit, isolated test | All new history and inventory state changes roll back |
+| Incorrect reference date, isolated test | Explicit actual-campus-date error |
+
+Run `manage.py test operations.tests.test_demo_transactions --noinput`; schema-failure checks belong only in its separate PostgreSQL test database. The account-only `seed_demo_data` command remains independent and must not be rerun to refresh transaction dates.
+
+### T21-05: Seed and cleanup command rehearsal
+
+[DEV.md's command runbook](../DEV.md#demo-command-runbook) owns the runnable PowerShell commands, parameters, backup steps and deletion scopes. Use a disposable database for this rehearsal; the populated local history is retained for demonstration. CLI access is the authorization boundary; unit registration requires the named active ADMIN. These T21 CLI tools are published on `jerome` at `e3402bf` and are not integrated into main.
+
+| Setup / input | Expected stored result and inspection |
+| --- | --- |
+| Existing active catalog; `seed_demo_units --admin-username andrea.mendoza --quantity-per-item 2 --acquired-on 2026-07-01` | Each active item has at least two total units, counting all states. New stock is Good/Available with the supplied date and creation audits; existing stock/photos/maintenance unchanged. Check `/manage/units/` and its details |
+| Repeat the same top-up | Zero new units; archived items/categories remain untouched |
+| Basic-user/missing admin, invalid date, zero quantity or asset-code collision | Specific error; no partial unit/audit creation |
+| Seeded transaction history; `clear_equipment_units` before clearing borrowing | Explicit prerequisite error; no deletions |
+| Stop writers; `clear_borrowing_data` | Requests/loans/returns and their audits removed; Reserved/Issued units Available; other states unchanged. Maintenance retained with source-return links cleared. Check empty `/manage/requests/`, `/manage/loans/`, reports, dashboard and retained inventory/maintenance |
+| Then `clear_equipment_units` | No stock or maintenance; catalog/photo references/accounts/settings remain. Check catalog pictures, empty units/maintenance pages and zero stock |
+| Top up units with July 1 acquisition date, then seed fixed history | New asset identities; 30 requests, 20 loans and 28 returns imported. Available counts depend on the new stock count |
+
+Run `manage.py test operations.tests.test_demo_units operations.tests.test_demo_transactions --noinput` for the isolated PostgreSQL rehearsal, including actual database-error rollback. Do not run purge SQL/commands on the populated demonstration merely to check this guide. Full database drop/recreate and private backup restore remain separate manual procedures; no completed restore rehearsal is claimed here.
+
+### T21 actual execution
+
+The local import ran atomically after a private database backup. Before commit, comparisons confirmed unchanged original accounts, Profiles, catalog/category/settings rows, all nine old maintenance records/audits and all 23 photo paths/SHA-256 hashes. Existing units were retained, with workflow-derived state changes only. All 30 requests use the existing photographed equipment records; no generic sample item or new stock was substituted. Read-only ORM reports confirm the counts and dates above. Real PostgreSQL integration tests exercise the entire import, HTTP dashboard/reports/CSV, owner isolation, repeat rejection and rollback; the current handoff owns the exact final test result. Browser/mobile/keyboard, spreadsheet opening and actual user acceptance remain **Not run for this history delivery** until recorded below. Earlier empty-data examples in completed handoffs are historical.
+
 ## Recording manual results
 
 Use one row per actual test run. Expected outcomes in this guide do not count as passes. Keep evidence fictional and do not include passwords, session/CSRF tokens or private environment values.
@@ -1960,6 +2039,7 @@ Use one row per actual test run. Expected outcomes in this guide do not count as
 | Example: T16-01 | `23c1ad9` including integrated T16 fixes, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional asset code/maintenance ID; no private data |
 | Example: T18-02 | `26b1ee5`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request/loan/category markers; no private data |
 | Example: T19-03 | `e8f2a19` (PR #49), browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional report range/loan IDs and CSV filename; no borrower-private data |
+| Example: T21-02 | uncommitted `jerome`, browser/version, Asia/Manila date/time | Fill in after running | Not run | Fictional request/loan marker; no credentials |
 
 Report the purpose marker/request ID and the smallest reproduction steps for a failure. Retain test records rather than deleting history to make counts match. Save real findings in the current handoff or the team's review record when supplied.
 
@@ -1967,13 +2047,13 @@ Report the purpose marker/request ID and the smallest reproduction steps for a f
 
 ## Remaining validation and demonstration work
 
-T01-T20 are integrated. T20's borrower home and shared UI are available through PR #51 at `6f18116`; see Module 19 for Ralph's executed browser cases and remaining limits. T21's coherent demonstration dataset is Not started. T22 system verification and T23 actual user acceptance await T21; existing automated/browser checks do not complete those tasks. Screen-reader evaluation, Firefox/Safari, opening CSVs in spreadsheet software and the complete maintenance repair lifecycle remain unrun follow-ups.
+T01-T20 are integrated. T20's borrower home and shared UI are available through PR #51 at `6f18116`; see Module 19 for Ralph's executed browser cases and remaining limits. T21 now has the August-October historical dataset; see Module 20 and the current handoff for local acceptance/main-integration state. T22 system verification and T23 actual user acceptance await T21 main integration and their own actual execution; existing automated/browser checks do not complete those tasks. Screen-reader evaluation, Firefox/Safari, opening CSVs in spreadsheet software and the complete maintenance repair lifecycle remain unrun follow-ups.
 
 ---
 
 ## Running the automated test suite
 
-The integrated PR #51 checkout at `6f18116` passes **322 PostgreSQL tests in 127.102s** on October 21, including all seven T20 workspace tests and 11 T19 report tests. The earlier PR #49 checkout passed 315 tests in 57.317s. The preceding PR #46 authentication/UI checkout passed 304 tests in 74.818s. The integrated T18 baseline at `26b1ee5` previously passed 298 tests in 56.385s. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
+The T21 source `e3402bf`, published on `jerome` over main `4f285cb`, passes **336 PostgreSQL tests in 101.342s** on October 22, including five account-seed tests, seven history/cleanup tests and two physical-unit seed tests. The earlier 327-test account-only stage is historical in its dated handoff. The integrated PR #51 checkout at `6f18116` passed **322 PostgreSQL tests in 127.102s** on October 21, including all seven T20 workspace tests and 11 T19 report tests. The earlier PR #49 checkout passed 315 tests in 57.317s. The preceding PR #46 authentication/UI checkout passed 304 tests in 74.818s. The integrated T18 baseline at `26b1ee5` previously passed 298 tests in 56.385s. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput

@@ -98,7 +98,7 @@ Open `.env.local` in your editor. The command above deliberately fails if the fi
 | `DJANGO_DEBUG`                                            | `True` for normal local debugging and static serving; use the [error-page preview steps](#preview-custom-error-pages) to inspect the custom 404 |
 | `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`     | Keep the template's localhost entries when using port 8000                                                                                      |
 | `MCP_DATABASE_URL`                                        | Leave blank unless using optional MCP tooling                                                                                                   |
-| `SEED_ACCOUNT_PASSWORD`                                   | Your shared private password for both authentication test accounts; required only when running `seed_auth_accounts`                             |
+| `SEED_ACCOUNT_PASSWORD`                                   | Your private default password when running `seed_auth_accounts` or `seed_demo_data`; existing account passwords are not changed                             |
 
 Generate a secret locally, then paste the result into `.env.local`:
 
@@ -131,7 +131,7 @@ The supplied screenshot below records the earlier minimal sign-in page. Local UI
 
 ![Campus Equipment sign-in page with username or email, password, and the green bottom wave](static/images/login-screen.png)
 
-The current root is `accounts:home`: anonymous visitors go to the custom login page and active users go to `/portal/` or `/manage/` from their stored role. `/test` remains a separate debug-only preview and returns 404 when debug is disabled. The role destinations intentionally contain no demonstration workflow/dashboard data.
+The current root is `accounts:home`: anonymous visitors go to the custom login page and active users go to `/portal/` or `/manage/` from their stored role. `/test` remains a separate debug-only preview and returns 404 when debug is disabled. Role workspaces display stored data; migrations alone supply no demonstration transactions.
 
 <details>
 <summary>Earlier setup screens (historical)</summary>
@@ -146,7 +146,7 @@ The screenshot below records the temporary development index that preceded T04:
 
 </details>
 
-Migrations initialize the settings row (7 days and 3 units per item) and its system audit. They create no accounts or equipment. Use the commands below for local account setup; the full demonstration dataset remains T21.
+Migrations initialize the settings row (7 days and 3 units per item) and its system audit. They create no accounts or equipment. Use the commands below for local account setup or the [T21 demonstration dataset](#seed-the-t21-demonstration-dataset).
 
 ### Create an administrator account
 
@@ -166,7 +166,7 @@ After migrations, run this command in a trusted local terminal:
 .\.venv\Scripts\python.exe manage.py seed_auth_accounts
 ```
 
-Set `SEED_ACCOUNT_PASSWORD` in your ignored `.env.local` first. The command uses that same private password for both accounts without prompting or printing it; explicit process environment values override the file. The setting is required only for this command, so other Django commands do not require a seed password. Keep its value out of shared files and Git.
+Set `SEED_ACCOUNT_PASSWORD` in your ignored `.env.local` first. The command uses that same private password for both accounts without prompting or printing it; explicit process environment values override the file. Only the two seed commands require this setting. Keep its value out of shared files and Git.
 
 It creates the fictional `auth_demo_admin` (`ADMIN`) and `auth_demo_user` (`BASIC_USER`), both active with Profiles and Django staff/superuser flags false. Django validates and hashes the configured password. Both accounts are created in one transaction; a missing/blank/invalid password or either username already existing causes a clear error without changing accounts. Reuse existing accounts or run `manage.py changepassword USERNAME` if needed. Changing the environment value does not reset existing accounts.
 
@@ -180,6 +180,132 @@ Open `/accounts/login/` and sign in with each account separately using the "User
 Both accounts use your private `SEED_ACCOUNT_PASSWORD`; there is no password shipped in the repository. Choose your own value in `.env.local`. To replace the password on existing accounts, follow [password changes](#change-seed-passwords-while-keeping-records); changing the environment value alone does not update them. Email matching ignores letter case; shared or otherwise ambiguous email addresses require an unambiguous username instead.
 
 The admin should reach `/manage/` and receive 403 at `/portal/`; the basic user should reach `/portal/` and receive 403 at `/manage/`. Sign out using the page's logout button, then reopen the protected destination and confirm it redirects to login. These are the integrated role workspaces; use the feature navigation for existing workflows. This two-account development seed does not satisfy T21's full fictional demonstration dataset.
+
+### Seed the T21 demonstration dataset
+
+The demonstration commands have separate purposes: `seed_demo_data` creates the accounts below; [`seed_demo_units`](#seed-physical-units-for-existing-equipment) tops up stock in an existing catalog; [`seed_demo_transactions`](#seed-august-october-2026-transactions) imports the user-requested August-October history using existing equipment. The account command creates no inventory, requests, allocations, loans or returns. Equipment and uploaded photos remain local records. The [demo command runbook](#demo-command-runbook) lists the preparation order and cleanup choices.
+
+After existing migrations, set a Django-valid `SEED_ACCOUNT_PASSWORD` privately in ignored `.env.local`, then run once:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py seed_demo_data
+```
+
+The command atomically creates one ADMIN and eight BASIC_USER accounts with Profiles. All identities below are realistic fictional examples, with `username@example.invalid` emails and blank contact numbers. Each account has a usable password hashed from the private seed value; the password is neither shipped nor printed.
+
+| Full name | Username | Email | Role | Default password source |
+| --- | --- | --- | --- | --- |
+| Andrea Mendoza | `andrea.mendoza` | `andrea.mendoza@example.invalid` | ADMIN | `.env.local` → `SEED_ACCOUNT_PASSWORD` |
+| Miguel Santos | `miguel.santos` | `miguel.santos@example.invalid` | BASIC_USER | `.env.local` → `SEED_ACCOUNT_PASSWORD` |
+| Sofia Reyes | `sofia.reyes` | `sofia.reyes@example.invalid` | BASIC_USER | `.env.local` → `SEED_ACCOUNT_PASSWORD` |
+| Gabriel Cruz | `gabriel.cruz` | `gabriel.cruz@example.invalid` | BASIC_USER | `.env.local` → `SEED_ACCOUNT_PASSWORD` |
+| Isabella Garcia | `isabella.garcia` | `isabella.garcia@example.invalid` | BASIC_USER | `.env.local` → `SEED_ACCOUNT_PASSWORD` |
+| Daniel Navarro | `daniel.navarro` | `daniel.navarro@example.invalid` | BASIC_USER | `.env.local` → `SEED_ACCOUNT_PASSWORD` |
+| Camille Torres | `camille.torres` | `camille.torres@example.invalid` | BASIC_USER | `.env.local` → `SEED_ACCOUNT_PASSWORD` |
+| Rafael Ramos | `rafael.ramos` | `rafael.ramos@example.invalid` | BASIC_USER | `.env.local` → `SEED_ACCOUNT_PASSWORD` |
+| Alyssa Flores | `alyssa.flores` | `alyssa.flores@example.invalid` | BASIC_USER | `.env.local` → `SEED_ACCOUNT_PASSWORD` |
+
+Sign in at <http://127.0.0.1:8000/accounts/login/> with any listed username or email. For the password, enter the actual value of `SEED_ACCOUNT_PASSWORD` from your private `.env.local` when you created the accounts. Explicit process environment values override the file during seeding. The admin reaches `/manage/`; basic users reach `/portal/`. Each developer supplies their own private seed value and runs the seed against their local database. Changing that environment value later does not change stored passwords; use `manage.py changepassword USERNAME` to reset an existing account. Share instructor demonstration credentials only through the designated private channel. This table documents the environment key; live passwords stay in private configuration.
+
+Existing unrelated accounts, equipment, images, maintenance, settings and transactions remain unchanged by this seed. Case-insensitive username/email collisions fail before writes; invalid passwords or audit/database errors roll back all nine new accounts. There is no destructive reset mode. The one-time user-authorized local cleanup is recorded in [the cleanup handoff](handoffs/clean-demonstration-accounts-and-equipment-preservation-10-22-2026.md); it is separate from this safe account-creation command. Old sessions were cleared, so sign in again using the new accounts. The former `auth_demo_*` and `t21_*` accounts no longer exist in this local database.
+
+See [implementation](operations/demo_seed.py) and [Module 20](docs/manual-test-guide.md#module-20--fictional-demonstration-dataset-t21) for current examples and verification. Run the focused PostgreSQL checks with:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py test operations.tests.test_demo_seed --noinput
+```
+
+### Physical units for the current local catalog
+
+On October 22, 2026, one Good/Available demonstration unit was registered for each of the eleven catalog items that had none. Audio Cassette Duplicator was restored from archive with the user's approval before its unit was added. All 29 catalog items have at least one physical unit: **46 units total**. The registration snapshot, before transaction import, had 39 Available, 5 Maintenance and 2 Retired units. Existing units, maintenance history and all 23 uploaded photos were preserved. Current borrowing counts belong to the [transaction snapshot](#seed-august-october-2026-transactions).
+
+| Equipment | Added asset code |
+| --- | --- |
+| TP-Link Wi-Fi Router | `CEL-NET-RTR-001` |
+| 5-Port Network Switch | `CEL-NET-SWT-001` |
+| Cat6 Ethernet Cable (10m) | `CEL-NET-CAT6-001` |
+| Wireless Presentation Clicker | `CEL-PRA-CLK-001` |
+| Portable Whiteboard | `CEL-PRA-WBD-001` |
+| Desktop PC (Core 2 Duo) | `CEL-LGC-PC-001` |
+| CRT Monitor 17-inch | `CEL-LGC-CRT-001` |
+| PS/2 Keyboard | `CEL-LGC-KBD-001` |
+| Cassette Tape Recorder | `CEL-ANR-CTR-001` |
+| VHS Player | `CEL-ANR-VHS-001` |
+| Audio Cassette Duplicator | `CEL-ANR-DUP-001` |
+
+These are fictional demonstration inventory entries, with registration date October 22 as their acquisition date and practical handling notes. They were added locally through the existing audited unit-registration service; the account seed command does not create this equipment or copy uploaded images to another developer's database. Other developers can use the [physical-unit seed](#seed-physical-units-for-existing-equipment) for bulk registration or `/manage/units/new/` for individual stock. See the [unit-registration follow-up](handoffs/seed-account-access-table-and-missing-physical-units-10-22-2026.md) and [Module 20](docs/manual-test-guide.md#module-20--fictional-demonstration-dataset-t21) for the verified local state.
+
+### Seed physical units for existing equipment
+
+After creating the nine demonstration accounts and adding equipment to the catalog, run:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py seed_demo_units --admin-username andrea.mendoza --quantity-per-item 2 --acquired-on 2026-07-01
+```
+
+This tops up each active catalog item under an active category to **at least two total physical units**, counting all existing units regardless of state. An item with two or more units receives none; an item with one receives one. Repeat runs at the same quantity add no duplicates. Use `--quantity-per-item 1` if you only need one unit per item. All three options are required; change the administrator username when using another active ADMIN.
+
+New units are Good/Available, with unique `DEMO-<catalog-id>-<sequence>` asset codes, practical accessory/inspection notes and the supplied acquisition date. They are registered through the existing audited service in one transaction. Existing asset codes, conditions, statuses, acquisition dates, maintenance and photos remain unchanged. Archived items/categories are excluded and reported as such; restore them in the management UI first if they need stock. Invalid arguments, unavailable administrators or asset-code collisions fail without partial registration. No catalog records or photos are bundled with this command.
+
+For the fixed August-October history, July 1 is a fictional acquisition date before its first reservation. Use an accurate acquisition date for your own records; the importer rejects stock acquired after its historical allocation. Retired/damaged/reserved stock counts toward the top-up target, so a successful top-up alone does not guarantee sufficient serviceable equipment for the history. The current populated database already has units and transactions; running this command there may add extra stock and change dashboard counts.
+
+### Seed August-October 2026 transactions
+
+This command imports realistic **fictional** campus borrowing history from August through **October 22, 2026**, with most activity in October. It reuses the documented accounts and the existing named equipment from the manually entered catalog; it creates no accounts, catalog items or physical units, and does not replace photos. Prepare the equipment named in [the plan](operations/demo_transaction_plan.py), including enough serviceable stock with acquisition dates no later than each historical reservation. The current local inventory satisfies these prerequisites, and the history was imported successfully on October 22; do not rerun it to refresh dates.
+
+```powershell
+.\.venv\Scripts\python.exe manage.py seed_demo_transactions
+```
+
+The importer requires an empty borrowing history and the active seeded accounts. Missing/archived equipment, insufficient stock, acquisition/maintenance conflicts and database errors fail the whole transaction. An existing borrowing history produces an explicit error; there is no overwrite, reset or duplicate-import mode. Existing acquisition dates, master records, old maintenance records and old audits remain intact; stock states change only through the existing approval, issue, cancellation, return and repair services.
+
+Each workflow runs through the actual services, then only its newly created transaction/audit records are assigned the historical dates. Original database registration times on equipment/accounts remain the actual entry/import times, which can be later than the imported events. Server time is not patched, constraints remain enabled, and no historical dates are accepted through ordinary application endpoints. The importer checks acquisition dates, reservation exclusivity and maintenance windows before committing. New event dates end October 22; outstanding due dates extend through October 26, still inside the requested October scope.
+
+| Demonstration metric, as of October 22 | Count |
+| --- | --- |
+| Requests | 30: 3 submitted in August, 4 in September, 23 in October |
+| Issued loans | 20: August 3, September 4, October 13 |
+| Loan units / returned / outstanding | 34 / 28 / 6 |
+| Request states | 16 Returned, 1 Partially returned, 3 Issued, 2 Approved, 2 Rejected, 3 Cancelled, 3 Pending |
+| Dashboard Available / Pending / active / overdue | 30 / 3 / 4 / 2 |
+| Current inventory states | 30 Available, 3 Reserved, 6 Issued, 5 Maintenance, 2 Retired |
+| Maintenance | 9 existing records preserved; 1 new damaged-return record repaired and closed |
+
+The plan includes real equipment names, course/event purposes, practical decision/return notes, an Approved cancellation releasing reservations, partial return, overdue outstanding loans and damaged-return repair. These are demonstration scenarios, not evidence of actual campus borrowing or technician work. Overdue counts naturally change after October 22; the command does not freeze the clock or refresh dates on repeat execution. [Module 20](docs/manual-test-guide.md#module-20--fictional-demonstration-dataset-t21) supplies current local examples and expected checks.
+
+Run the focused real PostgreSQL integration tests with:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py test operations.tests.test_demo_transactions --noinput
+```
+
+### Demo command runbook
+
+Run from the project root using your private `.env.local`. Every command targets its configured database; explicit process environment variables override that file. Run commands one at a time and stop if one fails. Seeds require migrations first. Your current populated local data does **not** need these commands rerun for an ordinary server restart.
+
+| Need | Command / procedure | Result |
+| --- | --- | --- |
+| Default admin + eight basic users | `manage.py seed_demo_data` | Nine accounts from the table above; password from `SEED_ACCOUNT_PASSWORD` |
+| Small authentication-only test | `manage.py seed_auth_accounts` | Two separate `auth_demo_*` accounts; choose this instead of the nine-account seed when only testing sign-in |
+| Physical stock for existing equipment | `manage.py seed_demo_units --admin-username andrea.mendoza --quantity-per-item 2 --acquired-on 2026-07-01` | Tops up active items; preserves existing units/catalog/photos |
+| Borrow, issue, return and repair history | `manage.py seed_demo_transactions` | Imports the fixed 30 requests / 20 loans; requires empty history and the named equipment/stock |
+| Professor wants empty transaction history | `manage.py clear_borrowing_data` | Deletes all borrowing history; keeps accounts, catalog/photos, stock and maintenance |
+| Professor also wants no physical stock or maintenance | `manage.py clear_equipment_units` after clearing borrowing | Deletes all units and maintenance; keeps accounts and catalog/photos |
+| Professor wants absolutely no existing database records | [Recreate the database](#delete-all-local-records-and-seed-again) | Deletes accounts, catalog/photo references, units, transactions, audits and settings; migrations restore required system rows |
+
+The table abbreviates the executable; use `.\.venv\Scripts\python.exe manage.py ...` in PowerShell. Cleanup commands delete **all records in their stated scope**, including manually entered records, rather than identifying only fictional seed rows. They are trusted local CLI tools, not application workflow actions. They do not prompt. Stop Django and other database writers before cleanup, check the target database, and take a private backup if you need to restore the current demonstration later.
+
+For a new database **with the required catalog already prepared**, use this order. Skip the account seed if these users already exist:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py migrate --noinput
+.\.venv\Scripts\python.exe manage.py seed_demo_data
+.\.venv\Scripts\python.exe manage.py seed_demo_units --admin-username andrea.mendoza --quantity-per-item 2 --acquired-on 2026-07-01
+.\.venv\Scripts\python.exe manage.py seed_demo_transactions
+.\.venv\Scripts\python.exe manage.py check --database default
+```
+
+An empty database has no catalog. Register the equipment named in [the transaction plan](operations/demo_transaction_plan.py) at `/manage/items/new/` before unit/history seeding, or restore your private database backup. These commands cannot reconstruct manually uploaded equipment/photos after a full database deletion. A different stock count changes Available totals; the current 46-unit dashboard snapshot is not a universal seed result.
 
 ### Preview custom error pages
 
@@ -199,7 +325,50 @@ The custom [403](templates/403.html) and [404](templates/404.html) share the pro
 
 ### Reset local development data
 
-An existing-username error from `seed_auth_accounts` means the accounts have already been created. Sign in with them; the seed deliberately refuses to overwrite existing users. Choose password changes to keep accounts/history, deletion of the two disposable accounts to reseed only those identities, or the full reset for an empty local database.
+Choose the smallest scope requested by your professor using the [command table](#demo-command-runbook). Cleanup is destructive and is **not part of everyday startup**. The cleanup commands below have been exercised in a separate PostgreSQL test database; the current local demonstration records have not been cleared for this runbook.
+
+#### Back up the populated demonstration before cleanup
+
+Use pgAdmin's **Backup** action on the database named by `DB_NAME`, selecting **Custom** format, and save it privately under `output/private-backups/`. Also copy the uploaded files from `media/`; a database dump contains photo paths, not image bytes. Both directories are ignored by Git. For example, choose a new destination for each media backup:
+
+```powershell
+New-Item -ItemType Directory -Path output/private-backups -Force
+Copy-Item -LiteralPath media -Destination output/private-backups/media-before-professor-demo -Recurse -ErrorAction Stop
+```
+
+To recover the original demonstration, restore the custom dump into a newly recreated empty database using pgAdmin **Restore**, and restore its matching `media/` files. A full dump already includes accounts, units, history, settings and migration records: do not run the seed commands after a full restore. Keep the private password used by those stored accounts; editing the seed environment value does not update restored passwords. This runbook does not claim a restore rehearsal; that remains separate T24 work.
+
+#### Clear transactions while retaining equipment and maintenance
+
+For “fresh transaction history, keep my equipment and pictures,” stop the server and run:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py clear_borrowing_data
+```
+
+This atomically deletes all requests/items, allocations, loans/loan units, returns and audits targeting requests, loans or returns. Reserved/Issued units become Available; other unit states and conditions remain unchanged. Accounts, Profiles, sessions, categories, catalog/photo references, units, maintenance and settings remain. Maintenance records keep their repair history but their `source_return` links are detached because the returns no longer exist. Their existing audit text can still mention the deleted return. There are no borrowing rows left for charts/reports; Pending, active and overdue counts become zero.
+
+You can now demonstrate new manual borrowing through the portal. Reimporting the fixed history still requires valid stock/acquisition/maintenance windows. Preserved maintenance can conflict with its historic dates; restoring the pre-history backup preserves the original equipment setup exactly. If you instead want entirely new demonstration stock, use the next procedure.
+
+#### Clear physical units and maintenance while retaining the catalog and photos
+
+For “keep the equipment list and pictures, but delete transactions, physical units and maintenance,” stop the server and run:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py clear_borrowing_data
+.\.venv\Scripts\python.exe manage.py clear_equipment_units
+```
+
+The second command refuses to proceed while any borrowing request remains. It removes **all** physical units, maintenance records and audits targeting those units/maintenance. Categories, catalog items and their photo references, accounts/Profiles/sessions, settings and unrelated audits remain. Uploaded files are untouched. The catalog now has zero stock; you can register units manually or rebuild demonstration stock/history:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py seed_demo_units --admin-username andrea.mendoza --quantity-per-item 2 --acquired-on 2026-07-01
+.\.venv\Scripts\python.exe manage.py seed_demo_transactions
+```
+
+This creates new asset identities and fresh maintenance from the history, rather than restoring the previous 46 units and ten maintenance records. Existing users keep their passwords; do not rerun `seed_demo_data` for this procedure.
+
+An existing-username error from either account seed means those accounts already exist. Use their login or change their passwords below; seeds deliberately refuse to overwrite identities.
 
 #### Change seed passwords while keeping records
 
@@ -208,6 +377,13 @@ Run these commands and follow their hidden password/confirmation prompts:
 ```powershell
 .\.venv\Scripts\python.exe manage.py changepassword auth_demo_admin
 .\.venv\Scripts\python.exe manage.py changepassword auth_demo_user
+```
+
+For the nine-account demonstration, use the username from the table, for example:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py changepassword andrea.mendoza
+.\.venv\Scripts\python.exe manage.py changepassword miguel.santos
 ```
 
 Use your private `SEED_ACCOUNT_PASSWORD` value for each if you want both accounts to match the seed configuration. These commands keep accounts, Profiles, and transaction history. Editing `.env.local` alone does not change stored password hashes; reseeding is unnecessary for a password change.
@@ -225,7 +401,7 @@ Run the seed command only after deletion succeeds. It recreates both identities 
 
 #### Delete all local records and seed again
 
-**This deletes the entire selected database, including every account, Profile, session, equipment record, transaction, audit entry, setting, and migration record.** Use it only for your own disposable development database. Export a backup first if any records must be kept. Your code, migration files, `.env.local`, and generated frontend assets remain on disk.
+**This deletes the entire selected database, including every account, Profile, session, equipment record, transaction, audit entry, setting, and migration record.** Use it only for your own disposable development database. [Back up the database and media first](#back-up-the-populated-demonstration-before-cleanup) if any records must be kept. Your code, migration files, `.env.local`, generated frontend assets and uploaded image files remain on disk. Catalog/photo database references are deleted, so retained image files will no longer appear in the app unless their catalog records are restored. No file deletion is included in this procedure.
 
 1. Verify `DB_HOST`, `DB_PORT`, `DB_NAME`, and `DB_USER` in your private `.env.local`. The SQL below targets the standard local `campus_equipment` database; use your exact disposable database name if different. Stop Django with Ctrl+C and disconnect other clients from that database, including pgAdmin Query Tool tabs and any MCP/database tools.
 2. In pgAdmin, connect to that same PostgreSQL server as the account named by `DB_USER`, then open Query Tool on the maintenance database **postgres**, not `campus_equipment`. Keep autocommit enabled. Execute each statement separately; database drop/create cannot run inside a transaction:
@@ -244,14 +420,21 @@ Run the seed command only after deletion succeeds. It recreates both identities 
 
     ```powershell
     .\.venv\Scripts\python.exe manage.py migrate --noinput
-    .\.venv\Scripts\python.exe manage.py seed_auth_accounts
     .\.venv\Scripts\python.exe manage.py check --database default
     .\.venv\Scripts\python.exe manage.py showmigrations
     ```
 
-    Migrations rebuild the schema, initialize the required settings singleton (7 days / 3 units per item) and its SYSTEM audit, and recreate Django metadata. The seed recreates both authentication accounts and Profiles using the current private password. All migrations should show `[X]`; no equipment or borrowing demonstration records are supplied by this two-account seed.
+    Migrations rebuild the schema, initialize the required settings singleton (7 days / 3 units per item) and its SYSTEM audit, and recreate Django metadata. All migrations should show `[X]`. Stop here if your professor wants an empty application database: there are no user accounts or equipment/transaction records, only required framework/system rows.
 
-4. Restart Django using [everyday startup](#everyday-startup) and verify both roles using the [authentication test steps](#seed-authentication-test-accounts). Existing login sessions were deleted, so sign in again.
+    If login accounts are needed afterward, choose **one** account setup:
+
+    ```powershell
+    .\.venv\Scripts\python.exe manage.py seed_demo_data
+    ```
+
+    This supplies the documented one-admin/eight-user roster with the current private password. For only the two authentication test accounts, use `seed_auth_accounts` instead. For only an administrator and no borrowers, use [create_admin](#create-an-administrator-account). Equipment and transaction seeds require catalog preparation as described in the [runbook](#demo-command-runbook); migrations and account seeds do not restore deleted catalog/photos.
+
+4. Restart Django using [everyday startup](#everyday-startup) when you are ready. If you created accounts, verify the roles using the matching seed table. Existing login sessions were deleted, so sign in again.
 
 Do not use `manage.py flush` as this project's fresh-start procedure. It deletes data created by migrations, including `SystemSetting` row 1, but retains migration history; running ordinary `migrate` afterward will not rerun the already-applied initialization migration. Use database recreation above even if you have already flushed the disposable database. Keep the migration files in Git; deleting them or using `--fake` is not a data-reset procedure.
 
@@ -493,7 +676,7 @@ Shared `components/form_field.html`, `request_status.html`, `loan_status.html`, 
 
 Preserve the active-role/ownership helpers in [accounts/access.py](accounts/access.py), workflow entry points in [borrowing services](borrowing/services.py), [release services](borrowing/release_services.py) and [return services](borrowing/return_services.py), and existing named routes in the [HTTP contract](docs/api_spec.md). T19 presentation is in [workspace_views.py](operations/workspace_views.py) and [report.html](templates/operations/manage/report.html); `loan_report_rows`, `overdue_report_rows` and `report_totals` in [queries.py](operations/queries.py) own its read-only calculations. Keep both report pages and both exports active-ADMIN/GET-only, with inclusive issue-date filters and matching all-row CSV totals. Reports use `report_navigation_active` to keep their shared parent active. The [folder guide](docs/project-folder-architecture.md#where-views-and-page-html-go) maps the other implemented pages.
 
-The historical [T19 review](handoffs/t19-main-review-and-local-merge-conflict-resolution-10-21-2026.md) passed 315 PostgreSQL tests. Fresh merged-source review passes **322 PostgreSQL tests in 127.102s**, including seven workspace integration checks, with no blocking runtime defect. See the [integration review](handoffs/t20-main-integration-review-and-documentation-10-21-2026.md). Ralph's earlier implementation run passed 322 tests in 87.253s. His isolated Edge/Chromium browser run covers 17 portal/management routes at 1440/1024/768/390/320px, keyboard navigation, invalid/valid requests, approval/release back-out, partial/final damaged returns, cancellation, access errors, both CSV downloads, native logout and JavaScript-disabled empty-state navigation. See [Module 19](docs/manual-test-guide.md#module-19--integrated-role-workspaces-t20) for procedures and limitations. This review did not rerun browsers. Existing formatting findings remain in the portal equipment template, its test file's line endings and an archived handoff Python example; spreadsheet-opening checks, screen-reader evaluation and system acceptance remain pending. Jerome / T21 is ready with T17 integrated but remains Not started; T22/T23 await T21, and diagrams still require Jerome's go signal.
+The historical [T19 review](handoffs/t19-main-review-and-local-merge-conflict-resolution-10-21-2026.md) passed 315 PostgreSQL tests. Fresh merged-source review passes **322 PostgreSQL tests in 127.102s**, including seven workspace integration checks, with no blocking runtime defect. See the [integration review](handoffs/t20-main-integration-review-and-documentation-10-21-2026.md). Ralph's earlier implementation run passed 322 tests in 87.253s. His isolated Edge/Chromium browser run covers 17 portal/management routes at 1440/1024/768/390/320px, keyboard navigation, invalid/valid requests, approval/release back-out, partial/final damaged returns, cancellation, access errors, both CSV downloads, native logout and JavaScript-disabled empty-state navigation. See [Module 19](docs/manual-test-guide.md#module-19--integrated-role-workspaces-t20) for procedures and limitations. This review did not rerun browsers. Existing formatting findings remain in the portal equipment template, its test file's line endings and an archived handoff Python example; spreadsheet-opening checks, screen-reader evaluation and system acceptance remain pending. Jerome / T21 is Done locally with historical transactions and T17 integrated; see [seed setup](#seed-the-t21-demonstration-dataset). T22/T23 await T21 main integration and actual execution, and diagrams still require Jerome's go signal.
 
 ## Equipment photos and local media
 
