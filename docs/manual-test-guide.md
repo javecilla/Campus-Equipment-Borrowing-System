@@ -1952,7 +1952,7 @@ Use **Not run - needs test data** when appropriate. Record browser/version, date
 
 ## Module 20 — Fictional demonstration dataset (T21)
 
-T21 is **Done locally** and includes the user-requested **August-October 22, 2026 transaction history**, using the existing manually entered equipment and seeded accounts. Source `e3402bf` is committed and pushed on `jerome` over main `4f285cb`, not integrated into main; see the [publication receipt](../handoffs/t21-seeds-and-cleanup-publication-10-22-2026.md). [DEV.md](../DEV.md#seed-august-october-2026-transactions) owns the setup, expected dataset totals and repeat-run behavior; [the account table](../DEV.md#seed-the-t21-demonstration-dataset) lists every full name, username, email and private password source. These are realistic fictional demonstration events, not actual campus activity records.
+T21 is **Done and integrated through PR #53** and includes the user-requested **August-October 22, 2026 transaction history**, using the existing manually entered equipment and seeded accounts. Source `e3402bf` and publication `ae6b147` are integrated at main `b828945`, with exact published/merge-tree equality verified; see [integration/acceptance evidence](../handoffs/t22-automated-system-acceptance-10-22-2026.md). [DEV.md](../DEV.md#seed-august-october-2026-transactions) owns the setup, expected dataset totals and repeat-run behavior; [the account table](../DEV.md#seed-the-t21-demonstration-dataset) lists every full name, username, email and private password source. These are realistic fictional demonstration events, not actual campus activity records.
 
 ### T21-01: Review the dated local records
 
@@ -2009,7 +2009,7 @@ Run `manage.py test operations.tests.test_demo_transactions --noinput`; schema-f
 
 ### T21-05: Seed and cleanup command rehearsal
 
-[DEV.md's command runbook](../DEV.md#demo-command-runbook) owns the runnable PowerShell commands, parameters, backup steps and deletion scopes. Use a disposable database for this rehearsal; the populated local history is retained for demonstration. CLI access is the authorization boundary; unit registration requires the named active ADMIN. These T21 CLI tools are published on `jerome` at `e3402bf` and are not integrated into main.
+[DEV.md's command runbook](../DEV.md#demo-command-runbook) owns the runnable PowerShell commands, parameters, backup steps and deletion scopes. Use a disposable database for this rehearsal; the populated local history is retained for demonstration. CLI access is the authorization boundary; unit registration requires the named active ADMIN. These T21 CLI tools are integrated through PR #53 at `b828945`, preserving source `e3402bf`.
 
 | Setup / input | Expected stored result and inspection |
 | --- | --- |
@@ -2026,6 +2026,54 @@ Run `manage.py test operations.tests.test_demo_units operations.tests.test_demo_
 ### T21 actual execution
 
 The local import ran atomically after a private database backup. Before commit, comparisons confirmed unchanged original accounts, Profiles, catalog/category/settings rows, all nine old maintenance records/audits and all 23 photo paths/SHA-256 hashes. Existing units were retained, with workflow-derived state changes only. All 30 requests use the existing photographed equipment records; no generic sample item or new stock was substituted. Read-only ORM reports confirm the counts and dates above. Real PostgreSQL integration tests exercise the entire import, HTTP dashboard/reports/CSV, owner isolation, repeat rejection and rollback; the current handoff owns the exact final test result. Browser/mobile/keyboard, spreadsheet opening and actual user acceptance remain **Not run for this history delivery** until recorded below. Earlier empty-data examples in completed handoffs are historical.
+
+## Module 21 — Automated system acceptance (T22)
+
+T22 validates the integrated workflows using PostgreSQL and actual Django HTTP requests. T14/T19/T20/T21 prerequisites are integrated; T21 source `e3402bf` and publication receipt `ae6b147` are included in PR #53 at main `b828945`. The local `jerome` checkout was fast-forwarded to that merge before this work. [DEV.md](../DEV.md#t22-automated-system-acceptance) owns the complete, focused, concurrency and saved-output commands. New T22 checks are local/uncommitted until separately published/integrated.
+
+### T22-01: Run complete automated acceptance
+
+Run the complete DEV command against the separate PostgreSQL test database. The final summary must show `OK` and exit code 0. All rows below are executed by the complete suite, rather than requiring eleven separate manual data setups. A failed row requires investigation and a rerun of the affected checks; do not mark it passed from an earlier revision's evidence.
+
+| SRS scenario | Observable automated evidence |
+| --- | --- |
+| 1. Authentication, privilege forgery, deactivated sessions | [Authentication tests](../accounts/tests/test_authentication.py), [registration/profile](../accounts/tests/test_borrower_portal.py), [account management](../accounts/tests/test_account_management.py); both roles' real login flows, protected-field rejection and inactive session invalidation |
+| 2. Ownership and direct management/export access | [T22 route sweep and foreign-owner checks](../operations/tests/test_system_acceptance.py), [request tracking](../borrowing/tests/test_request_tracking.py), [reports](../operations/tests/test_reports.py); all 45 current management routes deny basic-user access, inactive management sessions are cleared, missing CSRF blocks POST, foreign request/cancel/loan IDs return 404 |
+| 3. Three valid items and invalid-row rollback | [T22 complete HTTP flow](../operations/tests/test_system_acceptance.py) and [submission tests](../borrowing/tests/test_request_submission.py); invalid third row saves no request, valid three-item request captures server owner/status/limits |
+| 4. Last-unit contention | [PostgreSQL competing approvals](../borrowing/tests/test_approval_concurrency.py); overlapping separate connections produce one complete winner/one conflict, including no partial multi-item allocations |
+| 5. Approved cancellation and issued conflict | [Request tracking](../borrowing/tests/test_request_tracking.py), [cancel/release race](../borrowing/tests/test_release_concurrency.py); ended reservations free stock, issue prevents cancellation, audit failure rolls back |
+| 6. Issue once, slip, expiry and date revision | [Release HTTP/services](../borrowing/tests/test_release.py), [release concurrency](../borrowing/tests/test_release_concurrency.py), [T22 flow](../operations/tests/test_system_acceptance.py); repeat issue conflicts, correct asset slip, expired issue rejected, snapshot-based revision audited |
+| 7. Partial/duplicate/damaged/final returns | [Return HTTP/services](../borrowing/tests/test_returns.py), [return races](../borrowing/tests/test_return_concurrency.py), [T22 flow](../operations/tests/test_system_acceptance.py); only final return closes a loan, damage opens linked maintenance atomically, audit errors roll back all writes |
+| 8. Maintenance states and inventory reconciliation | [Maintenance](../inventory/tests/test_maintenance.py), [integrity/races](../inventory/tests/test_maintenance_integrity.py), [T22 flow](../operations/tests/test_system_acceptance.py); Reserved/Issued rejected, repair/retirement and all five inventory counts verified |
+| 9. Before/on/after due date and closure | [Return/overdue checks](../borrowing/tests/test_returns.py), [reports](../operations/tests/test_reports.py); derived overdue days and outstanding counts, partial versus final closure |
+| 10. Live dashboard, reports and exports | [T22 live HTML/CSV comparison](../operations/tests/test_system_acceptance.py), [dashboard](../operations/tests/test_dashboard.py), [reports](../operations/tests/test_reports.py), [seeded history](../operations/tests/test_demo_transactions.py); changing issued/returned stock changes cards/totals consistently, including CSV totals and formula protection |
+| 11. Archive/settings/search/pagination/errors | [Catalog restore](../inventory/tests/test_catalog_restore.py), [catalog management](../inventory/tests/test_catalog_management.py), [settings/audit](../operations/tests/test_settings_audit.py), [equipment browsing](../inventory/tests/test_portal_equipment.py), [workspace](../accounts/tests/test_workspace.py), [reports](../operations/tests/test_reports.py); preserved historical references, future-only limits and bounded/invalid/empty filter handling |
+
+The new route sweep uses HTTP method restrictions as valid denials: GET-only or POST-only paths can return 405 before role checking; supported unauthorized requests return 403. It checks that denied requests do not change borrowing, stock, maintenance, audit or settings rows. The lifecycle test uses CSRF-enforcing clients; it uses role fixtures for setup, while the existing authentication/registration tests exercise real credential handling separately.
+
+### T22-02: Inspect the integrated HTTP rehearsal
+
+The focused command runs its own fictional fixtures; these values are not instructions to alter the populated local demonstration. Existing Module 20 stock, photos and transaction IDs remain intact.
+
+| Field / case | Fixture value / expected outcome |
+| --- | --- |
+| Roles | `fictional_admin` as ADMIN; `fictional_borrower` as BASIC_USER; `t22_other_borrower` for owner-isolation checks |
+| Equipment / quantity | Test camera, Presentation projector and Wireless microphone, one unit each |
+| Purpose | `=Media studies presentation and recorded class demonstration`; CSV must escape the leading formula character |
+| Requested / revised due | Campus today + 3 days / today + 4 days; issue uses the stored revised date |
+| Invalid third quantity | `0`: bound errors, no parent/child request saved |
+| Forged owner/status/issuer/due | Server-owned fields prevail; a borrower cannot choose ADMIN ownership or issue metadata |
+| Approval / issue | All three units Reserved, then Issued; repeat issue returns 409; the borrowing slip lists all asset codes |
+| Partial / duplicate return | First unit returned: 3 issued / 1 returned / 2 outstanding, loan open; duplicate return returns 409 |
+| Final damaged return | Remaining two returned, including loose projector socket: 3 / 3 / 0, loan closed, linked Open maintenance |
+| Repair | Secure/test socket, Available outcome and Good condition: three Available units, no active allocation or active loan |
+| Missing CSRF / foreign IDs | Administrator POST without CSRF returns 403; another borrower's request/cancel/loan routes return 404 |
+
+### T22 execution and limits
+
+**T22 is Done locally and Not integrated.** All **339 PostgreSQL tests passed in 96.345s**; the documented three-test focused command passed in 1.470s and eight-test concurrency command in 3.319s. The [T22 handoff](../handoffs/t22-automated-system-acceptance-10-22-2026.md) records the branch/revision, failures corrected and checks not run. The photo-download test now uses temporary media and consumes its streaming response, preventing leftover files and Windows file-lock cleanup errors. Formatting that owned test also resolves its earlier mixed-line-ending finding. Remaining unrelated formatting findings are reported separately.
+
+No browser, keyboard, phone, screen-reader, spreadsheet-opening or real participant session is implied by these automated HTTP checks. T23 still requires actual users and feedback; T24 still requires measurements and a demonstrated restore. T22 completion does not complete those tasks or authorize new commits/main integration.
 
 ## Recording manual results
 
@@ -2047,13 +2095,13 @@ Report the purpose marker/request ID and the smallest reproduction steps for a f
 
 ## Remaining validation and demonstration work
 
-T01-T20 are integrated. T20's borrower home and shared UI are available through PR #51 at `6f18116`; see Module 19 for Ralph's executed browser cases and remaining limits. T21 now has the August-October historical dataset; see Module 20 and the current handoff for local acceptance/main-integration state. T22 system verification and T23 actual user acceptance await T21 main integration and their own actual execution; existing automated/browser checks do not complete those tasks. Screen-reader evaluation, Firefox/Safari, opening CSVs in spreadsheet software and the complete maintenance repair lifecycle remain unrun follow-ups.
+T01-T21 are integrated; PR #53 at `b828945` contains the August-October dataset. T22 automated SRS minimum-scenario acceptance is Done locally with 339 passing PostgreSQL tests, including the complete HTTP repair lifecycle; see Module 21 for executed evidence. T23 prerequisites are satisfied but actual participant sessions/feedback remain pending. T24 awaits T22 main integration and measured operational evidence. Earlier browser coverage remains attributed to Module 19; screen-reader evaluation, Firefox/Safari, spreadsheet opening and complete browser maintenance-lifecycle checks remain unrun follow-ups.
 
 ---
 
 ## Running the automated test suite
 
-The T21 source `e3402bf`, published on `jerome` over main `4f285cb`, passes **336 PostgreSQL tests in 101.342s** on October 22, including five account-seed tests, seven history/cleanup tests and two physical-unit seed tests. The earlier 327-test account-only stage is historical in its dated handoff. The integrated PR #51 checkout at `6f18116` passed **322 PostgreSQL tests in 127.102s** on October 21, including all seven T20 workspace tests and 11 T19 report tests. The earlier PR #49 checkout passed 315 tests in 57.317s. The preceding PR #46 authentication/UI checkout passed 304 tests in 74.818s. The integrated T18 baseline at `26b1ee5` previously passed 298 tests in 56.385s. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
+The current T22 checkout on `jerome` over integrated main `b828945` passes **339 PostgreSQL tests in 96.345s** on October 22, including three new system acceptance tests. The preceding T21 source passed 336 tests before integration through PR #53; its five account-seed, seven history/cleanup and two physical-unit tests remain included. The earlier 327-test account-only stage is historical in its dated handoff. The integrated PR #51 checkout at `6f18116` passed **322 PostgreSQL tests in 127.102s** on October 21, including all seven T20 workspace tests and 11 T19 report tests. The earlier PR #49 checkout passed 315 tests in 57.317s. The preceding PR #46 authentication/UI checkout passed 304 tests in 74.818s. The integrated T18 baseline at `26b1ee5` previously passed 298 tests in 56.385s. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput

@@ -549,6 +549,43 @@ Install the workspace-recommended **Tailwind CSS IntelliSense** extension (`brad
 
 If `app.css` shows `{ expected` near `source(none)` or warnings on `@source` / `@theme`, check the bottom-right language mode: it should say **Tailwind CSS**, not **CSS**. After installing/enabling the extension, run **Developer: Reload Window** from the Command Palette and reopen the file. These are valid Tailwind v4 directives; verify compilation with `npm.cmd run build:css`. Keep CSS validation enabled. See the [official editor setup](https://tailwindcss.com/docs/editor-setup) for the supported language mode. CLI formatting remains the team reference above.
 
+## T22 automated system acceptance
+
+Run the complete automated T22 acceptance checks from the project root:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py test --noinput
+```
+
+This is the native Django test runner. It runs the complete project suite, including all eleven [SRS minimum acceptance scenarios](docs/SRS.md#minimum-acceptance-scenarios), the integrated T22 HTTP checks, real PostgreSQL races, rollback, access control, return/maintenance/report checks and seed checks. Success ends with `Ran ... tests` and `OK`, with process exit code **0**; failures/errors produce a nonzero exit code. The test count can grow as features are added. T22 results and the exact tested revision belong in the [T22 manual/acceptance section](docs/manual-test-guide.md#module-21--automated-system-acceptance-t22).
+
+Prerequisites: PostgreSQL running; your project virtual environment and dependencies installed; configured private `.env.local`; and built frontend assets (`npm.cmd run build`). The database account needs permission to create/drop the separate `test_<DB_NAME>` database. Run one test command at a time: parallel test processes using that same database can interfere. `--noinput` permits replacing an existing database with that test name, so keep valuable data out of it. Tests build their own fictional fixtures; you do **not** need to run any seed or cleanup command against the populated development database first. Photo fixtures use temporary storage and leave existing uploads intact.
+
+For a quick rerun of only the **three additional T22 integration tests**:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py test operations.tests.test_system_acceptance --noinput --verbosity 2
+```
+
+These exercise a three-item request through real CSRF-protected HTTP approval/date revision/issue/partial return/damaged final return/repair and matching HTML/CSV results; access denial across all current management routes; foreign-owner isolation; and rejection of administrator POSTs without CSRF. This focused command supplements the full suite; it does not rerun the existing concurrency/rollback scenarios by itself.
+
+To rerun the **eight PostgreSQL concurrency checks** alone:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py test borrowing.tests.test_approval_concurrency borrowing.tests.test_release_concurrency borrowing.tests.test_return_concurrency inventory.tests.test_maintenance_integrity.MaintenanceConcurrencyTests --noinput --verbosity 2
+```
+
+To save a full run's output privately in PowerShell and preserve failure visibility:
+
+```powershell
+New-Item -ItemType Directory -Path output/t22 -Force
+.\.venv\Scripts\python.exe manage.py test --noinput --verbosity 2 2>&1 | Tee-Object -FilePath output/t22/acceptance-tests.txt
+$t22ExitCode = $LASTEXITCODE
+if ($t22ExitCode -ne 0) { throw "T22 acceptance tests failed with exit code $t22ExitCode. See output/t22/acceptance-tests.txt." }
+```
+
+The ignored log is overwritten on each run; save dated copies if needed for evidence. Do not treat a started command as a pass: review the final summary and fix failures before recording acceptance. These commands automate database and Django HTTP behavior. They do not run a real browser, conduct the T23 user sessions, benchmark T24 performance or demonstrate backup/restore. Those remain separately recorded work.
+
 ## Before handing over work
 
 Run the configured checks and any meaningful tests for your feature:
@@ -676,7 +713,7 @@ Shared `components/form_field.html`, `request_status.html`, `loan_status.html`, 
 
 Preserve the active-role/ownership helpers in [accounts/access.py](accounts/access.py), workflow entry points in [borrowing services](borrowing/services.py), [release services](borrowing/release_services.py) and [return services](borrowing/return_services.py), and existing named routes in the [HTTP contract](docs/api_spec.md). T19 presentation is in [workspace_views.py](operations/workspace_views.py) and [report.html](templates/operations/manage/report.html); `loan_report_rows`, `overdue_report_rows` and `report_totals` in [queries.py](operations/queries.py) own its read-only calculations. Keep both report pages and both exports active-ADMIN/GET-only, with inclusive issue-date filters and matching all-row CSV totals. Reports use `report_navigation_active` to keep their shared parent active. The [folder guide](docs/project-folder-architecture.md#where-views-and-page-html-go) maps the other implemented pages.
 
-The historical [T19 review](handoffs/t19-main-review-and-local-merge-conflict-resolution-10-21-2026.md) passed 315 PostgreSQL tests. Fresh merged-source review passes **322 PostgreSQL tests in 127.102s**, including seven workspace integration checks, with no blocking runtime defect. See the [integration review](handoffs/t20-main-integration-review-and-documentation-10-21-2026.md). Ralph's earlier implementation run passed 322 tests in 87.253s. His isolated Edge/Chromium browser run covers 17 portal/management routes at 1440/1024/768/390/320px, keyboard navigation, invalid/valid requests, approval/release back-out, partial/final damaged returns, cancellation, access errors, both CSV downloads, native logout and JavaScript-disabled empty-state navigation. See [Module 19](docs/manual-test-guide.md#module-19--integrated-role-workspaces-t20) for procedures and limitations. This review did not rerun browsers. Existing formatting findings remain in the portal equipment template, its test file's line endings and an archived handoff Python example; spreadsheet-opening checks, screen-reader evaluation and system acceptance remain pending. Jerome / T21 is Done locally with historical transactions and T17 integrated; see [seed setup](#seed-the-t21-demonstration-dataset). T22/T23 await T21 main integration and actual execution, and diagrams still require Jerome's go signal.
+The historical [T19 review](handoffs/t19-main-review-and-local-merge-conflict-resolution-10-21-2026.md) passed 315 PostgreSQL tests. Fresh merged-source review passes **322 PostgreSQL tests in 127.102s**, including seven workspace integration checks, with no blocking runtime defect. See the [integration review](handoffs/t20-main-integration-review-and-documentation-10-21-2026.md). Ralph's earlier implementation run passed 322 tests in 87.253s. His isolated Edge/Chromium browser run covers 17 portal/management routes at 1440/1024/768/390/320px, keyboard navigation, invalid/valid requests, approval/release back-out, partial/final damaged returns, cancellation, access errors, both CSV downloads, native logout and JavaScript-disabled empty-state navigation. See [Module 19](docs/manual-test-guide.md#module-19--integrated-role-workspaces-t20) for procedures and limitations. This review did not rerun browsers. That review recorded three formatting findings; T22 resolves the owned photo test's line endings, leaving the template and archived handoff findings. Spreadsheet-opening and screen-reader checks remain pending. T21 is integrated through PR #53 at `b828945` with the historical transactions; see [seed setup](#seed-the-t21-demonstration-dataset). T22 automated acceptance is Done locally; T23 still requires actual sessions, and diagrams still require Jerome's go signal.
 
 ## Equipment photos and local media
 
