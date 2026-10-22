@@ -1,0 +1,31 @@
+# Clean demonstration accounts and equipment preservation
+
+- Date: October 22, 2026, Asia/Manila.
+- Owner: Jerome Avecilla with Codex assistance; earlier team contributions remain intact.
+- Scope: user-authorized local data cleanup and account-only seed revision. The user explicitly selected keeping all equipment, units and maintenance, including the earlier generated samples. Borrowing transactions are deferred. No commit, push, PR/main merge, teammate message or diagram work.
+
+## Current outcome
+
+The local `campus_equipment` database now contains **1 ADMIN, 8 BASIC_USER accounts and 9 Profiles**, all active with usable private passwords. The [account roster and setup](../DEV.md#seed-the-t21-demonstration-dataset) lists the realistic fictional names; the admin username is `andrea.mendoza`. Reserved `example.invalid` emails and blank contact numbers avoid real campus identities. Old account names and sessions were removed; sign in again with the existing private `SEED_ACCOUNT_PASSWORD`.
+
+All **12 categories, 29 catalog items, 35 physical units, 9 maintenance records and 23 uploaded catalog photos** were retained. Inventory IDs, item/category/unit relationships, photo paths and SHA-256 file hashes were checked before the cleanup transaction committed. Manually entered catalog descriptions, physical-unit notes and maintenance remarks were preserved. Six generated sample items now have practical names/descriptions, and only their sample unit notes/four sample maintenance remarks were polished; these remain fictional examples, not evidence of new technician work.
+
+Requests, request items, allocations, loans, loan units and returns are all **zero**. Removing those records released the ten Reserved/Issued units to Available. Current unit counts are **28 Available / 5 Maintenance / 2 Retired**; no Reserved/Issued units remain. Dashboard Pending/active/overdue counts are all zero. Maintenance states, dates, outcomes, equipment links and record IDs were preserved; the one source-return link was detached because its ReturnRecord was deleted. Maintenance actor references were reassigned to the new administrator as part of the account reset. Settings limits remain **7 days / 3 units per item**, with their original update timestamp; the settings updater reference now identifies the new admin.
+
+Old user audit entries were removed with the old accounts. The system-initialization entry and eight real new-account creation audits remain. A custom-format PostgreSQL backup was saved first under ignored `output/private-backups/before-clean-accounts-20261022-085452.dump`; `pg_restore --list` verified its archive directory. A restore was not executed. The one-time cleanup procedure also remains privately under that ignored directory; no destructive reset endpoint or reusable command was introduced. No image file was modified or deleted.
+
+## Source and verification
+
+- [`operations/demo_seed.py`](../operations/demo_seed.py): `seed_demo_data(password)` creates only the nine accounts through the existing account services in one transaction. It preserves unrelated existing accounts/inventory/history, rejects case-insensitive username/email collisions, validates/hashes every password and rolls back on audit/database errors. Every parameter is explicit; no mode/reset flag or dependency added.
+- [`seed_demo_data` command](../operations/management/commands/seed_demo_data.py): uses the existing private environment loader without printing passwords. It creates no equipment, maintenance or borrowing transactions. Repeat execution produces an identity-collision error rather than changing accounts.
+- [`Five PostgreSQL seed tests`](../operations/tests/test_demo_seed.py): focused run passed **5 tests in 17.462s**. The final complete suite passed **327 tests in 82.767s**, including role login/access for all nine accounts, no generated equipment/transactions, preservation across all 14 domain models, repeat/email-collision rejection, invalid/blank password behavior and real PostgreSQL audit-failure rollback.
+- Local cleanup ran in one transaction with table locks and pre-commit preservation assertions. All nine private credentials authenticate. Read-only post-cleanup queries verified account roles, inventory counts/states, zero borrowing records, detached return links and dashboard totals. No new browser, keyboard/mobile or user acceptance run is claimed.
+- Django database/schema/applied-migration checks, full Ruff lint, owned-file formatting and `pip check` passed. npm formatting, build, nine contrast checks and audit passed with zero vulnerabilities. Full formatting checks still report the same three unrelated findings: the archived borrower-portal handoff Python example, portal-equipment test line endings and portal-equipment template attribute wrapping. Those files were preserved.
+- Updated [Module 20](../docs/manual-test-guide.md#module-20--fictional-demonstration-dataset-t21), [DEV](../DEV.md#seed-the-t21-demonstration-dataset), README, current task/evidence, HANDOFF and AGENTS. Original requirement/member files and the [earlier full-dataset snapshot](t21-fictional-demonstration-dataset-10-22-2026.md) remain intact; the earlier snapshot is superseded for current data/code behavior.
+- Documentation checks passed: 813 relative targets and 201 heading anchors across seven current documents, paired fences and diff whitespace. Private backup/cleanup files remain ignored.
+
+## Task state and next action
+
+**T21 is In progress**, locally uncommitted on `jerome` over main `4f285cb`, and **Not integrated into main**. The course brief still requires at least 20 requests and 8 loans plus the specified workflow examples; the user deliberately deferred those transactions. This clean account-only stage does not complete that acceptance requirement. T01-T20 and the integrated T17 prerequisite remain unchanged.
+
+The user inspects the clean equipment/account pages now and supplies transaction work later. T22/T23 remain Not started and await completed/verified T21 data, authorized main integration and their own actual execution. Publication, further transaction generation, diagrams and instructor-channel credential delivery remain separate actions.
