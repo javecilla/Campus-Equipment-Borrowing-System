@@ -4,12 +4,27 @@ asgiref==3.12.1
     # via
     #   -c requirements.txt
     #   django
+boto3==1.43.117
+    # via django-storages
+botocore==1.43.117
+    # via
+    #   boto3
+    #   s3transfer
 django==5.2.18
     # via
     #   -c requirements.txt
     #   -r requirements.in
-pillow==13.0.0
+    #   django-storages
+django-storages==1.14.6
     # via -r requirements.in
+jmespath==1.1.0
+    # via
+    #   boto3
+    #   botocore
+pillow==13.0.0
+    # via
+    #   -c requirements.txt
+    #   -r requirements.in
 psycopg==3.3.6
     # via
     #   -c requirements.txt
@@ -18,10 +33,16 @@ psycopg-binary==3.3.6
     # via
     #   -c requirements.txt
     #   psycopg
+python-dateutil==2.9.0.post0
+    # via botocore
 python-dotenv==1.2.4
     # via
     #   -c requirements.txt
     #   -r requirements.in
+s3transfer==0.19.3
+    # via boto3
+six==1.17.0
+    # via python-dateutil
 sqlparse==0.6.0
     # via
     #   -c requirements.txt
@@ -31,3 +52,5 @@ tzdata==2026.5
     #   -c requirements.txt
     #   django
     #   psycopg
+urllib3==2.8.0
+    # via botocore

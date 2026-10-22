@@ -31,6 +31,14 @@ When reviewing, identify the concrete violation, file/location, consequence, and
 
 Use the guide's verification table and actual configured project commands. Prefer meaningful real integration checks for the affected behavior; record unavailable commands or unrun checks honestly. For design/documentation work, check links and consistency without adding application code.
 
+**Shared database guard:** The active `.env.local` may point to the shared Neon database (`neondb`). Before running any management command that writes, deletes, migrates or tests, confirm the active target:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py shell -c "from django.db import connection; connection.ensure_connection(); print('Database:', connection.settings_dict['NAME'])"
+```
+
+If the output is `neondb`, only `check`, `showmigrations`, `migrate --check` and read-only shell queries are permitted without coordinator authorization. Never run `migrate`, `flush`, seeds, cleanup commands or bare `manage.py test` against the shared database. For tests, always use the local child-process override (`DATABASE_URL=''`, `MEDIA_STORAGE=local`). See the full list of prohibited operations in [AGENTS.md](../../../AGENTS.md#shared-database-and-media-safety).
+
 For every newly implemented feature, create or update its section in [docs/manual-test-guide.md](../../../docs/manual-test-guide.md) before completing the implementation handoff. Follow the canonical [manual testing guide requirements](../../../docs/coding-standards.md#manual-testing-guide-for-feature-delivery) for concrete Field / Value cases, read-only local record/settings checks, dated examples and honest expected-versus-executed results. Refresh existing cases when their flow changes; keep pending features and member-branch integration state explicit. Guide creation is part of authorized feature work and does not authorize seeding, database writes or publication.
 
 For file-changing work, follow the [project-handoff skill](../project-handoff/SKILL.md) as required by AGENTS.md: save the work snapshot in project-root `handoffs/{title-of-work}-{MM-DD-YYYY}.md` using the current Asia/Manila date, then update HANDOFF.md's current state/index and affected tasks. Preserve other members' work and leave changes uncommitted unless explicitly requested. Summarize the outcome, relevant checks, and remaining limitations. Using this skill alone does not authorize commits, publishing, unrelated dependencies, or database changes beyond the user's requested scope.

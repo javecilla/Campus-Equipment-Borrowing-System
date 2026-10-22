@@ -8,26 +8,34 @@ License identifiers come from installed Python distribution metadata/license fil
 
 Pins: [requirements.txt](../requirements.txt) and [requirements-dev.txt](../requirements-dev.txt). Runtime means present in the runtime lock; formatter support packages are development-only. Native libraries shipped inside binary wheels retain their supplied notices.
 
-| Package          | Version   | Role        | Introduced by                                | Declared license                               |
-| ---------------- | --------- | ----------- | -------------------------------------------- | ---------------------------------------------- |
-| `asgiref`        | 3.12.1    | Runtime     | `requirements.txt`, `django`                 | BSD-3-Clause                                   |
-| `click`          | 8.5.0     | Development | `djlint`                                     | BSD-3-Clause                                   |
-| `cssbeautifier`  | 2.0.3     | Development | `djlint`                                     | MIT                                            |
-| `django`         | 5.2.18    | Runtime     | `requirements.txt`                           | BSD-3-Clause                                   |
-| `djlint`         | 1.46.6    | Development | `requirements-dev.in`                        | GPL-3.0-or-later                               |
-| `editorconfig`   | 0.17.1    | Development | `cssbeautifier`, `jsbeautifier`              | PSF-2.0                                        |
-| `jsbeautifier`   | 2.0.3     | Development | `cssbeautifier`, `djlint`                    | MIT                                            |
-| `json5`          | 0.17.3    | Development | `djlint`                                     | Apache-2.0                                     |
-| `pathspec`       | 1.1.1     | Development | `djlint`                                     | MPL-2.0                                        |
-| `pillow`         | 13.0.0    | Runtime     | `requirements.in`; optional equipment photos | MIT-CMU; retain bundled native-library notices |
-| `psycopg`        | 3.3.6     | Runtime     | `requirements.txt`                           | LGPL-3.0-only                                  |
-| `psycopg-binary` | 3.3.6     | Runtime     | `requirements.txt`                           | LGPL-3.0-only                                  |
-| `python-dotenv`  | 1.2.4     | Runtime     | `requirements.txt`                           | BSD-3-Clause                                   |
-| `pyyaml`         | 6.0.3     | Development | `djlint`                                     | MIT                                            |
-| `regex`          | 2026.9.29 | Development | `djlint`                                     | Apache-2.0 AND CNRI-Python                     |
-| `ruff`           | 0.17.1    | Development | `requirements-dev.in`                        | MIT                                            |
-| `sqlparse`       | 0.6.0     | Runtime     | `requirements.txt`, `django`                 | BSD-3-Clause                                   |
-| `tzdata`         | 2026.5    | Runtime     | `requirements.txt`, `django`, `psycopg`      | Apache-2.0                                     |
+| Package           | Version     | Role        | Introduced by                                  | Declared license                                               |
+| ----------------- | ----------- | ----------- | ---------------------------------------------- | -------------------------------------------------------------- |
+| `asgiref`         | 3.12.1      | Runtime     | `requirements.txt`, `django`                   | BSD-3-Clause                                                   |
+| `boto3`           | 1.43.117    | Runtime     | `django-storages[s3]`                          | Apache-2.0                                                     |
+| `botocore`        | 1.43.117    | Runtime     | `boto3`, `s3transfer`                          | Apache-2.0                                                     |
+| `click`           | 8.5.0       | Development | `djlint`                                       | BSD-3-Clause                                                   |
+| `cssbeautifier`   | 2.0.3       | Development | `djlint`                                       | MIT                                                            |
+| `django`          | 5.2.18      | Runtime     | `requirements.txt`                             | BSD-3-Clause                                                   |
+| `django-storages` | 1.14.6      | Runtime     | `requirements.in`; private S3-compatible media | BSD-3-Clause                                                   |
+| `djlint`          | 1.46.6      | Development | `requirements-dev.in`                          | GPL-3.0-or-later                                               |
+| `editorconfig`    | 0.17.1      | Development | `cssbeautifier`, `jsbeautifier`                | PSF-2.0                                                        |
+| `jmespath`        | 1.1.0       | Runtime     | `boto3`, `botocore`                            | MIT                                                            |
+| `jsbeautifier`    | 2.0.3       | Development | `cssbeautifier`, `djlint`                      | MIT                                                            |
+| `json5`           | 0.17.3      | Development | `djlint`                                       | Apache-2.0                                                     |
+| `pathspec`        | 1.1.1       | Development | `djlint`                                       | MPL-2.0                                                        |
+| `pillow`          | 13.0.0      | Runtime     | `requirements.in`; optional equipment photos   | MIT-CMU; retain bundled native-library notices                 |
+| `psycopg`         | 3.3.6       | Runtime     | `requirements.txt`                             | LGPL-3.0-only                                                  |
+| `psycopg-binary`  | 3.3.6       | Runtime     | `requirements.txt`                             | LGPL-3.0-only                                                  |
+| `python-dateutil` | 2.9.0.post0 | Runtime     | `botocore`                                     | Apache-2.0 / BSD-3-Clause; retain upstream dual-license notice |
+| `python-dotenv`   | 1.2.4       | Runtime     | `requirements.txt`                             | BSD-3-Clause                                                   |
+| `pyyaml`          | 6.0.3       | Development | `djlint`                                       | MIT                                                            |
+| `regex`           | 2026.9.29   | Development | `djlint`                                       | Apache-2.0 AND CNRI-Python                                     |
+| `ruff`            | 0.17.1      | Development | `requirements-dev.in`                          | MIT                                                            |
+| `s3transfer`      | 0.19.3      | Runtime     | `boto3`                                        | Apache-2.0                                                     |
+| `six`             | 1.17.0      | Runtime     | `python-dateutil`                              | MIT                                                            |
+| `sqlparse`        | 0.6.0       | Runtime     | `requirements.txt`, `django`                   | BSD-3-Clause                                                   |
+| `tzdata`          | 2026.5      | Runtime     | `requirements.txt`, `django`, `psycopg`        | Apache-2.0                                                     |
+| `urllib3`         | 2.8.0       | Runtime     | `botocore`                                     | MIT                                                            |
 
 ## npm runtime, build, and optional packages
 
@@ -66,7 +74,7 @@ Every package entry in [package-lock.json](../package-lock.json) is listed below
 | `node_modules/@jridgewell/resolve-uri`                                           | 3.1.2   | Build/dev           | `@jridgewell/trace-mapping`                                                                                     | MIT              |
 | `node_modules/@jridgewell/sourcemap-codec`                                       | 1.6.0   | Build/dev           | `@jridgewell/gen-mapping`, `@jridgewell/trace-mapping`, `magic-string`                                          | MIT              |
 | `node_modules/@jridgewell/trace-mapping`                                         | 0.3.31  | Build/dev           | `@jridgewell/gen-mapping`, `@jridgewell/remapping`                                                              | MIT              |
-| `node_modules/@kurkle/color` | 0.3.4 | Browser runtime | `chart.js` | MIT |
+| `node_modules/@kurkle/color`                                                     | 0.3.4   | Browser runtime     | `chart.js`                                                                                                      | MIT              |
 | `node_modules/@parcel/watcher`                                                   | 2.6.0   | Build/dev           | `@tailwindcss/cli`                                                                                              | MIT              |
 | `node_modules/@parcel/watcher-android-arm64`                                     | 2.6.0   | Build/dev; optional | `@parcel/watcher`                                                                                               | MIT              |
 | `node_modules/@parcel/watcher-darwin-arm64`                                      | 2.6.0   | Build/dev; optional | `@parcel/watcher`                                                                                               | MIT              |
@@ -104,7 +112,7 @@ Every package entry in [package-lock.json](../package-lock.json) is listed below
 | `node_modules/ansi-regex`                                                        | 6.4.0   | Build/dev           | `strip-ansi`                                                                                                    | MIT              |
 | `node_modules/ansi-styles`                                                       | 6.2.3   | Build/dev           | `wrap-ansi`                                                                                                     | MIT              |
 | `node_modules/chalk`                                                             | 5.6.2   | Build/dev           | `concurrently`                                                                                                  | MIT              |
-| `node_modules/chart.js` | 4.5.1 | Browser runtime | `package.json (dependencies)` | MIT |
+| `node_modules/chart.js`                                                          | 4.5.1   | Browser runtime     | `package.json (dependencies)`                                                                                   | MIT              |
 | `node_modules/cliui`                                                             | 9.0.1   | Build/dev           | `yargs`                                                                                                         | ISC              |
 | `node_modules/concurrently`                                                      | 10.0.6  | Build/dev           | `package.json (devDependencies)`                                                                                | MIT              |
 | `node_modules/detect-libc`                                                       | 2.1.2   | Build/dev           | `@parcel/watcher`, `lightningcss`                                                                               | Apache-2.0       |

@@ -2,6 +2,10 @@
 
 ## Current authorization and context
 
+The user authorized adding a shared database and media safety section to AGENTS.md and a guard block to the django-mtv and project-handoff skills. AI agents and team members are now explicitly prohibited from running `migrate`, `flush`, seeds, cleanup commands, bulk deletes, or bare `manage.py test` against the shared Neon database without coordinator authorization; the required local test override and database-target check command are documented in the new section. The user also requested clarifying the README.md "Run locally" section so professors and evaluators can run the app locally without any Neon credentials: the section now opens with a clearly labelled team-member callout and a standalone-evaluation paragraph explaining no Neon account is needed, the local steps work fully with local PostgreSQL, and items show a placeholder instead of an error when the team's cloud photos are absent. Changes are uncommitted on `jerome`. No implementation, commit, push or main integration is authorized by this request. Earlier scope/history follows below.
+
+The user authorized shared Neon PostgreSQL and private Object Storage using ignored `.env.local`, preserving existing equipment, photos and local originals, and requested README disclosure plus step-by-step DEV.md teammate setup with credentials supplied privately by email. HOST-01 is locally implemented on `jerome`, uncommitted and Not integrated: the existing dataset was copied to an empty Neon database, 23 referenced photos were copied and SHA-256 verified, both roles/reports/photos passed live HTTP checks, and 342 tests passed on isolated local PostgreSQL. See [current handoff](HANDOFF.md) and [Neon setup](DEV.md#shared-neon-database-and-photos). Normal commands now select the shared database; tests use the documented local override, and shared migrations/seeds/purges require team coordination. No commit, push, PR, main integration, email delivery or additional Neon service wiring is authorized by this setup request. Earlier scope/history follows below.
+
 The user authorized committing and pushing T22. Source `a7ce0a25c598b929852f4498ab40dd5b2d5e6f6c` is committed and pushed on `origin/jerome`, with fetched source equality and `Co-authored-by: Codex <codex@openai.com>` verified. The documentation publication receipt retains Codex credit. The tested 339-test result is unchanged; T22 remains Done on the member branch and Not integrated. No PR, main merge or live-data change was performed. See [publication receipt](handoffs/t22-automated-acceptance-publication-10-22-2026.md). Earlier scope/history follows.
 
 The user authorized checking/implementing T22 and documenting repeatable automated-test commands in DEV.md. Fresh fetch verified user-merged PR #53 at main `b82894549c7e50a37e91cfa2a6f22d9599e446c2`, with T21 source/publication ancestry and exact merge-tree equality; local `jerome` was fast-forwarded before T22 work. T22 is Done locally, uncommitted and Not integrated: all eleven SRS minimum acceptance scenarios pass in **339 PostgreSQL tests (96.345s)**, including three new integrated HTTP/access checks and eight concurrency cases. Photo-test media/stream isolation is fixed; development data/media remain unchanged. See [acceptance receipt](handoffs/t22-automated-system-acceptance-10-22-2026.md) and [commands](DEV.md#t22-automated-system-acceptance). T23 actual sessions and T24 measurements/restore remain separate; T24 awaits T22 main integration. No commit/push, PR/main merge or live-data cleanup was performed for this request. Earlier scope/history follows.
@@ -49,6 +53,30 @@ If a requested change would contradict the course brief, call out the exact conf
 - State transitions go through the services and constraints in the design. Never implement generic status updates that bypass reservation, issue, return, maintenance, or audit rules.
 - Enforce active-account checks and role/ownership server-side on all protected pages/actions, downloads, and any future AJAX endpoints.
 - Keep the approximately 75% custom-admin / 25% basic-user emphasis. Do not add roles, payments, integrations, or hosting as implicit scope.
+
+## Shared database and media safety
+
+The active `.env.local` points to the shared Neon PostgreSQL database and private Object Storage. Every team member and AI agent works against the same live dataset. The following operations are **strictly prohibited** without explicit coordinator authorization in the current session, regardless of task scope:
+
+- **Never run `manage.py migrate`** on the shared database. Migrations alter the shared schema and affect every teammate immediately. Only the coordinator (Jerome) applies approved migrations. Use `showmigrations`, `migrate --plan` and `migrate --check` to inspect state; never apply.
+- **Never run `manage.py flush`, `manage.py sqlflush`**, or any command that deletes or truncates shared tables.
+- **Never run seeds or cleanup commands** (`seed_auth_accounts`, `seed_demo_data`, `seed_demo_units`, `seed_demo_transactions`, `clear_borrowing_data`, `clear_equipment_units`) against the shared database.
+- **Never execute ORM bulk deletes, `QuerySet.delete()`, raw `DELETE` SQL, or Django shell record deletions** on the shared database. Data loss is irreversible.
+- **Never run `manage.py test` without the local PostgreSQL override.** Direct test commands would target `test_neondb`, which shares Neon infrastructure. Always use the child-process override from [DEV.md](DEV.md#isolated-tests-while-using-neon):
+
+    ```powershell
+    .\.venv\Scripts\python.exe -c "import os, subprocess, sys; sys.exit(subprocess.call([sys.executable, 'manage.py', 'test', '--noinput'], env={**os.environ, 'DATABASE_URL': '', 'MEDIA_STORAGE': 'local'}))"
+    ```
+
+- **Before running any management command that writes or deletes**, verify the active database:
+
+    ```powershell
+    .\.venv\Scripts\python.exe manage.py shell -c "from django.db import connection; connection.ensure_connection(); print('Database:', connection.settings_dict['NAME'])"
+    ```
+
+    `campus_equipment` = local (safe for destructive work). `neondb` = shared Neon (read-only and workflow-only). If the output is `neondb`, only `check`, `showmigrations`, `migrate --check`, `migrate --plan`, and read-only shell queries are permitted without coordinator authorization.
+
+A general implementation or documentation task does not authorize shared database writes outside normal application HTTP workflows. When uncertain, switch to the local database first. Shared migrations, resets, seeds and purges are coordinator-owned; teammates and AI agents coordinate through Jerome before any of those operations touch the Neon dataset.
 
 ## Coding standards and Django MTV
 
