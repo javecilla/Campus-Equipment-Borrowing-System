@@ -2,15 +2,15 @@
 
 ## Current outcome and ownership
 
-Preparation is committed and pushed on `origin/ralph` as `5d5ca49`, with Codex co-author credit; see [publication receipt](../handoffs/ralph-t23-preparation-publication-10-22-2026.md). It is not integrated into main, and publication does not complete the participant acceptance work below.
+T23's preparation, R01 report and startup asset enhancement E01 are integrated through user-merged PR #56 at main `17873b6` (source `cc00a93`), October 22, 2026, 13:26:59 Asia/Manila. Fresh review verifies exact source/merge-tree equality and preservation of T20/T21/T22 and HOST-01. Ralph owns the delivery with Codex assistance; Ralph/Ellyssa remain usability coordinators. See [integration review](../handoffs/t23-main-integration-review-and-t24-readiness-10-22-2026.md).
 
-**In progress: the user reports that both borrower and administrator flows are working.** Report R01 below records that positive outcome with its stated limits. No actionable improvement has yet been requested, selected or implemented. Ralph and Ellyssa coordinate; all members can help facilitate, observe and verify. This is the canonical T23 session/results and improvement record. Use [Module 22](manual-test-guide.md#module-22--participant-usability-sessions-t23) for the executable walkthrough and [the T26 collection guide](user-needs-evidence-guide.md#collecting-feedback) for interview/consent guidance; link findings between topics rather than copying source notes.
+**Implementation integrated; acceptance evidence follow-up In progress.** R01 is a limited user report that both roles work. Ralph's [delivery snapshot](../handoffs/t23-acceptance-and-startup-asset-feedback-enhancement-10-22-2026.md) also reports a real missing-build symptom (R02/F02) and E01 implementation, but the merged canonical record omitted that evidence and its referenced tests. This review supplies the missing technical checks and attributed record below. It does not reconstruct an unavailable original traceback or invent participant metadata. Ralph's reported local Done outcome remains in the historical snapshot; full participant-session acceptance and the human recheck cannot be independently substantiated from this checkout.
 
-Baseline checked October 22, 2026: `ralph` was fast-forwarded to fetched main `6e6f594`. T20 source `b43fb99` and T21 source `e3402bf` are main ancestors, satisfying T23's entry gate. T22 source `a7ce0a2` and publication `7d0043d` are also included through PR #54; its merge tree exactly equals the publication tree. The earlier 339-test result belongs to that delivery; no acceptance suite or participant session was rerun for this preparation.
+T20 source `b43fb99`, T21 source `e3402bf`, and T22 source `a7ce0a2`/publication `7d0043d` are main ancestors. T23's entry gate and T24's independent T22 gate are satisfied. T24 measurements/restore remain Not started and can proceed alongside participant-evidence follow-up.
 
 ## Local setup checked before sessions
 
-Read-only PostgreSQL inspection on October 22, 2026, 10:38 Asia/Manila found the following. These are this workstation's records, not Jerome's separate demonstration database.
+Read-only PostgreSQL inspection on October 22, 2026, 10:38 Asia/Manila found the following. These are Ralph's historical local records from preparation, not current shared Neon facts or this review workstation's records. Ordinary startup now selects shared Neon; follow [DEV setup](../DEV.md#shared-neon-database-and-photos) and recheck the chosen session dataset read-only.
 
 | Input / prerequisite | Verified local state |
 | --- | --- |
@@ -52,37 +52,42 @@ The current user reported the following after the borrower/admin walkthrough was
 | Participant feedback, verbatim | "BOTH OF THEM ARE WORKING" |
 | Satisfaction/ease response | No rating or ease assessment supplied |
 | Source | User's T23 task conversation; only the short anonymized outcome retained here |
-| Remaining uncertainty | No specific problem or requested improvement identified. Enhancement/recheck remains pending |
+| Remaining uncertainty | R01 supplies no specific issue or improvement. R02/E01 below comes from the separate delivery record; individual task results and human recheck remain unavailable |
+
+### R02: Reported missing-build failure
+
+Ralph's October 22 [delivery snapshot](../handoffs/t23-acceptance-and-startup-asset-feedback-enhancement-10-22-2026.md#actual-feedback-and-scope) attributes an earlier `/manage/` template traceback to a real user report: the compiled dashboard charts bundle was missing. This is an attributed delivery record, not a new participant observation or a retained original traceback. The original report time, tested revision, device/browser and exact exception text are unavailable in the merged files. No additional participant identity, quotation or rating is inferred.
+
+Fresh technical verification reproduces that failure condition using a temporary copy of the real build with `dashboard-charts.js` removed. Ordinary CLI startup refuses to serve and reports `operations.E001`, the missing path and the build command. The integrated system check and restoration checks pass without changing project assets or shared records. Post-enhancement human recheck: Not run by this review; none is retained in the delivery.
 
 ## Findings and resolution register
 
-**One positive functional report is recorded; no actionable usability issue has been supplied.** Add findings only from actual reports/observations. Keep bugs separate from preferences and setup limitations; absence of data is not automatically a UI failure.
-
 | Finding ID | Session/task source | Observation and participant feedback | Requirement / severity / rationale | Owner / disposition | Change and verification | Participant recheck |
 | --- | --- | --- | --- | --- | --- | --- |
-| F01 | R01 / both role flows, individual tasks unspecified | User reports both roles working; no difficulty or requested change stated | Positive functional feedback; no defect severity assigned | Ralph/Ellyssa: retain result and obtain a real improvement preference | No change selected; no new verification claimed | No enhancement exists to recheck yet |
+| F01 | R01 / both role flows, individual tasks unspecified | User reports both roles working; no difficulty or requested change stated | Positive functional feedback; no defect severity assigned | Ralph/Ellyssa: retain limited result | No change attributed to this positive report | Task-level recheck unavailable |
+| F02 | R02 / Ralph's delivery record | Missing dashboard charts bundle reportedly failed at `/manage/` rendering | A7, NFR-07/NFR-08; startup configuration failure, no numerical severity invented | Ralph: E01 implemented and integrated; coordinators retain source/session evidence when available | Fresh real-file checks verify missing-build errors, recovery and CLI startup rejection | Not run; no human recheck supplied |
 
 Use [SRS U1-U4 and NFR-04](SRS.md#functional-requirements) and the affected administrator requirements. Explain priorities with the observed impact, without manufacturing numerical scores. For deferred requests, record the reason and whether they conflict with scope; do not silently discard feedback.
 
 ## Feedback-driven enhancement
 
-**Not selected.** T23 requires at least one improvement based on actual feedback, followed by implementation and verification. Automated tests, an agent's UI review and the existence of this packet cannot substitute for that source feedback.
+**E01 implemented and integrated:** Django's registered staticfiles check reports absent required CSS/JavaScript bundles before ordinary `runserver` serves requests. The repair remains an explicit `npm ci`, then `npm run build`; Django does not automatically build assets. See [DEV's preflight](../DEV.md#frontend-preview).
 
 | Required evidence | Actual record |
 | --- | --- |
-| Real session and finding ID motivating the change | Pending |
-| Before behavior / participant goal / smallest proposed change | Pending |
-| Requirement and scope check / responsible owner | Pending |
-| Source/template/query/service paths and local revision | Pending |
-| Relevant regression checks with actual commands/results | Not run |
-| Browser/keyboard/compact checks relevant to the change | Not run |
-| Participant recheck and outstanding concern | Not run |
-| Review/publication/main integration references, when they exist | Not published or integrated |
+| Source motivating the change | R02/F02, attributed to Ralph's delivery; original traceback unavailable here |
+| Before / after | Missing dashboard bundle failed at template rendering; ordinary startup now fails with a named missing-file/build instruction |
+| Requirement / owner | A7, NFR-07/NFR-08; Ralph with Codex assistance; no role, route, schema or workflow change |
+| Source / revision | `operations/apps.py`, `operations/checks.py`; source `cc00a93`, PR #56 merge `17873b6` |
+| Fresh verification | `operations/tests/test_assets.py` now covers registered checks using real build copies, missing build and recovery. Ordinary CLI missing-chart startup independently rejects with `operations.E001`. Full results are in the integration review |
+| Earlier browser verification | Ralph reports Edge/Chromium borrower/admin flows at four widths in disposable databases; see his delivery snapshot. Not independently rerun here |
+| Participant recheck / limits | Not run. One brief both-role functional report; original missing-build report and session metadata unavailable |
+| Integration | Fresh fetched main equals local `jerome` at `17873b6`; exact source/merge tree verified before review edits |
 
-Implement only after recording the source observation and agreeing the smallest change within the existing two-role, native-form workflow contracts. Follow the Django MTV/Campus UI skills, update the affected manual case, and retain any unresolved issue. A preference for payments, extra roles or external integrations does not expand project scope.
+The check detects absent entry files, not stale contents or every generated chunk. WSGI/ASGI hosts that skip checks must run `manage.py check --tag staticfiles` separately. Automated checks establish the enhancement's technical behavior, not a representative usability sample.
 
 ## Completion gate and next action
 
-T23 stays In progress until actual sessions cover both role perspectives, their findings/dispositions are recorded, at least one feedback-driven enhancement is implemented and verified, and the recorded feedback is rechecked with a participant where practical. Link the final evidence and handoff from the backlog; distinguish member-branch delivery from main integration. T26 technology/persona evidence, T24 performance/restore and T25 diagram work remain separate.
+T23 remains In progress for acceptance-evidence follow-up: Ralph/Ellyssa should reconcile the reported completion with the retained session/source record and seek a participant recheck where practical. Keep unspecified task outcomes, environment and assistance explicit; no extra participants or satisfaction scores are invented. E01 is integrated and technically verified, so the outstanding work is evidence/participant follow-up rather than another enhancement.
 
-**Next action:** record the user's concrete improvement preference, then implement and verify the smallest in-scope change and request a recheck. Complete missing report metadata or further role observations when available. Preserve R01's positive result without inventing a defect, additional participants, ratings or task-level outcomes.
+**Next action:** Jerome may start T24 because its sole prerequisite is integrated T22. Ralph/Ellyssa continue the T23 evidence follow-up in parallel. T26 research and T25 diagrams remain separate; diagrams still need T23/T24 completion and Jerome's go signal.
