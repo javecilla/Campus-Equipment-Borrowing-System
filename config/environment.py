@@ -10,6 +10,8 @@ from urllib.parse import SplitResult, urlsplit
 from django.core.exceptions import ImproperlyConfigured
 from dotenv.parser import Binding, parse_stream
 
+from config.database_url import DatabaseURL, parse_database_url
+
 
 @dataclass(frozen=True)
 class ApplicationEnvironment:
@@ -22,6 +24,8 @@ class ApplicationEnvironment:
     database_password: str
     database_host: str
     database_port: int
+    database_sslmode: str | None
+    database_channel_binding: str | None
 
 
 def required_value(values: Mapping[str, str | None], key: str) -> str:
@@ -135,9 +139,6 @@ def read_environment(path: Path, process_environment: Mapping[str, str]) -> Appl
     debug_value: str = required_value(values, "DJANGO_DEBUG")
     if debug_value not in {"True", "False"}:
         raise ImproperlyConfigured("DJANGO_DEBUG must be exactly True or False.")
-    port_value: str = required_value(values, "DB_PORT")
-    if re.fullmatch(r"[0-9]{1,5}", port_value) is None or not 1 <= int(port_value) <= 65535:
-        raise ImproperlyConfigured("DB_PORT must be an integer from 1 to 65535.")
     hosts: tuple[str, ...] = comma_separated_values(
         required_value(values, "DJANGO_ALLOWED_HOSTS"), "DJANGO_ALLOWED_HOSTS"
     )
@@ -148,7 +149,27 @@ def read_environment(path: Path, process_environment: Mapping[str, str]) -> Appl
     )
     for origin in origins:
         validate_origin(origin)
-    database_host: str = required_value(values, "DB_HOST")
+    database_url: str = (values.get("DATABASE_URL") or "").strip()
+    if database_url:
+        database: DatabaseURL = parse_database_url(database_url)
+        database_name: str = database.name
+        database_user: str = database.user
+        database_password: str = database.password
+        database_host: str = database.host
+        database_port: int = database.port
+        database_sslmode: str | None = database.sslmode
+        database_channel_binding: str | None = database.channel_binding
+    else:
+        port_value: str = required_value(values, "DB_PORT")
+        if re.fullmatch(r"[0-9]{1,5}", port_value) is None or not 1 <= int(port_value) <= 65535:
+            raise ImproperlyConfigured("DB_PORT must be an integer from 1 to 65535.")
+        database_name = required_value(values, "DB_NAME")
+        database_user = required_value(values, "DB_USER")
+        database_password = required_value(values, "DB_PASSWORD")
+        database_host = required_value(values, "DB_HOST")
+        database_port = int(port_value)
+        database_sslmode = None
+        database_channel_binding = None
     validate_host(f"[{database_host}]" if ":" in database_host else database_host, "DB_HOST")
     if database_host == "*" or database_host.startswith("."):
         raise ImproperlyConfigured(
@@ -159,9 +180,11 @@ def read_environment(path: Path, process_environment: Mapping[str, str]) -> Appl
         debug=debug_value == "True",
         allowed_hosts=hosts,
         csrf_trusted_origins=origins,
-        database_name=required_value(values, "DB_NAME"),
-        database_user=required_value(values, "DB_USER"),
-        database_password=required_value(values, "DB_PASSWORD"),
+        database_name=database_name,
+        database_user=database_user,
+        database_password=database_password,
         database_host=database_host,
-        database_port=int(port_value),
+        database_port=database_port,
+        database_sslmode=database_sslmode,
+        database_channel_binding=database_channel_binding,
     )

@@ -2,3 +2,4 @@ Django>=5.2,<5.3
 psycopg[binary]>=3.2,<4
 python-dotenv>=1.0,<2
 Pillow>=13,<14
+django-storages[s3]>=1.14.6,<2
