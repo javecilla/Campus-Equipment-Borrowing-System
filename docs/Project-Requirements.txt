@@ -169,7 +169,7 @@ integrations, and online deployment are not required.
 
 PART 6 Submission and Presentation
 Required Submission Package
-Submit one ZIP named IT401W_ProjectA_Section_Group.zip. Include source code, migrations, requirements.txt, README,
+Submit one ZIP named IT401W_ProjectA_BSIT4EG1_Group2.zip. Include source code, migrations, requirements.txt, README,
 fixture/seed command, and the documentation/evidence folder. Exclude virtual environments, caches, real credentials, and
 private data.
 Provide safe demonstration credentials for one admin and two basic users through the instructor-designated submission
