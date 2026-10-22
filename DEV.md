@@ -426,7 +426,7 @@ New-Item -ItemType Directory -Path output/private-backups -Force
 Copy-Item -LiteralPath media -Destination output/private-backups/media-before-professor-demo -Recurse -ErrorAction Stop
 ```
 
-To recover the original demonstration, restore the custom dump into a newly recreated empty database using pgAdmin **Restore**, and restore its matching `media/` files. A full dump already includes accounts, units, history, settings and migration records: do not run the seed commands after a full restore. Keep the private password used by those stored accounts; editing the seed environment value does not update restored passwords. This runbook does not claim a restore rehearsal; that remains separate T24 work.
+To recover the original demonstration, restore the custom dump into a newly recreated empty database using pgAdmin **Restore**, and restore its matching `media/` files. A full dump already includes accounts, units, history, settings and migration records: do not run the seed commands after a full restore. Keep the private password used by those stored accounts; editing the seed environment value does not update restored passwords. The [T24 recovery record](docs/operational-verification.md#backup-and-recovery-demonstration) now documents a separate current-Neon-to-local rehearsal; the preserved development database was not overwritten.
 
 #### Clear transactions while retaining equipment and maintenance
 
@@ -680,14 +680,176 @@ The ignored log is overwritten on each run; save dated copies if needed for evid
 
 ## T24 readiness and consumer handoff
 
-**Owner: Jerome with feature owners. Ready; Not started.** T24 depends on T22, which is integrated through PR #54 at `6e6f594` (source `a7ce0a2`, publication `7d0043d`). Fresh review baseline is PR #56/main/local `jerome` at `17873b6`; Ralph's T23 enhancement and HOST-01 are preserved. T23 participant-evidence follow-up can proceed independently; it is not a T24 prerequisite. [Task evidence](docs/tasks.md#verified-task-evidence) and the [review receipt](handoffs/t23-main-integration-review-and-t24-readiness-10-22-2026.md) own actual results.
+**T24 Done locally on `jerome`, uncommitted and Not integrated.** [Operational results](docs/operational-verification.md) record the full 1,000-unit/5,000-request/10-session measurements, SQL plans and current Neon database/media recovery. The [dated handoff](handoffs/t24-performance-and-recovery-verification-10-22-2026.md) owns final checks/integration evidence. T23 is Done/integrated on its retained limited acceptance evidence. T25/T29 wait for T24 main integration; diagram conversion also requires the separate go signal.
 
-1. Record the exact revision, OS/CPU/RAM, Python/Django/PostgreSQL versions, app server settings, database location/network and media backend. Choose a dedicated local benchmark database and verify its effective name/host before generating fixtures. The current shared Neon dataset is not a load-test fixture; do not seed, reset, migrate or load-test it under this review's authorization.
-2. Measure the proposed [SRS NFR-05 target](docs/SRS.md#non-functional-requirements): p95 at most 2 seconds for lists/details and 3 seconds for dashboard/reports, with 10 concurrent authenticated sessions, 1,000 units and 5,000 requests. Record tested routes, role/filter choices, dataset construction, warm-up, sample counts, latency/error results and the limits of the chosen configuration. Smaller-dataset smoke checks do not prove that target. Inspect slow SQL/query counts and execution plans before proposing query changes; retain failures honestly.
-3. Demonstrate database and matching-media backup/restore into a separate empty **local** target. Follow [the backup runbook](#back-up-the-populated-demonstration-before-cleanup) and [coordinator guidance](#coordinator-import-and-maintenance). A database dump contains paths, not images; a Neon recovery rehearsal needs current Object Storage bytes, not an assumed-current local `media/` folder. Use compatible PostgreSQL clients and private ignored backup paths. Verify model/relationship counts, sign-in/access, dashboard/reports and protected photos on the restored target. Do not overwrite shared Neon or the preserved development database.
-4. Record elapsed backup/restore measurements, verification results, maintenance steps, limitations and unresolved issues. Update the affected manual-guide section, backlog and dated handoff after actual execution. HOST-01's earlier import and existing backup instructions establish setup, not T24 performance/recovery acceptance. T25 remains gated on completed T22/T23/T24 and Jerome's separate diagram go signal.
+### T24 replay prerequisites
 
-This consumer handoff defines the next work; no benchmark, fixture generation or restore was run for the integration review.
+Use a dedicated local PostgreSQL **18** server and matching native tools for recovery. This workstation used [official EDB portable 18.6 tools](https://www.enterprisedb.com/download-postgresql-binaries) under ignored `output/t24/tools/pgsql/bin`, a separate cluster at `127.0.0.1:55424`, and no new application packages/global installation. Keep `.env.local` unchanged for normal Neon startup. Private `.env.t24.local` supplies only `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD` for the isolated server; `DB_HOST` must be `127.0.0.1`. This workstation's private profile already exists; teammates supply their own local values.
+
+The retained portable cluster is stopped. To inspect its retained databases on this workstation:
+
+```powershell
+& .\output\t24\tools\pgsql\bin\pg_ctl.exe -D .\output\t24\pgdata -l .\output\t24\postgres.log -o "-p 55424 -h 127.0.0.1" -w start
+```
+
+A fresh fixture/restore replay requires a fresh isolated local cluster or separately coordinated archival of the old dedicated databases. Scripts refuse rerunning fixtures, overwriting earlier output directories or restoring into populated targets. Do not clear a database to bypass a refusal. The original PostgreSQL service, `campus_equipment` database and `media/` remain separate. Build assets first with `npm.cmd ci`, `npm.cmd run build`.
+
+### T24 performance replay
+
+In a project Python session, the following setup derives an explicit child-process environment from the private local profile and creates only the guarded benchmark database. Use the same setup statements for the launchers below; no secrets are printed or persisted into shared files:
+
+```python
+import os
+import subprocess
+import sys
+from pathlib import Path
+import psycopg
+from config.environment import read_environment_values, required_value
+
+values = read_environment_values(Path(".env.t24.local"), {})
+local = {
+    key: required_value(values, key) for key in ("DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD")
+}
+if local["DB_HOST"] != "127.0.0.1":
+    raise ValueError("T24 writes require loopback PostgreSQL.")
+with psycopg.connect(
+    host=local["DB_HOST"],
+    port=int(local["DB_PORT"]),
+    user=local["DB_USER"],
+    password=local["DB_PASSWORD"],
+    dbname="postgres",
+    sslmode="disable",
+    autocommit=True,
+) as database:
+    database.execute("CREATE DATABASE campus_t24_benchmark TEMPLATE template0")
+env = {
+    **os.environ,
+    **local,
+    "DATABASE_URL": "",
+    "MEDIA_STORAGE": "local",
+    "DB_NAME": "campus_t24_benchmark",
+    "DJANGO_DEBUG": "False",
+}
+subprocess.run(
+    [
+        sys.executable,
+        "manage.py",
+        "shell",
+        "-c",
+        "from django.db import connection; connection.ensure_connection(); print('Database:', connection.settings_dict['NAME'])",
+    ],
+    env=env,
+    check=True,
+)
+subprocess.run([sys.executable, "manage.py", "migrate", "--noinput"], env=env, check=True)
+```
+
+Start the local HTTP server from that prepared session (foreground; use another terminal for the load). It uses the benchmark child environment rather than ordinary Neon configuration:
+
+```python
+subprocess.run(
+    [sys.executable, "manage.py", "runserver", "127.0.0.1:8024", "--noreload"], env=env, check=True
+)
+```
+
+In the second project Python session, repeat only the imports, private-profile validation and `env` assignment above, **not database creation or migration**, then run:
+
+```python
+subprocess.run(
+    [
+        sys.executable,
+        "manage.py",
+        "shell",
+        "-c",
+        "from pathlib import Path; from scripts.t24_fixture import seed_benchmark; from scripts.t24_load import run_load; run_load(seed_benchmark(), 'http://127.0.0.1:8024', Path('output/t24-replay/measurement'))",
+    ],
+    env=env,
+    check=True,
+)
+```
+
+For non-interactive use from the project root, wrap each Python block in a PowerShell here-string and pipe it into `.\.venv\Scripts\python.exe -`. The measured run used a temporary server process with a readiness check and guaranteed termination; stop the server after replay.
+
+`latency.json` retains individual timings/statuses and concrete-route p95/targets. `sql-profiles.json` retains query counts and actual EXPLAIN plans for the three slowest captured SELECTs per representative route. The load uses ten distinct real CSRF/password sessions and 260 synchronized request waves. A non-200 response or target miss produces a nonzero result after saving measurements. Login/warm-up/barrier waiting are excluded from individual response times. Keep load traffic separate from backup, regression tests and other benchmark work.
+
+### T24 current database/media recovery replay
+
+With ordinary `.env.local` still selecting shared Neon/private storage, this command takes a **read-only** exported database snapshot and all current referenced photo bytes. Use fresh output paths; coordinate against planned photo replacement/deletion because the two services have no atomic joint snapshot:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py shell -c "from pathlib import Path; from scripts.t24_recovery import backup_neon; backup_neon(Path('output/t24-recovery-replay/backup'), Path('output/t24/tools/pgsql/bin'))"
+```
+
+The source must be `neondb`. Native credentials are passed privately through the process environment; an optional direct database URL is used for pg_dump when supplied. Keep the dump, photos and manifest together. Nothing is migrated, seeded or changed on Neon. Matching/newer compatible tools are required; restoring a PostgreSQL 18 dump into the original PostgreSQL 17 service is not this verified procedure.
+
+For restore, reuse the validated private local profile/imports above in a separate project Python session. Create only a **fresh empty local** target, then pass its environment explicitly:
+
+```python
+with psycopg.connect(
+    host=local["DB_HOST"],
+    port=int(local["DB_PORT"]),
+    user=local["DB_USER"],
+    password=local["DB_PASSWORD"],
+    dbname="postgres",
+    sslmode="disable",
+    autocommit=True,
+) as database:
+    database.execute("CREATE DATABASE campus_t24_restore TEMPLATE template0")
+env = {
+    **os.environ,
+    **local,
+    "DATABASE_URL": "",
+    "MEDIA_STORAGE": "local",
+    "DB_NAME": "campus_t24_restore",
+    "DJANGO_DEBUG": "False",
+}
+subprocess.run(
+    [
+        sys.executable,
+        "manage.py",
+        "shell",
+        "-c",
+        "from django.db import connection; connection.ensure_connection(); print('Database:', connection.settings_dict['NAME'])",
+    ],
+    env=env,
+    check=True,
+)
+subprocess.run(
+    [
+        sys.executable,
+        "manage.py",
+        "shell",
+        "-c",
+        "from pathlib import Path; from scripts.t24_recovery import restore_local; restore_local(Path('output/t24-recovery-replay/backup'), Path('output/t24/tools/pgsql/bin'), Path('output/t24-recovery-replay/restored-media'), Path('output/t24-recovery-replay/result.json'))",
+    ],
+    env=env,
+    check=True,
+)
+```
+
+The schema-inclusive dump creates `public`, so the helper verifies an empty target and drops only that local empty schema without CASCADE before a single-transaction, fail-fast restore. It verifies complete table hashes **before** login/session updates, restores separate media and checks protected routes. The private `SEED_ACCOUNT_PASSWORD` must match the stored demonstration account password; it verifies real sign-in and never resets passwords. No migrations or seeds follow a full restore. Keep partial failed evidence and diagnose the root cause; do not bypass failures.
+
+Stop the dedicated portable cluster after inspection using the same verified data directory with `pg_ctl -m fast -w stop`; leave the original service running. [Maintenance and limitations](docs/operational-verification.md#maintenance-and-limitations) define the backup scope, sensitive artifacts, retention gaps and unmeasured cases. No restore into shared Neon is authorized by this local runbook.
+
+## T25 readiness and consumer handoff
+
+**Owner: Jerome coordinates; Kenneth, Margareth and Ellyssa prepare diagrams after his go signal; everyone reviews. Status: Not started, readiness prepared.** T22 is integrated through PR #54; T23 acceptance is Done, with the original enhancement in PR #56 and review fixes in PR #57 at `87098a6`. The [acceptance record](docs/usability-acceptance.md#completion-gate-and-next-action) preserves its limited self-report and Not-run human recheck. T24 passed locally but remains uncommitted and **Not integrated**. [Current task evidence](docs/tasks.md#verified-task-evidence) and [readiness receipt](handoffs/t23-acceptance-closure-and-t25-readiness-10-22-2026.md) distinguish preparation from execution.
+
+1. Review the complete local T24 scripts/results and this documentation reconciliation. Commit/push only when Jerome explicitly authorizes publication, then integrate the reviewed member branch into main through the normal PR workflow. Verify the actual T24 source/merge ancestry and tree before calling T25's T22/T23/T24 gate satisfied. PR #57 integrates the earlier T23 review source `9a491c6`; it does not integrate the current uncommitted T24 work or the later publication receipt `a9fff7e`.
+2. After that gate, Jerome confirms system completion and explicitly gives the diagram go signal. This readiness request does not give that signal. Keep T25 Not started and do not generate/convert diagrams until both conditions are met.
+3. Reconcile the existing canonical drafts with the completed code, then create editable diagrams in an actual tool such as Lucidchart. Preserve current contributor credit; link editable sources and readable exports from the existing design documents, rather than creating duplicate architecture/schema documentation.
+
+| T25 evidence | Canonical starting point | Required reconciliation after entry gate/go signal |
+| --- | --- | --- |
+| Requirements to source/tests | [SRS](docs/SRS.md), [T22 acceptance mapping](docs/manual-test-guide.md#module-21--automated-system-acceptance-t22), [integrated acceptance tests](operations/tests/test_system_acceptance.py) | Map implemented A1-A8/U1-U4, access/ownership, constraints and failure behavior to actual paths/results; keep unrun checks explicit |
+| MTV diagram | [Existing MTV draft](docs/architecture.md#model-template-view-structure), [coding boundaries](docs/coding-standards.md#what-mtv-means), [HTTP contracts](docs/api_spec.md) | Show actual URLs/views/forms/queries/services/ORM/templates, role/active/owner checks and explicit write transactions; native Django forms, no generated admin/API abstraction |
+| Database diagram | [Existing relationships draft](docs/db_design.md#relationships), actual models/migrations in accounts/inventory/borrowing/operations | Reconcile all 14 domain models, keys/cardinalities, request-item/allocation/loan-unit/return links and enforcement boundaries; retain historical references |
+| Workflow diagram | [Existing workflow draft](docs/architecture.md#workflow-view), [borrowing services](borrowing/services.py), [release](borrowing/release_services.py), [returns](borrowing/return_services.py), [inventory/maintenance](inventory/services.py) | Verify reservation/issue/cancel/partial/final/damaged-return/repair/retirement paths and audit/lock rules; overdue remains calculated, not an assigned request state |
+| Resolved issue/enhancement | [T23 R01/R02/F02/E01](docs/usability-acceptance.md) | Retain the actual self-report/source attribution and verified startup improvement; do not invent a campus sample or a human recheck |
+| Performance/recovery/limits | [T24 operational record](docs/operational-verification.md), [Module 23](docs/manual-test-guide.md#module-23--performance-and-recovery-t24) | Carry forward measured hardware/workload, route results, current database/photo recovery and local/cloud/atomicity limits; preserve private artifact exclusions |
+| Dependencies/standards/professional evidence | [Dependency inventory](docs/third-party-dependencies.md), [coding standards](docs/coding-standards.md), [T26 collection guide](docs/user-needs-evidence-guide.md), backlog T26-T28 | Reference actual licenses/tooling/decisions and available professional/team evidence; T23/T24 completion does not fabricate or finish T26-T28 |
+
+T25 completion requires reviewed diagrams/traceability that match actual implementation, linked editable sources/exports, evidence/constraints/limitations and a dated handoff. No such diagrams or completed T25 deliverable are claimed by this checklist. T29 can consume T24 only after its main integration; T30 still needs its full original evidence/submission prerequisites.
 
 ## Before handing over work
 
@@ -816,7 +978,7 @@ Shared `components/form_field.html`, `request_status.html`, `loan_status.html`, 
 
 Preserve the active-role/ownership helpers in [accounts/access.py](accounts/access.py), workflow entry points in [borrowing services](borrowing/services.py), [release services](borrowing/release_services.py) and [return services](borrowing/return_services.py), and existing named routes in the [HTTP contract](docs/api_spec.md). T19 presentation is in [workspace_views.py](operations/workspace_views.py) and [report.html](templates/operations/manage/report.html); `loan_report_rows`, `overdue_report_rows` and `report_totals` in [queries.py](operations/queries.py) own its read-only calculations. Keep both report pages and both exports active-ADMIN/GET-only, with inclusive issue-date filters and matching all-row CSV totals. Reports use `report_navigation_active` to keep their shared parent active. The [folder guide](docs/project-folder-architecture.md#where-views-and-page-html-go) maps the other implemented pages.
 
-The historical [T19 review](handoffs/t19-main-review-and-local-merge-conflict-resolution-10-21-2026.md) passed 315 PostgreSQL tests. Fresh merged-source review passes **322 PostgreSQL tests in 127.102s**, including seven workspace integration checks, with no blocking runtime defect. See the [integration review](handoffs/t20-main-integration-review-and-documentation-10-21-2026.md). Ralph's earlier implementation run passed 322 tests in 87.253s. His isolated Edge/Chromium browser run covers 17 portal/management routes at 1440/1024/768/390/320px, keyboard navigation, invalid/valid requests, approval/release back-out, partial/final damaged returns, cancellation, access errors, both CSV downloads, native logout and JavaScript-disabled empty-state navigation. See [Module 19](docs/manual-test-guide.md#module-19--integrated-role-workspaces-t20) for procedures and limitations. This review did not rerun browsers. That review recorded three formatting findings; T22 resolves the owned photo test's line endings, leaving the template and archived handoff findings. Spreadsheet-opening and screen-reader checks remain pending. T21 is integrated through PR #53 at `b828945` with the historical transactions; see [seed setup](#seed-the-t21-demonstration-dataset). T22 automated acceptance is Done locally; T23 still requires actual sessions, and diagrams still require Jerome's go signal.
+The historical [T19 review](handoffs/t19-main-review-and-local-merge-conflict-resolution-10-21-2026.md) passed 315 PostgreSQL tests. Fresh merged-source review passes **322 PostgreSQL tests in 127.102s**, including seven workspace integration checks, with no blocking runtime defect. See the [integration review](handoffs/t20-main-integration-review-and-documentation-10-21-2026.md). Ralph's earlier implementation run passed 322 tests in 87.253s. His isolated Edge/Chromium browser run covers 17 portal/management routes at 1440/1024/768/390/320px, keyboard navigation, invalid/valid requests, approval/release back-out, partial/final damaged returns, cancellation, access errors, both CSV downloads, native logout and JavaScript-disabled empty-state navigation. See [Module 19](docs/manual-test-guide.md#module-19--integrated-role-workspaces-t20) for procedures and limitations. This review did not rerun browsers. That review recorded three formatting findings; T22 resolves the owned photo test's line endings, leaving the template and archived handoff findings. Spreadsheet-opening and screen-reader checks remain pending. T21 is integrated through PR #53 at `b828945` with the historical transactions; see [seed setup](#seed-the-t21-demonstration-dataset). T22 automated acceptance is Done locally; T23 is Done on its retained limited acceptance evidence; T25 still awaits T24 main integration and Jerome's diagram go signal.
 
 ## Equipment photos and local media
 
