@@ -10,7 +10,7 @@ This status correction adds no participant, test session, quotation, rating or n
 
 The original implementation is integrated through PR #56; the review's added tests/document corrections are now integrated through user-merged PR #57 at `87098a6`, preserving source `9a491c6` exactly. The publication receipt `a9fff7e` is also integrated through PR #58 source ancestry.
 
-T20 source `b43fb99`, T21 source `e3402bf`, and T22 source `a7ce0a2`/publication `7d0043d` are main ancestors. T23's entry gate and T24's independent T22 gate are satisfied. T24 [lab measurements/recovery](operational-verification.md) are Done/integrated through PR #58 at `478eab3`. [T25 readiness](../DEV.md#t25-readiness-and-consumer-handoff) records the satisfied prerequisite integration gate and the still-pending diagram go signal.
+T20 source `b43fb99`, T21 source `e3402bf`, and T22 source `a7ce0a2`/publication `7d0043d` are main ancestors. T23's entry gate and T24's independent T22 gate are satisfied. T24 [lab measurements/recovery](operational-verification.md) are Done/integrated through PR #58 at `478eab3`. [T25 readiness](../DEV.md#t25-readiness-and-consumer-handoff) records the satisfied prerequisite integration gate and authorized T25 work; Jerome now reports Ellyssa/Kenneth conversion is ongoing, with exports and team review still pending.
 
 ## Local setup checked before sessions
 

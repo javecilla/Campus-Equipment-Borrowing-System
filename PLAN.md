@@ -48,7 +48,7 @@ The task links below lead to canonical acceptance criteria. A stage can hand ove
 
 Within each stage, follow each task's exact prerequisites and acceptance in the backlog. This table groups work for coordination; it does not relax those dependencies, reassign feature ownership, or make a shared module exclusively owned by one member.
 
-Follow the October 20 [current ownership and support responsibilities](docs/tasks.md#current-ownership-and-support-responsibilities): Kenneth, Margareth and Ellyssa now focus on validation, documentation and manual testing. They can check available implemented flows now without closing gated system-acceptance tasks. Their T25 MTV/database/workflow diagram conversion into an actual diagramming tool remains on standby until the system is fully finished and Jerome explicitly gives the go signal; T25's backlog prerequisites also remain required. Preserve earlier contributions and original member/branch records.
+Follow the October 20 [current ownership and support responsibilities](docs/tasks.md#current-ownership-and-support-responsibilities): Kenneth, Margareth and Ellyssa now focus on validation, documentation and manual testing. They can check available implemented flows now without closing gated system-acceptance tasks. Their T25 MTV/database/workflow diagram conversion requires integrated T22-T24 and Jerome's explicit go signal; the [current handoff](HANDOFF.md) records the satisfied gates and ongoing work. T25's delivery/review criteria still apply. Preserve earlier contributions and original member/branch records.
 
 ## Select the next task in a new session
 
