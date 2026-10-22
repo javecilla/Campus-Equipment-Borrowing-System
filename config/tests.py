@@ -18,6 +18,7 @@ def configuration_values() -> dict[str, str]:
         "DJANGO_DEBUG": "False",
         "DJANGO_ALLOWED_HOSTS": "localhost, 127.0.0.1, [::1], .example.com",
         "DJANGO_CSRF_TRUSTED_ORIGINS": "http://localhost:8000, https://*.example.com",
+        "IS_LOCAL_DB_CONNECTION": "True",
         "DB_NAME": "bootstrap_test",
         "DB_USER": "bootstrap_test",
         "DB_PASSWORD": "literal-${NOT_INTERPOLATED}-#-password",
@@ -32,8 +33,9 @@ def write_configuration(path: Path, values: dict[str, str]) -> None:
 
 
 class EnvironmentTests(SimpleTestCase):
-    def test_neon_url_overrides_local_fields_and_preserves_encoded_password_and_tls(self) -> None:
+    def test_explicit_database_selection_preserves_credentials_and_process_overrides(self) -> None:
         values: dict[str, str] = configuration_values()
+        values["IS_LOCAL_DB_CONNECTION"] = "False"
         values["DATABASE_URL"] = (
             "postgresql://test_user:encoded%23%40password@db.example.invalid/neondb?sslmode=require&channel_binding=require"
         )
@@ -50,8 +52,21 @@ class EnvironmentTests(SimpleTestCase):
                 (environment.database_sslmode, environment.database_channel_binding),
                 ("require", "require"),
             )
-            local: ApplicationEnvironment = read_environment(path, {"DATABASE_URL": ""})
+            local: ApplicationEnvironment = read_environment(
+                path, {"IS_LOCAL_DB_CONNECTION": "True"}
+            )
             self.assertEqual(local.database_host, "127.0.0.1")
+            self.assertIsNone(local.database_sslmode)
+
+    def test_shared_connection_requires_url_instead_of_using_local_fields(self) -> None:
+        values: dict[str, str] = configuration_values()
+        values["IS_LOCAL_DB_CONNECTION"] = "False"
+        with TemporaryDirectory() as directory:
+            path: Path = Path(directory) / ".env.local"
+            write_configuration(path, values)
+            for override in ({}, {"DATABASE_URL": " "}):
+                with self.assertRaisesMessage(ImproperlyConfigured, "DATABASE_URL is required"):
+                    read_environment(path, override)
 
     def test_neon_url_and_storage_fail_explicitly_for_incomplete_or_insecure_settings(self) -> None:
         for value in (
@@ -145,6 +160,7 @@ class EnvironmentTests(SimpleTestCase):
         invalid_values: dict[str, tuple[str, ...]] = {
             "DJANGO_SECRET_KEY": ("short-private-secret", "a" * 60),
             "DJANGO_DEBUG": ("true", "0", "False "),
+            "IS_LOCAL_DB_CONNECTION": ("true", "0", "False "),
             "DB_PORT": ("0", "65536", "5432.0", "not-a-port", "9" * 5000),
             "DJANGO_ALLOWED_HOSTS": (
                 "localhost,",

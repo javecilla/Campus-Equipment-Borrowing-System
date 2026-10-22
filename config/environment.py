@@ -149,8 +149,11 @@ def read_environment(path: Path, process_environment: Mapping[str, str]) -> Appl
     )
     for origin in origins:
         validate_origin(origin)
-    database_url: str = (values.get("DATABASE_URL") or "").strip()
-    if database_url:
+    local_connection: str = required_value(values, "IS_LOCAL_DB_CONNECTION")
+    if local_connection not in {"True", "False"}:
+        raise ImproperlyConfigured("IS_LOCAL_DB_CONNECTION must be exactly True or False.")
+    if local_connection == "False":
+        database_url: str = required_value(values, "DATABASE_URL").strip()
         database: DatabaseURL = parse_database_url(database_url)
         database_name: str = database.name
         database_user: str = database.user

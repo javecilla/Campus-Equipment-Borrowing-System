@@ -1,0 +1,15 @@
+﻿Loan ID,Request ID,Borrower,Purpose,Issued on,Due date,Request status,Loan status,Issued quantity,Returned quantity,Outstanding quantity
+30,45,isabella.garcia,Network topology and cable connectivity laboratory,2026-10-22,2026-10-26,Issued,Active,3,0,3
+29,44,gabriel.cruz,Department assembly audio support,2026-10-21,2026-10-24,Issued,Active,1,0,1
+28,43,sofia.reyes,Midterm presentation preparation and slide editing,2026-10-19,2026-10-21,Issued,Overdue,1,0,1
+27,42,miguel.santos,Student publication feature interview photography,2026-10-18,2026-10-21,Partially returned,Overdue,2,1,1
+26,41,alyssa.flores,Electronics project assembly and testing,2026-10-17,2026-10-21,Returned,Closed,2,2,0
+25,40,rafael.ramos,Capstone prototype review with faculty adviser,2026-10-16,2026-10-20,Returned,Closed,2,2,0
+24,39,camille.torres,Student leadership seminar audio support,2026-10-15,2026-10-18,Returned,Closed,1,1,0
+23,38,daniel.navarro,Environmental awareness class reporting,2026-10-14,2026-10-17,Returned,Closed,1,1,0
+22,37,isabella.garcia,Photojournalism workshop field assignment,2026-10-12,2026-10-15,Returned,Closed,2,2,0
+21,36,gabriel.cruz,Spreadsheet skills practice and class demonstration,2026-10-09,2026-10-12,Returned,Closed,2,2,0
+20,35,sofia.reyes,Research proposal oral presentations,2026-10-07,2026-10-10,Returned,Closed,2,2,0
+19,34,miguel.santos,Circuit measurements and soldering laboratory exercise,2026-10-05,2026-10-08,Returned,Closed,2,2,0
+18,33,alyssa.flores,Campus heritage documentation photo session,2026-10-02,2026-10-05,Returned,Closed,2,2,0
+TOTALS (13 loans),,,,,,,,23,17,6

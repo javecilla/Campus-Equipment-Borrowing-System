@@ -2,7 +2,7 @@
 
 [First-time setup](#first-time-setup) | [Shared Neon setup](#shared-neon-database-and-photos) | [Everyday startup](#everyday-startup) | [Error pages](#preview-custom-error-pages) | [Reset local data](#reset-local-development-data) | [Frontend assets](#frontend-assets-tailwind-and-page-scripts) | [Formatting](#formatting-and-code-consistency) | [Migrations](#working-with-migrations) | [Checks](#before-handing-over-work) | [Manual browser tests](docs/manual-test-guide.md) | [Fonts](#fonts-and-static-assets) | [Team Git](#assigned-branches-and-main-integration) | [Optional MCP](#configure-your-mcp-client) | [Troubleshooting](#troubleshooting)
 
-Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv` and ignored `.env.local`. For team development, follow [shared Neon setup](#shared-neon-database-and-photos): members connect to the same database and private photos. Isolated development and automated tests use a separate local PostgreSQL database. Git shares source and migrations, not credentials, database contents or uploaded images.
+Run commands in **PowerShell from the project root**, where `manage.py` lives. Every member uses their own `.venv` and ignored `.env.local`. The template selects local PostgreSQL; use [the connection switch](#switch-between-local-and-shared-databases) to choose local development or the shared Neon database/photos. Isolated development and automated tests use a separate local PostgreSQL database. Git shares source and migrations, not credentials, database contents or uploaded images.
 
 For current implementation, verification and main-integration status, read [HANDOFF.md](HANDOFF.md) and [verified task evidence](docs/tasks.md#verified-task-evidence). Shared Neon setup is locally implemented on `jerome` and awaits publication/review; it is not yet available by pulling main.
 
@@ -93,6 +93,7 @@ Open `.env.local` in your editor. The command above deliberately fails if the fi
 
 | Setting                                                   | What to enter                                                                                                                                   |
 | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `IS_LOCAL_DB_CONNECTION` | Required `True` for local PostgreSQL (template default), or `False` for the shared URL; restart Django after editing |
 | `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | Your database name, account, raw password, host, and port. Usual local values are `campus_equipment`, your account, `127.0.0.1`, and `5432`     |
 | `DJANGO_SECRET_KEY`                                       | A unique secret generated with the command below                                                                                                |
 | `DJANGO_DEBUG`                                            | `True` for normal local debugging and static serving; use the [error-page preview steps](#preview-custom-error-pages) to inspect the custom 404 |
@@ -106,7 +107,26 @@ Generate a secret locally, then paste the result into `.env.local`:
 .\.venv\Scripts\python.exe -c "import secrets; print(secrets.token_urlsafe(64))"
 ```
 
-[.env.example](.env.example) is the full key inventory. Django requires all `DJANGO_*` values and either a nonblank TLS `DATABASE_URL` or all `DB_*` values. `DJANGO_DEBUG` accepts exactly `True` or `False`; quote passwords containing `#` or whitespace. Django reads literal values without variable expansion, and explicit process environment values override the file. Missing, blank, malformed, or duplicate configuration fails clearly. Keep `.env.local` private and out of Git.
+[.env.example](.env.example) is the full key inventory. Django requires all `DJANGO_*` values, `IS_LOCAL_DB_CONNECTION`, and the selected database configuration: all `DB_*` for `True`, or a nonblank TLS `DATABASE_URL` for `False`. `DJANGO_DEBUG` accepts exactly `True` or `False`; quote passwords containing `#` or whitespace. Django reads literal values without variable expansion, and explicit process environment values override the file. Missing, blank, malformed, or duplicate configuration fails clearly. Keep `.env.local` private and out of Git.
+
+## Switch between local and shared databases
+
+Set `IS_LOCAL_DB_CONNECTION` in your ignored `.env.local`, then restart Django. The template defaults to `True`; existing private files must add this required key explicitly. Only the selected database configuration is used, and a failed connection never switches to the other database.
+
+| Database mode | `.env.local` | Required connection values | Photos for the same environment |
+| --- | --- | --- | --- |
+| Local PostgreSQL | `IS_LOCAL_DB_CONNECTION=True` | Your local `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | `MEDIA_STORAGE=local` uses your existing `media/` files |
+| Shared Neon | `IS_LOCAL_DB_CONNECTION=False` | Private TLS `DATABASE_URL` from Jerome | `MEDIA_STORAGE=neon` uses the existing private storage credentials |
+
+Keep both sets of credentials in the private file; there is no need to erase/retype the shared URL when switching. The flag accepts exactly `True` or `False`. `MEDIA_STORAGE` controls photos separately and does not select the database. Switching does not copy/synchronize records or photos: local and shared datasets can differ, and Git carries neither. Configure each teammate's own local database before selecting local mode.
+
+Verify the actual target before migrations, seeds, cleanup or tests:
+
+```powershell
+.\.venv\Scripts\python.exe manage.py shell -c "from django.db import connection; connection.ensure_connection(); print('Database:', connection.settings_dict['NAME'])"
+```
+
+`campus_equipment` is the ordinary local database; `neondb` is shared. Keep the [shared-database restrictions](AGENTS.md#shared-database-and-media-safety) when using Neon, and use the [explicit local child-process command](#isolated-tests-while-using-neon) for tests. A local mode value does not make arbitrary `DB_*` values safe: check the real host/database. Process environment values override `.env.local`; restart a shell with no conflicting override if the selected target differs from the file.
 
 ## Shared Neon database and photos
 
@@ -139,6 +159,7 @@ Neon supplies PostgreSQL and private S3-compatible Object Storage for shared tea
     DJANGO_DEBUG=True
     DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
     DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
+    IS_LOCAL_DB_CONNECTION=False
     DATABASE_URL="<pooled PostgreSQL URL from Jerome, including sslmode=require&channel_binding=require>"
     MEDIA_STORAGE=neon
     AWS_ENDPOINT_URL_S3="<storage HTTPS endpoint from Jerome>"
@@ -148,7 +169,7 @@ Neon supplies PostgreSQL and private S3-compatible Object Storage for shared tea
     AWS_STORAGE_BUCKET_NAME=assets
     ```
 
-    Keep the supplied URL intact, including its encoded password and TLS parameters. A nonblank `DATABASE_URL` takes precedence over `DB_*`; invalid URLs fail rather than silently using another database. Keep `DB_*` for your own local test database if you have one. `DATABASE_URL_UNPOOLED` is an optional direct URL for coordinator backup/import tools; Django uses `DATABASE_URL`. Leave optional `MCP_DATABASE_URL` blank unless independently configuring read-only MCP; it does not configure Django. `SEED_ACCOUNT_PASSWORD` is only an input to account creation, so teammates do not need it to sign in to already stored accounts.
+    Keep the supplied URL intact, including its encoded password and TLS parameters. `IS_LOCAL_DB_CONNECTION=False` selects `DATABASE_URL`; a missing/invalid URL fails rather than using local data. `True` selects `DB_*` even while the shared URL remains populated. Keep `DB_*` for your own local test database if you have one. `DATABASE_URL_UNPOOLED` is an optional direct URL for coordinator backup/import tools; Django uses `DATABASE_URL`. Leave optional `MCP_DATABASE_URL` blank unless independently configuring read-only MCP; it does not configure Django. `SEED_ACCOUNT_PASSWORD` is only an input to account creation, so teammates do not need it to sign in to already stored accounts.
 5. Check the configured connection and existing migrations without changing shared records:
 
     ```powershell
@@ -175,10 +196,10 @@ Do **not** rerun seeds, `upload_catalog_photos`, `flush`, transaction/unit clean
 Create your own local PostgreSQL 17 `campus_equipment` database and fill the existing `DB_*` keys with its credentials. The local account needs permission to create/drop the separate `test_campus_equipment` database. Run the complete suite through a child process that explicitly selects local PostgreSQL and local media:
 
 ```powershell
-.\.venv\Scripts\python.exe -c "import os, subprocess, sys; sys.exit(subprocess.call([sys.executable, 'manage.py', 'test', '--noinput'], env={**os.environ, 'DATABASE_URL': '', 'MEDIA_STORAGE': 'local'}))"
+.\.venv\Scripts\python.exe -c "import os, subprocess, sys; sys.exit(subprocess.call([sys.executable, 'manage.py', 'test', '--noinput'], env={**os.environ, 'IS_LOCAL_DB_CONNECTION': 'True', 'DATABASE_URL': '', 'MEDIA_STORAGE': 'local'}))"
 ```
 
-This leaves `.env.local` pointing at Neon for ordinary startup. The explicit empty URL is passed to the child even on Windows PowerShell versions where assigning an empty environment variable removes it. Do not use an unqualified `manage.py test --noinput` with the shared Neon configuration: it selects `test_neondb`, which other members could also use. Tests create their own fixtures and do not require seeding or clearing the populated development database. Never store valuable data in a `test_*` database.
+This leaves `.env.local` pointing at Neon for ordinary startup. The child explicitly sets `IS_LOCAL_DB_CONNECTION=True`; clearing its URL is an additional explicit isolation setting, without removing credentials from the private file. Do not use an unqualified `manage.py test --noinput` with the shared Neon configuration: it selects `test_neondb`, which other members could also use. Tests create their own fixtures and do not require seeding or clearing the populated development database. Never store valuable data in a `test_*` database.
 
 ### Coordinator import and maintenance
 
@@ -367,7 +388,7 @@ Run the focused real PostgreSQL integration tests with:
 
 ### Demo command runbook
 
-**Shared Neon is already populated.** This runbook is for an isolated local database or an explicitly coordinated central reset/import. Seeds and purges use whichever database is configured; setting `DB_NAME` alone does not select local data while `DATABASE_URL` points at Neon.
+**Shared Neon is already populated.** This runbook is for an isolated local database or an explicitly coordinated central reset/import. Seeds and purges use whichever database is configured; setting `DB_NAME` alone does not select local data while `IS_LOCAL_DB_CONNECTION=False`.
 
 Run from the project root using your private `.env.local`. Every command targets its configured database; explicit process environment variables override that file. Run commands one at a time and stop if one fails. Seeds require migrations first. Your current populated local data does **not** need these commands rerun for an ordinary server restart.
 
@@ -413,7 +434,7 @@ The custom [403](templates/403.html) and [404](templates/404.html) share the pro
 
 ### Reset local development data
 
-If your `.env.local` uses Neon, first switch to your own local database and media (`DATABASE_URL` blank, `MEDIA_STORAGE=local`, valid local `DB_*`) and restart Django. Run the connection check in [teammate setup](#teammate-setup-step-by-step) to verify the actual target before cleanup. A centralized reset requires Jerome's coordination and current database/Object Storage backups; the local examples below are not teammate onboarding steps.
+If your `.env.local` uses Neon, first switch to your own local database and media (`IS_LOCAL_DB_CONNECTION=True`, `MEDIA_STORAGE=local`, valid local `DB_*`) and restart Django. Run the connection check in [teammate setup](#teammate-setup-step-by-step) to verify the actual target before cleanup. A centralized reset requires Jerome's coordination and current database/Object Storage backups; the local examples below are not teammate onboarding steps.
 
 Choose the smallest scope requested by your professor using the [command table](#demo-command-runbook). Cleanup is destructive and is **not part of everyday startup**. The cleanup commands below have been exercised in a separate PostgreSQL test database; the current local demonstration records have not been cleared for this runbook.
 
@@ -641,7 +662,7 @@ If `app.css` shows `{ expected` near `source(none)` or warnings on `@source` / `
 
 ## T22 automated system acceptance
 
-**With Neon active, use [the isolated local test command](#isolated-tests-while-using-neon).** The direct test commands below assume an isolated local configuration (`DATABASE_URL` blank, `MEDIA_STORAGE=local`, and local `DB_*`). Do not run them against the shared connection.
+**With Neon active, use [the isolated local test command](#isolated-tests-while-using-neon).** The direct test commands below assume an isolated local configuration (`IS_LOCAL_DB_CONNECTION=True`, `MEDIA_STORAGE=local`, and local `DB_*`). Do not run them against the shared connection.
 
 Run the complete automated T22 acceptance checks from the project root:
 
@@ -684,7 +705,7 @@ The ignored log is overwritten on each run; save dated copies if needed for evid
 
 ### T24 replay prerequisites
 
-Use a dedicated local PostgreSQL **18** server and matching native tools for recovery. This workstation used [official EDB portable 18.6 tools](https://www.enterprisedb.com/download-postgresql-binaries) under ignored `output/t24/tools/pgsql/bin`, a separate cluster at `127.0.0.1:55424`, and no new application packages/global installation. Keep `.env.local` unchanged for normal Neon startup. Private `.env.t24.local` supplies only `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD` for the isolated server; `DB_HOST` must be `127.0.0.1`. This workstation's private profile already exists; teammates supply their own local values.
+Use a dedicated local PostgreSQL **18** server and matching native tools for recovery. This workstation used [official EDB portable 18.6 tools](https://www.enterprisedb.com/download-postgresql-binaries) under ignored `output/t24/tools/pgsql/bin`, a separate cluster at `127.0.0.1:55424`, and no new application packages/global installation. Keep both sets of ordinary `.env.local` credentials intact; the replay launchers explicitly select their target without overwriting that file. Private `.env.t24.local` supplies only `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD` for the isolated server; `DB_HOST` must be `127.0.0.1`. This workstation's private profile already exists; teammates supply their own local values.
 
 The retained portable cluster is stopped. To inspect its retained databases on this workstation:
 
@@ -725,6 +746,7 @@ with psycopg.connect(
 env = {
     **os.environ,
     **local,
+    "IS_LOCAL_DB_CONNECTION": "True",
     "DATABASE_URL": "",
     "MEDIA_STORAGE": "local",
     "DB_NAME": "campus_t24_benchmark",
@@ -774,7 +796,7 @@ For non-interactive use from the project root, wrap each Python block in a Power
 
 ### T24 current database/media recovery replay
 
-With ordinary `.env.local` still selecting shared Neon/private storage, this command takes a **read-only** exported database snapshot and all current referenced photo bytes. Use fresh output paths; coordinate against planned photo replacement/deletion because the two services have no atomic joint snapshot:
+For this coordinator-only backup, explicitly select `IS_LOCAL_DB_CONNECTION=False` and `MEDIA_STORAGE=neon` in the private file before starting the command; verify `neondb` as documented above. It takes a **read-only** exported database snapshot and all current referenced photo bytes. Use fresh output paths; coordinate against planned photo replacement/deletion because the two services have no atomic joint snapshot:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py shell -c "from pathlib import Path; from scripts.t24_recovery import backup_neon; backup_neon(Path('output/t24-recovery-replay/backup'), Path('output/t24/tools/pgsql/bin'))"
@@ -798,6 +820,7 @@ with psycopg.connect(
 env = {
     **os.environ,
     **local,
+    "IS_LOCAL_DB_CONNECTION": "True",
     "DATABASE_URL": "",
     "MEDIA_STORAGE": "local",
     "DB_NAME": "campus_t24_restore",
@@ -853,7 +876,7 @@ T25 is Done only after reviewed diagrams/traceability match implementation, real
 
 ## T27 readiness and consumer handoff
 
-**Owner: everyone; Alex coordinates security/privacy, with Jerome coordinating delivery. T27 is In progress and ready to continue.** It has a before-real-data-use/before-submission gate, not a T26-main-integration prerequisite. T26's [accepted evidence](docs/user-needs-evidence-guide.md) is published on `origin/jerome` as `25e83ef`, with fetched remote equality verified in the [publication receipt](handoffs/t26-evidence-publication-and-t27-readiness-10-22-2026.md); main integration remains separately recorded in the [backlog](docs/tasks.md#verified-task-evidence). This readiness update does not execute the remaining T27 research or approve campus/real-data use.
+**Owner: everyone; Alex coordinates security/privacy, with Jerome coordinating delivery. T27 is In progress and ready to continue.** It has a before-real-data-use/before-submission gate, not a T26-main-integration prerequisite. T26's [accepted evidence](docs/user-needs-evidence-guide.md) is published on `origin/jerome` as `25e83ef`, with fetched remote equality verified in the [publication receipt](handoffs/t26-evidence-publication-and-t27-readiness-10-22-2026.md); PR #63 now integrates source/receipt at `d409cfa` with exact receipt/merge-tree equality verified in the [backlog](docs/tasks.md#verified-task-evidence). This readiness update does not execute the remaining T27 research or approve campus/real-data use.
 
 Read the [Part 6 requirement](docs/Project-Requirements.txt), [T27 acceptance](docs/tasks.md#course-evidence-and-delivery), [contribution/licensing rules](CONTRIBUTING.md) and the existing evidence before collecting new material. Resume Ralph's integrated [technical contribution](handoffs/ralph-t17-per-unit-returns-and-overdue-10-20-2026.md#ralphs-t27-technical-contribution); retain his attribution and its policy/retention limitations. A consolidated professional-judgment document has not yet been delivered. Create its canonical record when actual sources/decisions are collected, referencing existing technical evidence rather than copying it.
 

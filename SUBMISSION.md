@@ -14,11 +14,11 @@ No PPT/slides needed. Bring a **printed project rubric in two copies** on demo d
 | --- | ------------------------------------------------------------ | ----------------------------------------------- | ----------- |
 | 1   | Application (T01–T24): all workflows implemented and tested  | Team                                            | Done        |
 | 2   | System diagrams — editable (Lucidchart or similar) T25       | Kenneth / Ellyssa / Margareth                   | In Progress |
-| 3   | [User needs, options comparison, emerging-tech evaluation T26](docs/user-needs-evidence-guide.md) | Jerome / Alex + everyone                        | Done (branch) |
+| 3   | [User needs, options comparison, emerging-tech evaluation T26](docs/user-needs-evidence-guide.md) | Jerome / Alex + everyone                        | Done |
 | 4   | Professional judgment, AI/reuse/policy disclosure T27        | Alex coordinates + everyone                     | In Progress |
 | 5   | Team participation and individual contribution evidence T28  | Everyone — rotate leadership                    | In Progress |
 | 6   | Verified user / admin / technical guides T29                 | Ellyssa+Ralph / Margareth+Kenneth / Jerome+Alex | Not Started |
-| 7   | Screenshots of the system                                    | Everyone                                        | Not Started |
+| 7   | Screenshots of the system | Jerome with Codex assistance | Done (72 PNGs) |
 | 8   | Submission ZIP assembled and clean-machine tested T30        | Everyone                                        | Not Started |
 | 9   | Demo rehearsed; printed rubric ready T31                     | Everyone                                        | Not Started |
 
@@ -26,56 +26,90 @@ No PPT/slides needed. Bring a **printed project rubric in two copies** on demo d
 
 ## Screenshots checklist
 
+View the [system screenshot gallery](docs/system-screenshots.md) for all 72 images displayed with short page descriptions.
+
 The instructor confirmed screenshots of the system are the required evidence format.
-Organize them in a `screenshots/` folder inside the ZIP. Name files clearly (e.g. `01-signin.png`, `05-request-approval.png`).
+Captured October 22, 2026, Asia/Manila: **72 actual browser PNGs** in `screenshots/`, using a disposable copy of the local fictional dataset and local photos. Desktop viewport: 1440 x 1000; two mobile captures: 390 x 844. All 39 checklist entries below have evidence. This completes screenshot collection, not T30 ZIP assembly or clean-machine verification.
+
+The copy was restored from local `campus_equipment` into `campus_screenshots_20261022`; archive/account-state examples changed only that disposable copy. The damaged-return example links its existing maintenance record, which was subsequently repaired. CSV confirmation is Chrome's real completed download entry; browser automation gives its temporary file a generated name. The companion [loan-report.csv](screenshots/loan-report.csv) contains 13 October loans plus their totals row, verified against the report. No screenshot content was retouched or synthesized. See [connection switching](DEV.md#switch-between-local-and-shared-databases) and the [capture handoff](handoffs/local-database-switch-and-submission-screenshots-10-22-2026.md).
 
 ### Admin role
 
-- [ ] Sign-in page
-- [ ] Admin dashboard — four live cards (available units, pending requests, active loans, overdue loans)
-- [ ] Admin dashboard — monthly issued-loan chart and equipment-category usage chart
-- [ ] Equipment categories list with search
-- [ ] Catalog items list (active and archived)
-- [ ] Physical units list with status filter (Available / Reserved / Issued / Maintenance / Retired)
-- [ ] Request queue — pending requests, searchable
-- [ ] Request detail — approval/rejection form with reason field
-- [ ] Approved request showing allocated units
-- [ ] Rejected request with reason
-- [ ] Cancelled request
-- [ ] Equipment release form
-- [ ] Generated borrowing slip (borrow receipt)
-- [ ] Per-unit return form
-- [ ] Partial return (some units returned, loan still active/overdue)
-- [ ] Damaged return that opens a maintenance record
-- [ ] Maintenance records list (open and closed)
-- [ ] Overdue loans highlighted in the loan report
-- [ ] Loan report with date filter applied
-- [ ] Overdue report
-- [ ] CSV export download confirmation
-- [ ] Audit log with search/filter
-- [ ] Settings page (loan duration and max units per item)
-- [ ] Account management — user list
-- [ ] Account detail with activate/deactivate action
-- [ ] A form validation error example (any form showing inline field errors)
+- [x] [Sign-in page](screenshots/01-signin.png)
+- [x] [Admin dashboard — four live cards (available units, pending requests, active loans, overdue loans)](screenshots/02-admin-dashboard.png)
+- [x] [Admin dashboard — monthly issued-loan chart and equipment-category usage chart](screenshots/03-admin-dashboard-charts.png)
+- [x] [Equipment categories list with search](screenshots/04-admin-categories-search.png)
+- [x] [Catalog items list (active and archived)](screenshots/05-admin-catalog-active.png); [06-admin-catalog-archived](screenshots/06-admin-catalog-archived.png)
+- [x] [Physical units list with status filter (Available / Reserved / Issued / Maintenance / Retired)](screenshots/07-admin-units-available.png); [08-admin-units-reserved](screenshots/08-admin-units-reserved.png); [09-admin-units-issued](screenshots/09-admin-units-issued.png); [10-admin-units-maintenance](screenshots/10-admin-units-maintenance.png); [11-admin-units-retired](screenshots/11-admin-units-retired.png)
+- [x] [Request queue — pending requests, searchable](screenshots/12-admin-request-queue.png)
+- [x] [Request detail — approval/rejection form with reason field](screenshots/13-admin-pending-request.png); [14-admin-approval-form](screenshots/14-admin-approval-form.png); [15-admin-rejection-form](screenshots/15-admin-rejection-form.png)
+- [x] [Approved request showing allocated units](screenshots/16-admin-approved-allocations.png)
+- [x] [Rejected request with reason](screenshots/17-admin-rejected-request.png)
+- [x] [Cancelled request](screenshots/18-admin-cancelled-request.png)
+- [x] [Equipment release form](screenshots/19-admin-release-form.png)
+- [x] [Generated borrowing slip (borrow receipt)](screenshots/20-admin-borrowing-slip.png)
+- [x] [Per-unit return form](screenshots/21-admin-unit-return-form.png)
+- [x] [Partial return (some units returned, loan still active/overdue)](screenshots/22-admin-partial-return.png)
+- [x] [Damaged return that opens a maintenance record](screenshots/23-admin-damaged-return.png); [24-admin-linked-maintenance](screenshots/24-admin-linked-maintenance.png)
+- [x] [Maintenance records list (open and closed)](screenshots/25-admin-maintenance-list.png); [26-admin-maintenance-closed](screenshots/26-admin-maintenance-closed.png); [27-admin-maintenance-open](screenshots/27-admin-maintenance-open.png)
+- [x] [Overdue loans highlighted in the loan report](screenshots/28-admin-loan-report.png)
+- [x] [Loan report with date filter applied](screenshots/29-admin-filtered-loan-report.png)
+- [x] [Overdue report](screenshots/30-admin-overdue-report.png)
+- [x] [CSV export download confirmation](screenshots/31-csv-export-download.png); [actual CSV](screenshots/loan-report.csv)
+- [x] [Audit log with search/filter](screenshots/32-admin-audit-filter.png)
+- [x] [Settings page (loan duration and max units per item)](screenshots/33-admin-settings.png)
+- [x] [Account management — user list](screenshots/34-admin-accounts.png)
+- [x] [Account detail with activate/deactivate action](screenshots/35-admin-account-detail.png)
+- [x] [A form validation error example (any form showing inline field errors)](screenshots/36-form-validation-error.png)
 
 ### Basic-user (portal) role
 
-- [ ] Portal home after sign-in
-- [ ] Browse equipment catalog with category/search filter
-- [ ] Equipment detail page (serviceable units shown; no internal notes or maintenance details)
-- [ ] Borrowing request form (1–3 items, quantities, dates, purpose)
-- [ ] Submitted Pending request in own history
-- [ ] Approved request showing reserved units
-- [ ] Active (Issued) loan in history
-- [ ] Cancelled request
-- [ ] Profile / account page
+- [x] [Portal home after sign-in](screenshots/37-portal-home.png)
+- [x] [Browse equipment catalog with category/search filter](screenshots/38-portal-catalog-filter.png)
+- [x] [Equipment detail page (serviceable units shown; no internal notes or maintenance details)](screenshots/39-portal-equipment-detail.png)
+- [x] [Borrowing request form (1–3 items, quantities, dates, purpose)](screenshots/40-portal-request-form.png)
+- [x] [Submitted Pending request in own history](screenshots/41-portal-pending-request.png)
+- [x] [Approved request showing reserved units](screenshots/42-portal-approved-request.png)
+- [x] [Active (Issued) loan in history](screenshots/43d-portal-issued-history.png); [43c-portal-issued-loan](screenshots/43c-portal-issued-loan.png)
+- [x] [Cancelled request](screenshots/44-portal-cancelled-request.png)
+- [x] [Profile / account page](screenshots/45-portal-profile.png)
 
 ### Access controls and errors
 
-- [ ] Inactive user blocked at sign-in
-- [ ] Admin redirected to `/manage/`, user redirected to `/portal/` after login
-- [ ] 403 / access-denied page when a user hits a protected admin route
-- [ ] Empty state (no requests yet, or no search results)
+- [x] [Inactive user blocked at sign-in](screenshots/46-inactive-login-blocked.png)
+- [x] [Admin redirected to `/manage/`, user redirected to `/portal/` after login](screenshots/37-portal-home.png); [02-admin-dashboard](screenshots/02-admin-dashboard.png)
+- [x] [403 / access-denied page when a user hits a protected admin route](screenshots/48-access-denied.png)
+- [x] [Empty state (no requests yet, or no search results)](screenshots/49-empty-search.png)
+
+---
+
+### Additional page and mobile captures
+
+These supplement the checklist with actual create/edit/detail, confirmation and mobile pages.
+
+- [43-portal-active-loans](screenshots/43-portal-active-loans.png)
+- [43b-portal-loan-detail](screenshots/43b-portal-loan-detail.png)
+- [50-admin-category-detail](screenshots/50-admin-category-detail.png)
+- [51-admin-category-create](screenshots/51-admin-category-create.png)
+- [52-admin-category-edit](screenshots/52-admin-category-edit.png)
+- [53-admin-item-detail](screenshots/53-admin-item-detail.png)
+- [54-admin-item-create](screenshots/54-admin-item-create.png)
+- [55-admin-item-edit](screenshots/55-admin-item-edit.png)
+- [56-admin-unit-detail](screenshots/56-admin-unit-detail.png)
+- [57-admin-unit-create](screenshots/57-admin-unit-create.png)
+- [58-admin-unit-edit](screenshots/58-admin-unit-edit.png)
+- [59-admin-maintenance-create](screenshots/59-admin-maintenance-create.png)
+- [60-admin-maintenance-close](screenshots/60-admin-maintenance-close.png)
+- [61-admin-loan-list](screenshots/61-admin-loan-list.png)
+- [62-admin-profile](screenshots/62-admin-profile.png)
+- [63-admin-due-date-revision](screenshots/63-admin-due-date-revision.png)
+- [64-admin-account-deactivation](screenshots/64-admin-account-deactivation.png)
+- [65-borrower-registration](screenshots/65-borrower-registration.png)
+- [66-portal-request-history](screenshots/66-portal-request-history.png)
+- [67-portal-cancel-confirmation](screenshots/67-portal-cancel-confirmation.png)
+- [68-mobile-portal-home](screenshots/68-mobile-portal-home.png)
+- [69-mobile-equipment-catalog](screenshots/69-mobile-equipment-catalog.png)
+- [70-admin-account-reactivation](screenshots/70-admin-account-reactivation.png)
 
 ---
 
@@ -98,7 +132,7 @@ Organize them in a `screenshots/` folder inside the ZIP. Name files clearly (e.g
 - [ ] Seed command documented (see `README.md` / `DEV.md` — `seed_demo_data`)
 - [ ] `screenshots/` folder — all screenshots from the checklist above
 - [ ] T25 diagram exports (images/PDFs from Lucidchart or equivalent)
-- [ ] T26 [user-needs evidence and recommendations](docs/user-needs-evidence-guide.md) accepted record (T26 Done on `jerome`; include in the final ZIP)
+- [ ] T26 [user-needs evidence and recommendations](docs/user-needs-evidence-guide.md) accepted record (T26 integrated through PR #63; include in the final ZIP)
 - [ ] T27 professional judgment / AI/reuse disclosure document
 - [ ] T28 team participation evidence
 - [ ] T29 user guide (borrower) and admin guide
@@ -147,11 +181,11 @@ Every member must have an identifiable part.
 | --- | --------------------------- | --------------------------------------------------------------------------------------------- | --------- | ----------- |
 | 1   | Authentication and access   | Sign-in for both roles; inactive-user block; role-based redirect                              | —         | ~1 min      |
 | 2   | Equipment catalog and units | Categories, items, physical units, status counts                                              | —         | ~1 min      |
-| 3   | Borrower workflow           | Browse catalog, submit a borrowing request                                                    | —         | ~1 min      || Done (branch) |
+| 3   | Borrower workflow           | Browse catalog, submit a borrowing request                                                    | —         | ~1 min      || Done |
 | 4   | Request review              | Admin views queue, approves (with unit allocation), rejects with reason                       | —         | ~2 min      |
 | 5   | Equipment release           | Admin releases approved request; borrowing slip generated                                     | —         | ~1 min      |
 | 6   | Returns                     | Borrower view of active loan; admin records partial return, damaged return; maintenance opens | —         | ~2 min      |
-| 7   | Reports and dashboard       | Live dashboard cards and charts; loan report with date filter; overdue report; CSV export     | —         | ~2 min      |
+| 7   | Screenshots of the system | Jerome with Codex assistance | Done (72 PNGs) |
 | 8   | Settings and audit          | Change loan limits; audit log entries for all recorded actions                                | —         | ~1 min      |
 | 9   | Concurrency (optional)      | Competing approvals; only one succeeds (T14 evidence)                                         | —         | bonus       |
 
