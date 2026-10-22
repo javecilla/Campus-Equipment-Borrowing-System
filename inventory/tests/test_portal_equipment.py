@@ -1,9 +1,10 @@
 """Tests for borrower equipment catalog browsing, detail, and confidentiality."""
 
 import io
+from tempfile import TemporaryDirectory
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 from PIL import Image
@@ -393,6 +394,12 @@ class PortalEquipmentPhotoTests(TestCase):
     photo_item: CatalogItem
 
     @classmethod
+    def setUpClass(cls) -> None:
+        media_root: str = cls.enterClassContext(TemporaryDirectory())
+        cls.enterClassContext(override_settings(MEDIA_ROOT=media_root))
+        super().setUpClass()
+
+    @classmethod
     def setUpTestData(cls) -> None:
         cls.records = create_catalog_records()
         webp_bytes = _generate_test_webp()
@@ -414,6 +421,7 @@ class PortalEquipmentPhotoTests(TestCase):
         self.assertEqual(response["Content-Type"], "image/webp")
         self.assertEqual(response["X-Content-Type-Options"], "nosniff")
         self.assertEqual(response["Cache-Control"], "private, no-store")
+        self.assertEqual(b"".join(response.streaming_content), _generate_test_webp())
 
     def test_item_without_photo_photo_route_returns_404(self) -> None:
         url = reverse("portal:equipment-photo", args=[self.records.item.pk])
