@@ -2,6 +2,8 @@
 
 ## Current state
 
+- **T23 review committed and pushed on `jerome`:** source `9a491c6eb6c10b99c49ce08db51a62c86e776dfc` is on `origin/jerome`; fresh source/remote equality and Codex co-author credit are verified. [Publication receipt](handoffs/t23-integration-review-publication-10-22-2026.md) records this authorization. The review's added tests/documentation are **Not integrated** into main; Ralph's original implementation remains integrated through PR #56. The 344-test evidence and T23 participant follow-up are unchanged; T24 is ready and Not started. No PR/main merge or shared-data/media operation was performed.
+
 - **T23 integration review / T24 readiness:** local `jerome` and freshly fetched `origin/main` equal PR #56 merge `17873b6f1724fd5b5e4da2d7e873a79808d4eff9` (October 22, 13:26:59 Asia/Manila). Ralph's source `cc00a93` has exactly the merge tree; T20/T21/T22 and HOST-01 are preserved ancestors. The merged files contained conflict markers in this file and `docs/tasks.md`, stale acceptance records and missing asset tests referenced by Ralph's delivery. This local review reconciles the documents and adds the two missing integration checks. See [review receipt](handoffs/t23-main-integration-review-and-t24-readiness-10-22-2026.md).
 
 - **T23 / Ralph and Ellyssa: implementation integrated; acceptance evidence follow-up In progress.** The native startup check is present and verified. [R01](docs/usability-acceptance.md#r01-user-reported-functional-confirmation) retains the user's both-role functional report; [R02/E01](docs/usability-acceptance.md#r02-reported-missing-build-failure) attributes the missing-build symptom to Ralph's delivery record and records fresh technical verification. The original traceback/session details and post-enhancement human recheck are unavailable in the merged evidence. Ralph reported Done locally; this review does not invent the missing participant evidence or independently repeat his browser runs. The canonical record and [Module 22](docs/manual-test-guide.md#module-22--participant-usability-sessions-t23) distinguish actual reports, fresh checks and remaining follow-up.
@@ -71,6 +73,7 @@ Developers and AI agents write work snapshots in the project-root `handoffs/` fo
 
 | Date | Work | Author | Handoff |
 | --- | --- | --- | --- |
+| October 22, 2026 | T23 integration review publication on jerome | Jerome with Codex co-author credit; Ralph delivery preserved | [Publication receipt](handoffs/t23-integration-review-publication-10-22-2026.md) |
 | October 22, 2026 | T23 main integration review and T24 readiness | Jerome review; Codex verification/documentation assistance; Ralph delivery credit preserved | [Review receipt](handoffs/t23-main-integration-review-and-t24-readiness-10-22-2026.md) |
 | October 22, 2026 | T23 startup asset feedback enhancement delivery | Ralph with Codex assistance | [Delivery snapshot](handoffs/t23-acceptance-and-startup-asset-feedback-enhancement-10-22-2026.md) |
 | October 22, 2026 | T23 user-reported borrower/admin functional confirmation | User-supplied result; Codex documentation assistance | [Feedback record](handoffs/t23-user-functional-feedback-record-10-22-2026.md) |
