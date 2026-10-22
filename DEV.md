@@ -572,7 +572,7 @@ When updating a workstation from the earlier Axios setup, remove its obsolete ge
 
 ### Frontend preview
 
-The shared shell and page modules use the `compiled_asset` template tag to append a content fingerprint to built CSS/JavaScript URLs. Rebuilding changes that URL when bundle bytes change, avoiding stale browser styles or scripts. Missing compiled files raise an explicit build instruction; run the asset build before starting the app or tests. Keep these generated bundles with a runnable submission and rebuild before static collection.
+The shared shell and page modules use the `compiled_asset` template tag to append a content fingerprint to built CSS/JavaScript URLs. Rebuilding changes that URL when bundle bytes change, avoiding stale browser styles or scripts. Missing compiled files raise an explicit build instruction. T23 adds `operations.E001` through Django's staticfiles checks, so ordinary `runserver` refuses to serve until all required entry bundles exist. Run `npm.cmd ci`, then `npm.cmd run build`; verify with `.\.venv\Scripts\python.exe manage.py check --tag staticfiles`. Hosts that skip startup checks, including separate WSGI/ASGI deployments, must run this preflight explicitly. The check detects absent entries, not stale contents or every generated chunk; run the asset build before starting the app or tests. Keep these generated bundles with a runnable submission and rebuild before static collection.
 
 After building assets and starting Django, go directly to **<http://127.0.0.1:8000/test>** (no trailing slash) with `DJANGO_DEBUG=True` in your private `.env.local`. The preview links back to the application home. Expect a pale background, rounded typography cards, green/slate/amber swatches, and the message **DM Sans and Poppins loaded successfully from local assets.** The message checks real font loading in the browser; it reports a failure if font declarations/files cannot load. If it stays at “Checking local fonts…”, check that `build/frontend-test.js` loads and rebuild assets.
 
@@ -677,6 +677,17 @@ if ($t22ExitCode -ne 0) { throw "T22 acceptance tests failed with exit code $t22
 ```
 
 The ignored log is overwritten on each run; save dated copies if needed for evidence. Do not treat a started command as a pass: review the final summary and fix failures before recording acceptance. These commands automate database and Django HTTP behavior. They do not run a real browser, conduct the T23 user sessions, benchmark T24 performance or demonstrate backup/restore. Those remain separately recorded work.
+
+## T24 readiness and consumer handoff
+
+**Owner: Jerome with feature owners. Ready; Not started.** T24 depends on T22, which is integrated through PR #54 at `6e6f594` (source `a7ce0a2`, publication `7d0043d`). Fresh review baseline is PR #56/main/local `jerome` at `17873b6`; Ralph's T23 enhancement and HOST-01 are preserved. T23 participant-evidence follow-up can proceed independently; it is not a T24 prerequisite. [Task evidence](docs/tasks.md#verified-task-evidence) and the [review receipt](handoffs/t23-main-integration-review-and-t24-readiness-10-22-2026.md) own actual results.
+
+1. Record the exact revision, OS/CPU/RAM, Python/Django/PostgreSQL versions, app server settings, database location/network and media backend. Choose a dedicated local benchmark database and verify its effective name/host before generating fixtures. The current shared Neon dataset is not a load-test fixture; do not seed, reset, migrate or load-test it under this review's authorization.
+2. Measure the proposed [SRS NFR-05 target](docs/SRS.md#non-functional-requirements): p95 at most 2 seconds for lists/details and 3 seconds for dashboard/reports, with 10 concurrent authenticated sessions, 1,000 units and 5,000 requests. Record tested routes, role/filter choices, dataset construction, warm-up, sample counts, latency/error results and the limits of the chosen configuration. Smaller-dataset smoke checks do not prove that target. Inspect slow SQL/query counts and execution plans before proposing query changes; retain failures honestly.
+3. Demonstrate database and matching-media backup/restore into a separate empty **local** target. Follow [the backup runbook](#back-up-the-populated-demonstration-before-cleanup) and [coordinator guidance](#coordinator-import-and-maintenance). A database dump contains paths, not images; a Neon recovery rehearsal needs current Object Storage bytes, not an assumed-current local `media/` folder. Use compatible PostgreSQL clients and private ignored backup paths. Verify model/relationship counts, sign-in/access, dashboard/reports and protected photos on the restored target. Do not overwrite shared Neon or the preserved development database.
+4. Record elapsed backup/restore measurements, verification results, maintenance steps, limitations and unresolved issues. Update the affected manual-guide section, backlog and dated handoff after actual execution. HOST-01's earlier import and existing backup instructions establish setup, not T24 performance/recovery acceptance. T25 remains gated on completed T22/T23/T24 and Jerome's separate diagram go signal.
+
+This consumer handoff defines the next work; no benchmark, fixture generation or restore was run for the integration review.
 
 ## Before handing over work
 

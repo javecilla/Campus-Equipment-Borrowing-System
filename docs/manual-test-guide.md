@@ -2077,11 +2077,11 @@ No browser, keyboard, phone, screen-reader, spreadsheet-opening or real particip
 
 ## Module 22 — Participant usability sessions (T23)
 
-**Status: In progress, preparation only.** This walkthrough has not been executed by participants. Record actual sessions, observations, findings and the required enhancement in [the canonical T23 record](usability-acceptance.md); the generic result checklist below is for manual feature cases. T20/T21 prerequisites are integrated into fetched main `6e6f594`; automated/browser test results do not prove participant acceptance.
+**Status: implementation integrated through PR #56 at `17873b6`; participant-evidence follow-up In progress.** The [canonical T23 record](usability-acceptance.md) retains R01's limited both-role functional report and attributed R02/E01 missing-build delivery evidence. E01 is technically verified; full task-level participant sessions and human recheck are not independently substantiated. T20/T21 prerequisites are integrated. The original preparation tasks below remain facilitator references, with historical local inputs; automated/browser checks do not prove representative participant acceptance.
 
 ### T23-01: Prepare the session
 
-Use the [read-only local setup snapshot](usability-acceptance.md#local-setup-checked-before-sessions). It differs from Module 20's separate demonstration: local accounts are `auth_demo_user` and `auth_demo_admin`, with passwords provided privately. Recheck eligibility and use a disposable session copy for write exercises. Begin each participant at the role home, with the app running through [DEV startup](../DEV.md#everyday-startup). Apply the [existing consent/feedback guidance](user-needs-evidence-guide.md#collecting-feedback), record the real environment and clearly label proxy users.
+Use Ralph's [historical read-only local setup snapshot](usability-acceptance.md#local-setup-checked-before-sessions) only as a preparation example. Ordinary startup now uses shared Neon; current setup is in [DEV](../DEV.md#shared-neon-database-and-photos). Ralph's preparation differed from Module 20's demonstration: his local accounts were `auth_demo_user` and `auth_demo_admin`, with passwords provided privately. Recheck eligibility and use a disposable session copy for write exercises. Begin each participant at the role home, with the app running through [DEV startup](../DEV.md#everyday-startup). Apply the [existing consent/feedback guidance](user-needs-evidence-guide.md#collecting-feedback), record the real environment and clearly label proxy users.
 
 ### T23-02: Borrower tasks
 
@@ -2122,9 +2122,24 @@ Record tasks not attempted because of stock, account or environment setup as Not
 
 Ask what was clear/confusing, what the participant expected and what they would change. Record their own words or a labeled paraphrase, task outcome and assistance. Link actionable observations to requirements, choose a real feedback-driven improvement, implement it within scope, run relevant checks and ask the participant to retry the affected task. Use the [session and enhancement registers](usability-acceptance.md#session-register); leave results pending until actually observed.
 
-**Executed in this preparation:** read-only local data/settings/account checks, prerequisite/main ancestry checks and runtime preflight only. **Not run:** participant tasks B1-B5/A1-A5, interviews, participant satisfaction measurements, feedback-driven enhancement and participant recheck. This packet does not complete T23.
+**Historical preparation only ? executed then:** read-only local data/settings/account checks, prerequisite/main ancestry checks and runtime preflight only. **Not run:** participant tasks B1-B5/A1-A5, interviews, participant satisfaction measurements, feedback-driven enhancement and participant recheck. This preparation packet alone does not complete T23; subsequent E01 verification is below.
 
-**Subsequent user report, October 22:** the user confirmed that both borrower and administrator flows are working. [Report R01](usability-acceptance.md#r01-user-reported-functional-confirmation) preserves that statement; individual task outcomes, browser/device and assistance were not specified. No actionable improvement or rating was supplied, so enhancement implementation/verification and participant recheck remain pending. The earlier preparation checks above remain separately attributed.
+**Subsequent user report, October 22:** the user confirmed that both borrower and administrator flows are working. [Report R01](usability-acceptance.md#r01-user-reported-functional-confirmation) preserves that statement; individual task outcomes, browser/device and assistance were not specified. R01 supplied no actionable improvement or rating. Separate R02/E01 delivery evidence and fresh technical checks are recorded below; human recheck remains Not run. The earlier preparation checks above remain separately attributed.
+
+### T23-05: Missing-build feedback enhancement (E01)
+
+E01 is integrated through PR #56, source `cc00a93`. [R02/F02](usability-acceptance.md#r02-reported-missing-build-failure) attributes the source symptom to Ralph's delivery snapshot; the original traceback is not retained here. This case checks configuration failure visibility, without changing borrowing records.
+
+1. Run `npm.cmd ci`, then `npm.cmd run build` from the project root. Run `.\.venv\Scripts\python.exe manage.py check --tag staticfiles`; with the complete build, expect exit 0 and no issues.
+2. Exercise absent-build/recovery cases through the isolated integration tests below. They copy actual built files to temporary directories, remove only the temporary dashboard bundle and verify `operations.E001`; replacing it restores a successful preflight and fingerprinted URL. A completely absent temporary build reports actionable errors. The project's real generated bundles remain intact.
+
+    ```powershell
+    .\.venv\Scripts\python.exe -c "import os, subprocess, sys; sys.exit(subprocess.call([sys.executable, 'manage.py', 'test', 'operations.tests.test_assets', '--noinput'], env={**os.environ, 'DATABASE_URL': '', 'MEDIA_STORAGE': 'local'}))"
+    ```
+
+3. With the real build present, start the app normally and open sign-in. With a missing required entry, ordinary CLI `runserver` must reject startup with the missing path and `npm ci` / `npm run build` hint. Hosts that skip checks must explicitly run the preflight. Do not delete project bundles during an active teammate session; the temporary tests cover this condition safely.
+
+**Fresh review execution:** registered missing-chart/recovery and complete-missing-build checks pass in the full isolated suite; ordinary CLI startup was independently rejected using a temporary real build missing charts. See [review receipt](../handoffs/t23-main-integration-review-and-t24-readiness-10-22-2026.md) for full results. Ralph's earlier Edge/Chromium results remain attributed to his [delivery snapshot](../handoffs/t23-acceptance-and-startup-asset-feedback-enhancement-10-22-2026.md); this review did not repeat those browser sessions or a human recheck. The check does not detect stale content or every generated chunk.
 
 ## Recording manual results
 
@@ -2179,7 +2194,7 @@ The coordinator-only photo importer was exercised against actual Neon storage: 2
 
 ## Remaining validation and demonstration work
 
-T01-T21 are integrated; PR #53 at `b828945` contains the August-October dataset. T22 automated SRS minimum-scenario acceptance is published on `jerome` at `a7ce0a2` with 339 passing PostgreSQL tests, including the complete HTTP repair lifecycle; see Module 21 for executed evidence. T23 session preparation is In progress; actual participant sessions/feedback and the required enhancement remain pending. T24's T22 integration gate is satisfied; measurements and restore remain Not started. Earlier browser coverage remains attributed to Module 19; screen-reader evaluation, Firefox/Safari, spreadsheet opening and complete browser maintenance-lifecycle checks remain unrun follow-ups.
+T01-T21 are integrated; PR #53 at `b828945` contains the August-October dataset. T22 source `a7ce0a2` is integrated through PR #54, with its 339-test delivery including the complete HTTP repair lifecycle; see Module 21. T23 E01 is integrated through PR #56 and technically verified; participant-evidence follow-up remains In progress in the canonical record. T24's T22 integration gate is satisfied; [performance/restore work](../DEV.md#t24-readiness-and-consumer-handoff) remains Not started. Earlier browser coverage remains attributed to Module 19; screen-reader evaluation, Firefox/Safari, spreadsheet opening and complete browser maintenance-lifecycle checks remain unrun follow-ups.
 
 ---
 
