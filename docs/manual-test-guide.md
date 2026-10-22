@@ -1952,7 +1952,7 @@ Use **Not run - needs test data** when appropriate. Record browser/version, date
 
 ## Module 20 — Fictional demonstration dataset (T21)
 
-T21 is **Done locally** and includes the user-requested **August-October 22, 2026 transaction history**, using the existing manually entered equipment and seeded accounts. Source is local/uncommitted on `jerome` over main `4f285cb`, not integrated into main. [DEV.md](../DEV.md#seed-august-october-2026-transactions) owns the setup, expected dataset totals and repeat-run behavior; [the account table](../DEV.md#seed-the-t21-demonstration-dataset) lists every full name, username, email and private password source. These are realistic fictional demonstration events, not actual campus activity records.
+T21 is **Done locally** and includes the user-requested **August-October 22, 2026 transaction history**, using the existing manually entered equipment and seeded accounts. Source `e3402bf` is committed and pushed on `jerome` over main `4f285cb`, not integrated into main; see the [publication receipt](../handoffs/t21-seeds-and-cleanup-publication-10-22-2026.md). [DEV.md](../DEV.md#seed-august-october-2026-transactions) owns the setup, expected dataset totals and repeat-run behavior; [the account table](../DEV.md#seed-the-t21-demonstration-dataset) lists every full name, username, email and private password source. These are realistic fictional demonstration events, not actual campus activity records.
 
 ### T21-01: Review the dated local records
 
@@ -2009,7 +2009,7 @@ Run `manage.py test operations.tests.test_demo_transactions --noinput`; schema-f
 
 ### T21-05: Seed and cleanup command rehearsal
 
-[DEV.md's command runbook](../DEV.md#demo-command-runbook) owns the runnable PowerShell commands, parameters, backup steps and deletion scopes. Use a disposable database for this rehearsal; the populated local history is retained for demonstration. CLI access is the authorization boundary; unit registration requires the named active ADMIN. These are local, uncommitted T21 tools, not integrated application endpoints.
+[DEV.md's command runbook](../DEV.md#demo-command-runbook) owns the runnable PowerShell commands, parameters, backup steps and deletion scopes. Use a disposable database for this rehearsal; the populated local history is retained for demonstration. CLI access is the authorization boundary; unit registration requires the named active ADMIN. These T21 CLI tools are published on `jerome` at `e3402bf` and are not integrated into main.
 
 | Setup / input | Expected stored result and inspection |
 | --- | --- |
@@ -2053,7 +2053,7 @@ T01-T20 are integrated. T20's borrower home and shared UI are available through 
 
 ## Running the automated test suite
 
-The current uncommitted T21 history checkout over main `4f285cb` passes **336 PostgreSQL tests in 101.342s** on October 22, including five account-seed tests, seven history/cleanup tests and two physical-unit seed tests. The earlier 327-test account-only stage is historical in its dated handoff. The integrated PR #51 checkout at `6f18116` passed **322 PostgreSQL tests in 127.102s** on October 21, including all seven T20 workspace tests and 11 T19 report tests. The earlier PR #49 checkout passed 315 tests in 57.317s. The preceding PR #46 authentication/UI checkout passed 304 tests in 74.818s. The integrated T18 baseline at `26b1ee5` previously passed 298 tests in 56.385s. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
+The T21 source `e3402bf`, published on `jerome` over main `4f285cb`, passes **336 PostgreSQL tests in 101.342s** on October 22, including five account-seed tests, seven history/cleanup tests and two physical-unit seed tests. The earlier 327-test account-only stage is historical in its dated handoff. The integrated PR #51 checkout at `6f18116` passed **322 PostgreSQL tests in 127.102s** on October 21, including all seven T20 workspace tests and 11 T19 report tests. The earlier PR #49 checkout passed 315 tests in 57.317s. The preceding PR #46 authentication/UI checkout passed 304 tests in 74.818s. The integrated T18 baseline at `26b1ee5` previously passed 298 tests in 56.385s. The published T14 checkout previously passed 254 tests in 39.994s, including 2 T14, 28 T13 and 33 maintenance tests. Earlier suite/probe results remain historical in the dated handoffs. To run the current suite yourself:
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py test --noinput
