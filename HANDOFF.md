@@ -2,6 +2,8 @@
 
 ## Current state
 
+- **T23 user report received:** on October 22, the user confirmed that both borrower and administrator flows are working. [R01](docs/usability-acceptance.md#r01-user-reported-functional-confirmation) records the actual brief outcome and unspecified session metadata. No defect, rating, extra participant or task-level result was inferred. A concrete improvement preference has been requested; no feedback-driven enhancement exists yet. T23 remains In progress. See [report handoff](handoffs/t23-user-functional-feedback-record-10-22-2026.md); these updates are uncommitted on `ralph`.
+
 - **T23 preparation committed and pushed on `ralph`:** source `5d5ca49a29c4da9b4544bf537930269724407d42` is on `origin/ralph` with `Co-authored-by: Codex <codex@openai.com>`; fetched source equality is verified. The message describes the session walkthrough, local readiness checks, blank feedback/enhancement records and existing T22 integration correction. See [publication receipt](handoffs/ralph-t23-preparation-publication-10-22-2026.md). T23 remains In progress, with no completed participant session or feedback-driven enhancement claimed. No PR/main integration or live-data change was performed.
 
 - **T23 / Ralph and Ellyssa: In progress, session preparation only.** The [canonical session/results record](docs/usability-acceptance.md) and [Module 22 walkthrough](docs/manual-test-guide.md#module-22--participant-usability-sessions-t23) provide role tasks, blank actual-results/findings/enhancement registers and honest completion gates. No participant session, feedback or improvement has been invented or implemented. `ralph` was fast-forwarded to freshly fetched main `6e6f594`; T20/T21 prerequisites and T22 PR #54 integration are verified. Read-only local inspection at 10:38 Asia/Manila found 5 requests, 2 loans, 4 units, the two `auth_demo_*` accounts and one available Nokia unit; Jerome's separate T21 roster/history is absent here. Django was started at port 8000 and login returns HTTP 200. Existing business data/media were preserved; no seeds, purges or password resets ran. See [preparation handoff](handoffs/ralph-t23-usability-session-preparation-10-22-2026.md). Next: real participant sessions/feedback, then a sourced enhancement and recheck; T23 is not Done.
@@ -69,6 +71,7 @@ Developers and AI agents write work snapshots in the project-root `handoffs/` fo
 
 | Date | Work | Author | Handoff |
 | --- | --- | --- | --- |
+| October 22, 2026 | T23 user-reported borrower/admin functional confirmation | User-supplied result; Codex documentation assistance | [Feedback record](handoffs/t23-user-functional-feedback-record-10-22-2026.md) |
 | October 22, 2026 | T23 preparation publication on ralph | Ralph with Codex co-author credit | [Publication receipt](handoffs/ralph-t23-preparation-publication-10-22-2026.md) |
 | October 22, 2026 | T23 usability session preparation and local readiness | Ralph; Codex preparation assistance; Ellyssa remains co-coordinator, no participation claimed | [T23 preparation](handoffs/ralph-t23-usability-session-preparation-10-22-2026.md) |
 | October 22, 2026 | T22 automated acceptance publication on jerome | Jerome; Codex co-author credit | [Publication receipt](handoffs/t22-automated-acceptance-publication-10-22-2026.md) |

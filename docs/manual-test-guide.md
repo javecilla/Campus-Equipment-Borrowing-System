@@ -2124,6 +2124,8 @@ Ask what was clear/confusing, what the participant expected and what they would 
 
 **Executed in this preparation:** read-only local data/settings/account checks, prerequisite/main ancestry checks and runtime preflight only. **Not run:** participant tasks B1-B5/A1-A5, interviews, participant satisfaction measurements, feedback-driven enhancement and participant recheck. This packet does not complete T23.
 
+**Subsequent user report, October 22:** the user confirmed that both borrower and administrator flows are working. [Report R01](usability-acceptance.md#r01-user-reported-functional-confirmation) preserves that statement; individual task outcomes, browser/device and assistance were not specified. No actionable improvement or rating was supplied, so enhancement implementation/verification and participant recheck remain pending. The earlier preparation checks above remain separately attributed.
+
 ## Recording manual results
 
 Use one row per actual test run. Expected outcomes in this guide do not count as passes. Keep evidence fictional and do not include passwords, session/CSRF tokens or private environment values.
