@@ -93,6 +93,7 @@ def backup_neon(output: Path, binaries: Path) -> None:
             settings.BASE_DIR / ".env.local",
             {
                 **os.environ,
+                "IS_LOCAL_DB_CONNECTION": "False",
                 "DATABASE_URL": direct,
             },
         )

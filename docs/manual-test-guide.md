@@ -2134,7 +2134,7 @@ E01 is integrated through PR #56, source `cc00a93`. [R02/F02](usability-acceptan
 2. Exercise absent-build/recovery cases through the isolated integration tests below. They copy actual built files to temporary directories, remove only the temporary dashboard bundle and verify `operations.E001`; replacing it restores a successful preflight and fingerprinted URL. A completely absent temporary build reports actionable errors. The project's real generated bundles remain intact.
 
     ```powershell
-    .\.venv\Scripts\python.exe -c "import os, subprocess, sys; sys.exit(subprocess.call([sys.executable, 'manage.py', 'test', 'operations.tests.test_assets', '--noinput'], env={**os.environ, 'DATABASE_URL': '', 'MEDIA_STORAGE': 'local'}))"
+    .\.venv\Scripts\python.exe -c "import os, subprocess, sys; sys.exit(subprocess.call([sys.executable, 'manage.py', 'test', 'operations.tests.test_assets', '--noinput'], env={**os.environ, 'IS_LOCAL_DB_CONNECTION': 'True', 'DATABASE_URL': '', 'MEDIA_STORAGE': 'local'}))"
     ```
 
 3. With the real build present, start the app normally and open sign-in. With a missing required entry, ordinary CLI `runserver` must reject startup with the missing path and `npm ci` / `npm run build` hint. Hosts that skip checks must explicitly run the preflight. Do not delete project bundles during an active teammate session; the temporary tests cover this condition safely.
@@ -2204,6 +2204,7 @@ Use these values after installing the reviewed source, locked dependencies and b
 | Field | Value |
 | --- | --- |
 | Database | Private pooled Neon URL from email, selecting `neondb` with TLS required |
+| Database selector | `IS_LOCAL_DB_CONNECTION=False`; keep the shared URL private |
 | Media backend | `MEDIA_STORAGE=neon`; private emailed S3 values; bucket `assets` |
 | Local Django host | `127.0.0.1:8000` |
 | Admin username | `andrea.mendoza` |
@@ -2225,6 +2226,26 @@ Use these values after installing the reviewed source, locked dependencies and b
 Configure local PostgreSQL `DB_*` alongside Neon and run [the exact isolated test command](../DEV.md#isolated-tests-while-using-neon). Expect a separate `test_campus_equipment` database and `OK`, leaving the central dataset intact. Do not run the direct test commands below against the shared Neon URL. Local originals and the cloud's domain-record counts were retained during verification.
 
 The coordinator-only photo importer was exercised against actual Neon storage: 23 uploaded and verified, followed by zero uploaded / 23 matching on repetition. Its documented command is not an onboarding step. Missing-source and mismatched-object errors must be resolved before repeating an import; it does not overwrite conflicting objects.
+
+## Module 24 - Explicit database selection and screenshot evidence (HOST-02)
+
+**Delivery:** local, uncommitted and Not integrated. [DEV connection switching](../DEV.md#switch-between-local-and-shared-databases) owns the setup instructions; [SUBMISSION.md](../SUBMISSION.md#screenshots-checklist) owns the captured-page checklist. Existing fictional local data/photos were inspected October 22, 2026: 9 accounts, 29 catalog items, 46 units, 30 requests, 20 loans and 10 maintenance records; every assigned image existed locally.
+
+| Field | Local example | Shared example |
+| --- | --- | --- |
+| `IS_LOCAL_DB_CONNECTION` | `True` | `False` |
+| Connection keys | Existing private local `DB_*`; database `campus_equipment` | Existing private TLS `DATABASE_URL`; database `neondb` |
+| `MEDIA_STORAGE` | `local` | `neon`, with private storage keys |
+| Shared URL retained in file | Yes; ignored in local mode | Yes; required in shared mode |
+
+1. Select local mode and restart Django. Run the read-only target check from DEV; expect `campus_equipment`. Open both role dashboards/catalogs and an existing photo. Local data and photo files must already exist; switching does not synchronize them.
+2. Select shared mode and restart. Run the read-only check; expect `neondb` with TLS. Inspect existing pages only; do not seed, migrate, reset or purge shared data for this check. Restore local mode afterwards if desired.
+3. Check configuration failures in an isolated temporary environment file/process: missing/invalid selector, or shared mode with no URL, must raise a specific configuration error. No connection failure may choose another database. Never damage real shared credentials to simulate this case.
+4. Run the explicit local child-process test command from DEV even when the private file selects shared mode. Expect a separate `test_campus_equipment` database. Confirm the original local and shared records remain intact.
+
+**Executed October 22:** `True` connected read-only to `campus_equipment`; `False` connected read-only to `neondb` with TLS. All **345 tests passed in 128.527s** using explicit local selection/media and `test_campus_equipment`; configuration selection/failure checks are included. Django/schema/migration checks pass, without applying migrations.
+
+**Screenshot evidence:** 72 unretouched browser PNGs using a 1440 x 1000 desktop viewport, including two captures at a 390 x 844 mobile viewport cover all 39 checklist entries and additional forms/details. A native browser CSV download was saved and verified: 13 loan rows plus totals. The screenshot server used only `campus_screenshots_20261022`, restored from a read-only dump of the existing local database. One item archive and an account deactivation/reactivation occurred only in that copy through the application; invalid category submission produced real inline errors without creating a record. The copy/server/browser sessions were removed, all 22 original local table fingerprints match, and the private file ends in local database/media mode. No new shared workflow or cloud-media write occurred. Screenshots establish page evidence; they do not complete T30 packaging, policy review or clean-machine verification.
 
 ## Remaining validation and demonstration work
 
