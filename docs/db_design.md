@@ -2,34 +2,169 @@
 
 ## Status and conventions
 
-The shared schema is implemented in [accounts/models.py](../accounts/models.py), [inventory/models.py](../inventory/models.py), [borrowing/models.py](../borrowing/models.py), and [operations/models.py](../operations/models.py), with Django migrations as executable schema authority. Implemented workflow coverage and remaining owners' work are recorded in the backlog. Workflow rules are maintained in [SRS.md](SRS.md); transaction boundaries in [architecture.md](architecture.md). Acceptance and main integration evidence remain separate in [tasks.md](tasks.md#verified-task-evidence). The [T24 recovery record](operational-verification.md#backup-and-recovery-demonstration) verifies a separate local restore of the implemented schema/data, integrated through PR #58 at `478eab3`. The relationships diagram remains a draft until [T25's entry/go-signal gates](../DEV.md#t25-readiness-and-consumer-handoff) permit reconciliation and editable-tool conversion; no schema or diagram was changed for readiness.
+The shared schema is implemented in [accounts/models.py](../accounts/models.py), [inventory/models.py](../inventory/models.py), [borrowing/models.py](../borrowing/models.py), and [operations/models.py](../operations/models.py), with Django migrations as executable schema authority. Implemented workflow coverage and remaining owners' work are recorded in the backlog. Workflow rules are maintained in [SRS.md](SRS.md); transaction boundaries in [architecture.md](architecture.md). Acceptance and main integration evidence remain separate in [tasks.md](tasks.md#verified-task-evidence). The [T24 recovery record](operational-verification.md#backup-and-recovery-demonstration) verifies a separate local restore of the implemented schema/data, integrated through PR #58 at `478eab3`. The relationships and drawing notes below were reconciled with all 14 domain models and their migration state at main `e2c3f61` on October 22, 2026 for Jerome's authorized T25 documentation preparation. They are Kenneth/Ellyssa's conversion reference; editable tool sources/exports and team review remain pending. See [T25 delivery guidance](../DEV.md#t25-readiness-and-consumer-handoff).
 
 Use PostgreSQL, `BigAutoField`/bigint primary keys, timezone-aware `DateTimeField`/timestamptz, and `DateField`/date for calendar dates. All fields are required and NOT NULL unless marked nullable. Text may be blank only when explicitly allowed. Every foreign key is indexed. Transactional references use `PROTECT` deletion behavior; the application has no hard-delete workflow for users, catalog, units, or historical transactions. Profile's one-to-one user relation may use CASCADE but accounts are deactivated, not deleted.
 
-Text lengths and the LoanUnit entity below follow the implemented shared schema; later workflow services remain planned until their task acceptance is verified. Display labels may use spaces/title case; persisted enum values use uppercase snake case. Add database CHECK constraints for enum domains, positive quantities, and same-row temporal invariants; Django choices alone do not create those checks.
+Text lengths and the LoanUnit entity below follow the implemented shared schema and services. Display labels may use spaces/title case; persisted enum values use uppercase snake case. The models/migrations implement CHECK constraints for enum domains, positive quantities, and the same-row temporal invariants listed below; Django choices alone do not create those checks.
 
 ## Relationships
 
+The core view includes every domain model. The actor view completes its foreign-key relationships without crowding the borrowing chain. PK/FK/UK mean primary/foreign/unique key. Entity boxes show keys and selected business fields; the field tables below are the full domain data dictionary.
+
 ```mermaid
 erDiagram
-    User ||--|| Profile : has
-    User ||--o{ BorrowRequest : submits
-    Category ||--o{ CatalogItem : contains
-    CatalogItem ||--o{ EquipmentUnit : identifies
-    BorrowRequest ||--|{ RequestItem : contains
-    CatalogItem ||--o{ RequestItem : requested_as
-    RequestItem ||--o{ UnitAllocation : reserves
-    EquipmentUnit ||--o{ UnitAllocation : allocated_over_time
-    BorrowRequest ||--o| Loan : produces
-    Loan ||--|{ LoanUnit : issues
-    UnitAllocation ||--o| LoanUnit : released_as
-    LoanUnit ||--o| ReturnRecord : returned_once
-    EquipmentUnit ||--o{ MaintenanceRecord : serviced
-    User ||--o{ AuditLog : acts
-    User ||--o{ SystemSetting : updates
+    User ||--o| Profile : user_id
+    User ||--o{ BorrowRequest : owner_id
+    Category ||--o{ CatalogItem : category_id
+    CatalogItem ||--o{ EquipmentUnit : catalog_item_id
+    BorrowRequest ||--o{ RequestItem : request_id
+    CatalogItem ||--o{ RequestItem : catalog_item_id
+    RequestItem ||--o{ UnitAllocation : request_item_id
+    EquipmentUnit ||--o{ UnitAllocation : unit_id
+    BorrowRequest ||--o| Loan : request_id
+    Loan ||--o{ LoanUnit : loan_id
+    UnitAllocation ||--o| LoanUnit : allocation_id
+    LoanUnit ||--o| ReturnRecord : loan_unit_id
+    EquipmentUnit ||--o{ MaintenanceRecord : unit_id
+    ReturnRecord |o--o| MaintenanceRecord : source_return_id
+    User |o--o{ AuditLog : actor_id
+    User |o--o| SystemSetting : updated_by_id
+
+    User {
+        bigint id PK
+        varchar username UK
+        varchar role
+        boolean is_active
+    }
+    Profile {
+        bigint id PK
+        bigint user_id FK,UK
+        varchar contact_number
+    }
+    Category {
+        bigint id PK
+        varchar name UK
+        boolean is_archived
+    }
+    CatalogItem {
+        bigint id PK
+        bigint category_id FK
+        varchar name
+        varchar photo "Storage path only"
+        boolean is_archived
+    }
+    EquipmentUnit {
+        bigint id PK
+        bigint catalog_item_id FK
+        varchar asset_code UK "Case-insensitive expression key"
+        varchar condition
+        varchar status
+        date acquired_on
+    }
+    BorrowRequest {
+        bigint id PK
+        bigint owner_id FK
+        bigint decided_by_id FK "Nullable"
+        bigint cancelled_by_id FK "Nullable"
+        varchar status
+        date submitted_on
+        date desired_due_date
+        date agreed_due_date
+        integer max_loan_days_applied
+        integer max_quantity_applied
+    }
+    RequestItem {
+        bigint id PK
+        bigint request_id FK
+        bigint catalog_item_id FK
+        integer quantity
+    }
+    UnitAllocation {
+        bigint id PK
+        bigint request_item_id FK
+        bigint unit_id FK
+        bigint allocated_by_id FK
+        timestamptz allocated_at
+        timestamptz released_at "Nullable"
+        timestamptz cancelled_at "Nullable"
+        timestamptz ended_at "Nullable; active while null"
+    }
+    Loan {
+        bigint id PK
+        bigint request_id FK,UK
+        bigint issued_by_id FK
+        date issued_on
+        date due_date
+        timestamptz closed_at "Nullable"
+    }
+    LoanUnit {
+        bigint id PK
+        bigint loan_id FK
+        bigint allocation_id FK,UK
+    }
+    ReturnRecord {
+        bigint id PK
+        bigint loan_unit_id FK,UK
+        bigint received_by_id FK
+        timestamptz returned_at
+        varchar returned_condition
+    }
+    MaintenanceRecord {
+        bigint id PK
+        bigint unit_id FK
+        bigint source_return_id FK,UK "Nullable"
+        bigint opened_by_id FK
+        bigint closed_by_id FK "Nullable"
+        varchar status
+        varchar outcome "Nullable"
+    }
+    SystemSetting {
+        smallint id PK "Singleton; id equals 1"
+        bigint updated_by_id FK "Nullable"
+        integer max_loan_days
+        integer max_quantity_per_item
+    }
+    AuditLog {
+        bigint id PK
+        bigint actor_id FK "Nullable for SYSTEM"
+        varchar actor_kind
+        varchar action
+        varchar target_model "Allowlisted historical label"
+        bigint target_id "Not a database FK"
+    }
 ```
 
-The diagram omits secondary actor foreign keys for readability. A persisted request must have 1–3 RequestItems and an issued loan at least one LoanUnit; services enforce those cardinalities atomically.
+### Actor relationships
+
+These seven edges supplement the core view; all arrows are labelled with actual child FK columns. Nullable actor references become populated only when that event occurs. Their ADMIN/BASIC_USER meaning is enforced by services, not by separate role tables.
+
+```mermaid
+erDiagram
+    direction LR
+    User |o--o{ BorrowRequest : decided_by_id
+    User |o--o{ BorrowRequest : cancelled_by_id
+    User ||--o{ UnitAllocation : allocated_by_id
+    User ||--o{ Loan : issued_by_id
+    User ||--o{ ReturnRecord : received_by_id
+    User ||--o{ MaintenanceRecord : opened_by_id
+    User |o--o{ MaintenanceRecord : closed_by_id
+```
+
+### Database drawing guide
+
+Use the two views together: 14 domain entities and all 23 domain FK/one-to-one fields. Group accounts, inventory, borrowing and operations by app. In Lucidchart, use crow's-foot ends: `||` exactly one, `o|` zero or one, `o{` zero or many. Read the symbol beside an entity as the number of that entity per row at the opposite end. FK columns are on the child; a nullable FK permits zero parents, while a required FK permits exactly one. Diagram optionality describes persisted schema, with these additional business annotations:
+
+- Profile.user is required/unique, but a User row alone does not guarantee a Profile row. Supported account creation writes exactly one profile. The User end of that edge must be `||`; the Profile end remains `o|` at schema level.
+- Every saved application request has 1-3 RequestItems, and an issued loan at least one LoanUnit. A foreign key cannot enforce a parent's minimum child count; services enforce these counts atomically. Thus schema crow's feet show zero-or-many, with the application minimum written as a note.
+- A request has zero or one Loan; an allocation zero or one LoanUnit; a LoanUnit zero or one ReturnRecord. Do not replace the LoanUnit bridge with a direct Loan-to-EquipmentUnit FK. Unit identity follows LoanUnit -> UnitAllocation -> EquipmentUnit; borrower identity follows Loan -> BorrowRequest -> User.
+- A MaintenanceRecord may link to zero or one source ReturnRecord; each ReturnRecord has at most one linked maintenance record. Manual/initial maintenance has no source return. The return service requires a linked return to be DAMAGED and to identify that same unit.
+- User-to-AuditLog is optional on the User side because SYSTEM events have no actor. SystemSetting.updated_by is nullable for initialization. There can be only one SystemSetting row globally (`id = 1`), so at most one is associated with any updater.
+- Put composite/conditional uniqueness in notes: RequestItem `(request_id, catalog_item_id)`; UnitAllocation `(request_item_id, unit_id)` plus one active allocation per `unit_id WHERE ended_at IS NULL`; one OPEN MaintenanceRecord per unit. `unit_id` is not globally unique in allocation/maintenance history. Category names and asset codes have case-insensitive uniqueness.
+- AuditLog.target_model/target_id are validated historical references, not a database FK or an extra entity. Settings are a typed singleton, not a key/value table. Overdue, available counts and loan progress are calculated, not extra stored columns/tables.
+- Django auth Group/Permission and join tables, sessions, content types and migration history are framework support tables omitted from this domain ERD. The inherited User fields/M2M relations remain in [accounts/models.py](../accounts/models.py) and its [initial migration](../accounts/migrations/0001_initial.py); they do not add product roles. The T24 recovery's 22-table count includes framework tables and is not a domain-model count.
+
+**Editable ERD source/exports:** pending Kenneth/Ellyssa conversion and team review. Keep the core and actor pages together, use the field dictionary below for expanded boxes, and link the actual editable document and readable exports here when available. Models and migrations remain authoritative if the schema later changes.
 
 ## Accounts
 
@@ -56,7 +191,7 @@ Inherited `is_staff`, `is_superuser`, groups, and permission fields must never c
 | Field | Type | Constraint/purpose |
 | --- | --- | --- |
 | `id` | bigint | PK |
-| `user_id` | bigint | Unique FK to User; exactly one profile per account through account-creation service |
+| `user_id` | bigint | Unique FK to User; exactly one profile per account through account-creation services |
 | `contact_number` | varchar(30), blank allowed | Optional additional contact detail; not a role/identity field |
 
 Keep names/email on User; do not duplicate them in Profile. Passwords, role, and activation are not profile-editable.
@@ -81,7 +216,7 @@ Keep names/email on User; do not duplicate them in Profile. Passwords, role, and
 | `category_id` | bigint | FK to Category |
 | `name` | varchar(150) | Nonblank |
 | `description` | text | Nonblank borrower-facing description |
-| `photo` | varchar(100), blank allowed | Optional ImageField path under local `MEDIA_ROOT/equipment/`; generated WebP filename, no image binary in PostgreSQL |
+| `photo` | varchar(100), blank allowed | Optional ImageField storage key under `equipment/`; local MEDIA_ROOT or private Object Storage selected by Django storage; generated WebP filename, no image binary in PostgreSQL |
 | `is_archived` | boolean | False for active items |
 | `created_at`, `updated_at` | timestamptz | Creation/modification times |
 
@@ -156,7 +291,7 @@ The service verifies that unit.catalog_item_id equals request_item.catalog_item_
 
 ## Issue and return
 
-T15's issue services are implemented on `jerome`; current acceptance/publication/integration evidence belongs in [the backlog](tasks.md#verified-task-evidence). T15 is integrated through PR #42 at `744bc39`. T17 uses the existing ReturnRecord and damaged-return maintenance schema without a migration. Its return endpoint/service is integrated through PR #43 at `55899d0`, source `bd62ed7`; see [the consumer handoff](../DEV.md#t17-readiness-and-consumer-handoff).
+T15's issue services are implemented and integrated through PR #42 at `744bc39`; current acceptance/publication/integration evidence belongs in [the backlog](tasks.md#verified-task-evidence). T17 uses the existing ReturnRecord and damaged-return maintenance schema without a migration. Its return endpoint/service is integrated through PR #43 at `55899d0`, source `bd62ed7`; see [the consumer handoff](../DEV.md#t17-readiness-and-consumer-handoff).
 
 ### Loan
 
@@ -248,7 +383,7 @@ Action values are the `AuditAction` enum in [operations/models.py](../operations
 
 ## Indexes and enforcement boundaries
 
-In addition to PK/FK/unique indexes, plan `(owner_id, submitted_at)` and `(status, submitted_at)` on BorrowRequest; `(catalog_item_id, status)` on EquipmentUnit; `issued_at` and `due_date` on Loan; `(status, opened_at)` on MaintenanceRecord; and `occurred_at`, `action`, `(target_model, target_id)` on AuditLog. Add further indexes only after inspecting actual queries.
+In addition to PK/FK/unique indexes, the implemented model/migration indexes cover `(owner_id, submitted_at)` and `(status, submitted_at)` on BorrowRequest; `(catalog_item_id, status)` on EquipmentUnit; `issued_at` and `due_date` on Loan; `(status, opened_at)` on MaintenanceRecord; and `occurred_at`, `action`, `(target_model, target_id)` on AuditLog. Add further indexes only after inspecting actual queries.
 
 Database constraints handle row-level validity and uniqueness. Django transaction services handle role/activation checks, row-count limits, cross-table identity, complete allocation, state transitions, settings snapshots, unit-status consistency, event sequencing across tables, and audit completeness. A CHECK constraint cannot query related rows; do not represent service rules as already enforced database constraints.
 

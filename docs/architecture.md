@@ -1,10 +1,10 @@
 # System Architecture Design
 
-## Status and proposed stack
+## Status and implemented stack
 
-This architecture describes the implemented T01-T20 foundation and workflows and the remaining planned work. T18 dashboard and T19 loan/overdue reports with CSV are integrated; Ralph's T20 role workspaces and shared UI components are integrated through PR #51 at `6f18116` (source `b43fb99`). The [backlog](tasks.md#verified-task-evidence) owns acceptance/integration evidence and [DEV.md](../DEV.md#t20-readiness-and-consumer-handoff) identifies the T20 interfaces. Behavioral authority is [SRS.md](SRS.md); persistence is in [db_design.md](db_design.md) and actual models/migrations. [Coding standards](coding-standards.md) define MTV boundaries and review rules. T23 acceptance/startup checks are complete and integrated; T24 operational verification is integrated through PR #58. Existing diagrams remain drafts for T25 reconciliation and editable-tool conversion; prerequisite integration is satisfied and the explicit diagram go signal is still required; use [the T25 consumer checklist](../DEV.md#t25-readiness-and-consumer-handoff).
+This architecture describes the implemented application through T24. The [backlog](tasks.md#verified-task-evidence) owns acceptance/integration evidence. Behavioral authority is [SRS.md](SRS.md); persistence is in [db_design.md](db_design.md) and actual models/migrations. [Coding standards](coding-standards.md) define MTV boundaries and review rules. The MTV and workflow references below were reconciled against main `e2c3f61` (PR #59, including T24 PR #58) on October 22, 2026 for Jerome's authorized T25 documentation preparation. They are the drawing basis for Kenneth and Ellyssa; editable tool sources/exports and team review remain pending. Use [the T25 consumer checklist](../DEV.md#t25-readiness-and-consumer-handoff).
 
-Use a single server-rendered Django application with Python 3.13, Django 5.2 LTS, PostgreSQL 17, and Psycopg 3. Pin tested patch versions during implementation. Django 5.2 supports the proposed Python series and database; consult the [release notes](https://docs.djangoproject.com/en/5.2/releases/5.2/) and [database documentation](https://docs.djangoproject.com/en/5.2/ref/databases/).
+The application is one server-rendered Django monolith using Python 3.13, Django 5.2 LTS, PostgreSQL and Psycopg 3. Exact pins belong in [requirements.txt](../requirements.txt). Local regression tests use PostgreSQL 17; normal team configuration selects shared Neon PostgreSQL and private Object Storage, while standalone evaluation uses local PostgreSQL/media. T24 used a separate PostgreSQL 18.6 recovery lab; see [measured configurations and limits](operational-verification.md). These are configurations of the same application.
 
 HTML/CSS and minimal JavaScript serve both roles. The user selected Tailwind CSS for styling. Ordinary Django forms and links handle the current HTTP interactions; no browser HTTP library is installed. The local npm build, shared HTML shell, and role navigation layouts are implemented. UI-09 supplies shared semantic roles/components with the supplied minimal dashboard palette and desktop sidebar, integrated through PR #39 at `a35e0f1` (source `043822e`) and preserved in main `866eb7e`. Fixed colors live in the shared stylesheet with a dependency-free contrast check; native Django forms, authorization and workflow services remain unchanged. [The coding guide](coding-standards.md#shared-m3-roles-and-components-ui-09) owns component usage; [DEV.md](../DEV.md#frontend-assets-tailwind-and-page-scripts) owns build commands. The former role-home and feature placeholders have been replaced by implemented views listed in [the HTTP contract](api_spec.md#status-and-interface-choice); future work retains its backlog gates. T18 is integrated through PR #45 at `26b1ee5`; UI-11/UI-12 are integrated through PR #48 at `9d67fab`; UI-11 uses Chart.js 4.5.1 for the two required charts, bundled through the existing esbuild command. Django owns aggregation and JSON-safe embedding; accessible disclosure tables remain available without JavaScript. UI-12 adds an active-ADMIN template context processor for the Pending-request badge, using the same read-only count helper as the dashboard. This library renders charts and does not generate administration pages. There are no required external APIs, background workers, message brokers, or separate frontend services.
 
@@ -39,31 +39,54 @@ A separate SPA/backend would add endpoint and client-state work without meeting 
 ## Model-template-view structure
 
 ```mermaid
-flowchart LR
-    Browser[Browser: basic user or admin] --> Router[Named Django URL routes]
-    Router --> Checks[Session, active account, role and ownership checks]
-    Checks --> Views[Custom function-based views]
-    Views --> Forms[Django forms and formsets]
-    Forms --> Services[Workflow service functions]
-    Services --> Models[Django models and ORM]
-    Models --> Database[(PostgreSQL)]
-    Services --> Audit[Audit records in the same transaction]
+flowchart TB
+    Browser["Browser: BASIC_USER or ADMIN"] -->|HTTP request| Middleware["Django middleware: session, authentication, CSRF, active account"]
+    Middleware --> Router["Named URL routes"]
+    Router --> Views["View layer: custom function-based views"]
+    Views --> Access["Server-side role checks and owner-scoped lookups"]
+    Views -->|bind and validate inputs| Forms["Django forms and formsets"]
+    Views -->|validated command| Services["Workflow services: atomic writes, locks, state validation"]
+    Views -->|GET data and reports| Queries["Read-only query helpers"]
+    Services --> Models["Model layer: Django models and ORM"]
+    Services --> Audit["Audit writer inside the same database transaction"]
     Audit --> Models
-    Views --> Queries[Read-only ORM query functions]
     Queries --> Models
-    Views --> Templates[Role base templates and shared components]
-    Templates --> Browser
+    Models --> Database[("PostgreSQL: local or shared Neon")]
+    Views -->|render context and bound forms| Templates["Template layer: feature pages, role bases, shared components"]
+    Templates -->|HTML| Browser
+    Views -->|302 redirect, CSV, printable HTML or protected photo stream| Browser
+    Services -->|photo operations through Django storage| Storage[("Local media or private Object Storage")]
+    Views -->|authorized photo read| Storage
+    Assets["Compiled Tailwind and page scripts; Chart.js dashboard charts"] --> Browser
 ```
 
 Views enforce HTTP/access rules and orchestrate forms, services, and rendering. Forms validate submitted shape and field-level values. Services own complete business transitions and database writes. Query functions own list, availability, dashboard, and reporting reads. Models/migrations enforce relational and row-level constraints. Templates render allowed data and named URLs; they do not enforce authorization.
 
 The browser receives HTML, printable HTML, and CSV exports. Small JavaScript enhancements do not replace server validation. Authentication uses Django sessions and CSRF protection.
 
-## Proposed modules and ownership
+### MTV drawing guide
+
+For Lucidchart, keep the Model, Template and View boundaries visible; forms, services and queries support these layers rather than replacing MTV. Arrows above show calls/data delivery, not a strict timeline: a view checks access before protected work, validates a bound form, and calls a service only when valid. Public login/registration use their explicit authentication rules; role and owner checks apply to protected routes. Services recheck their authoritative permissions/state. Templates cannot authorize a request.
+
+| Box or connection              | Implemented source to follow                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Middleware and URL dispatch    | [settings](../config/settings.py), [root URLs](../config/urls.py), [account routes](../accounts/urls.py), [portal routes](../accounts/portal_urls.py), [inventory routes](../inventory/manage_urls.py), [borrowing routes](../borrowing/manage_urls.py), [operations routes](../operations/urls.py)                                                                          |
+| Active/role/owner boundary     | [access helpers](../accounts/access.py), [inactive-session middleware](../accounts/middleware.py); portal record lookups use signed-in ownership                                                                                                                                                                                                                             |
+| View/forms/service sequence    | [request views](../borrowing/views.py), [forms](../borrowing/forms.py), [request services](../borrowing/services.py); [release views](../borrowing/release_views.py)/[services](../borrowing/release_services.py) and [return views](../borrowing/return_views.py)/[forms](../borrowing/return_forms.py)/[services](../borrowing/return_services.py)                         |
+| Model and transaction boundary | The four apps' models/migrations in [database design](db_design.md); [locking](../operations/locking.py), [audit writer](../operations/audit.py). Submission creates no audit event in the current implementation; show audit writes for actions that actually call the writer                                                                                               |
+| Read path                      | [inventory queries](../inventory/queries.py), [borrowing queries](../borrowing/queries.py), [operations queries](../operations/queries.py), [report views](../operations/workspace_views.py)                                                                                                                                                                                 |
+| Template inheritance           | [base.html](../templates/base.html) is extended by [workspace.html](../templates/components/workspace.html), then [management base](../templates/operations/manage/base.html) or [portal base](../templates/accounts/portal/base.html), then feature pages. [Printable slip](../templates/borrowing/manage/loan_slip.html) extends the document base directly                |
+| Storage and assets             | [storage selection](../config/media_storage.py), [photo service](../inventory/photo_services.py), [admin stream](../inventory/photo_views.py), [portal stream](../inventory/portal_views.py), [build scripts](../package.json), [startup asset checks](../operations/checks.py). Image bytes live outside PostgreSQL; storage changes are not part of its atomic transaction |
+
+Draw no generated Django admin, separate REST API, third role, background worker or direct browser-to-database/bucket connection. Chart.js renders server-provided aggregates. Photo reads pass through protected Django views. PostgreSQL transaction rollback does not roll back object storage; the photo services use cleanup and commit callbacks.
+
+**Editable MTV source/export:** pending Kenneth/Ellyssa conversion and team review. Add the real editable document link and readable export here when available; the Mermaid block is the current reference.
+
+## Implemented modules and ownership
 
 For the detailed existing/planned directory tree and page placement examples, see [Project Folder Architecture](project-folder-architecture.md). The coding guide remains authoritative for each file's responsibilities.
 
-The five Python app/config directories, shared `static/`, and common template shell below exist. Role templates and feature-specific layers are created when their owners implement the corresponding tasks.
+The config directory, four feature apps, shared `static/`, and role/feature templates below exist.
 
 | Module | Responsibility | Primary owner |
 | --- | --- | --- |
@@ -75,7 +98,7 @@ The five Python app/config directories, shared `static/`, and common template sh
 | `templates/` | Shared document/role layouts, navigation/messages and implemented T05–T13/T16 pages plus integrated T15 release/date/loan/slip pages, T17 returns, T18 dashboard and T19 loan/overdue report pages; T20 borrower home and shared fields/statuses/pagination/empty states | Feature owners; Ralph owns T20 integration; Ellyssa supports validation/documentation/manual testing |
 | `static/` | Source fonts/images/CSS/JavaScript and ignored generated `build/` assets; discovered through STATICFILES_DIRS | Feature owners |
 
-Current task/support assignments and the deferred conversion of MTV/database/workflow drafts into an actual diagramming tool follow [the backlog ownership decision](tasks.md#current-ownership-and-support-responsibilities). Original implementation credit is preserved; module coordination does not replace task ownership or authorize diagram work before Jerome's go signal.
+Current task/support assignments follow [the backlog ownership decision](tasks.md#current-ownership-and-support-responsibilities). Jerome authorized preparation of these drawing references; Kenneth/Ellyssa's editable-tool conversion and review remain to be recorded. Original implementation credit is preserved.
 
 Each Django app keeps models, forms, function-based views, URLs, service/query functions, migrations, and tests close to its feature. Split further only when actual file size or responsibility warrants it. Avoid a generic CRUD framework or unnecessary repository abstraction over Django ORM.
 
@@ -105,21 +128,56 @@ Never silently skip an unavailable requested quantity or convert an operational 
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Pending
-    Pending --> Approved: Reserve all units
-    Pending --> Rejected: Record reason
-    Pending --> Cancelled: Owner cancels
-    Approved --> Cancelled: Free reservations
-    Approved --> Issued: Release once
-    Issued --> PartiallyReturned: Some units returned
-    Issued --> Returned: All units returned
-    PartiallyReturned --> Returned: Remaining units returned
-    Rejected --> [*]
-    Cancelled --> [*]
-    Returned --> [*]
+    [*] --> PENDING: BASIC_USER submits request
+    PENDING --> APPROVED: ADMIN approves and reserves all
+    PENDING --> REJECTED: ADMIN rejects with reason
+    PENDING --> CANCELLED: Owner cancels
+    APPROVED --> APPROVED: ADMIN revises due date
+    APPROVED --> CANCELLED: Owner cancels and frees reservations
+    APPROVED --> ISSUED: ADMIN releases once
+    ISSUED --> PARTIALLY_RETURNED: ADMIN returns some
+    ISSUED --> RETURNED: ADMIN returns all
+    PARTIALLY_RETURNED --> PARTIALLY_RETURNED: ADMIN returns some
+    PARTIALLY_RETURNED --> RETURNED: ADMIN returns last units
 ```
 
-Overdue is calculated from outstanding loan units and the local date, so it is not a node in the persisted request workflow. Unit maintenance/retirement transitions are separate from request status.
+The nodes above are exactly the persisted `RequestStatus` values. REJECTED, CANCELLED and RETURNED are terminal, with no outgoing transitions. The APPROVED self-loop changes a date, not status; it preserves the original desired date and uses submission-time limits. The PARTIALLY_RETURNED self-loop matters for three or more issued units. A transition represents a successful service commit; invalid input/state or insufficient stock leaves no partial change. Approval/rejection both require a reason. Submission creates no allocation and does not guarantee stock; approval locks and rechecks current units.
+
+### Physical-unit and maintenance workflow
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> AVAILABLE: Register GOOD or FAIR unit
+    [*] --> MAINTENANCE: Register DAMAGED unit and open maintenance
+    AVAILABLE --> RESERVED: ADMIN approves
+    RESERVED --> AVAILABLE: Owner cancels
+    RESERVED --> ISSUED: ADMIN releases
+    ISSUED --> AVAILABLE: ADMIN returns GOOD or FAIR
+    ISSUED --> MAINTENANCE: ADMIN returns DAMAGED
+    AVAILABLE --> MAINTENANCE: ADMIN opens maintenance
+    MAINTENANCE --> AVAILABLE: ADMIN closes with AVAILABLE outcome
+    MAINTENANCE --> RETIRED: ADMIN closes with RETIRED outcome
+    RETIRED --> [*]
+```
+
+`MAINTENANCE` above is an EquipmentUnit status. Each MaintenanceRecord has its own `OPEN` then `CLOSED` lifecycle: registration damage, manual opening, or a damaged return creates OPEN; closure sets actor/time/action and AVAILABLE or RETIRED outcome. One open record per unit is allowed. Manual maintenance starts only from AVAILABLE; damaged returns create linked maintenance inside the return service. RETIRED units have no reactivation path. Generic metadata editing cannot change condition/status.
+
+### Workflow drawing guide
+
+Use separate request and physical-unit state pages so a Returned request is not confused with an Available unit. Add BASIC_USER/ADMIN actor labels or swimlanes, retaining the exact uppercase stored states above. Keep the following transaction and derived-state notes beside the diagrams.
+
+| Action/annotation                      | Source and effects that the drawing must preserve                                                                                                                                                                                                                                                                                                                                                                                     |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Submit, approve, reject, cancel        | [request services](../borrowing/services.py): 1-3 distinct item lines and snapshotted limits; reserve all or none on approval; PENDING cancellation has no inventory effect; APPROVED cancellation ends every reservation. A decision/cancellation appends its audit in the same transaction                                                                                                                                          |
+| Revise due date and release            | [release services](../borrowing/release_services.py), [reservation validation](../borrowing/reservations.py): revision only in APPROVED without a loan; release requires an active borrower, complete reservations and issue date no later than the agreed due date. Exactly one Loan per request and one LoanUnit per allocation; `released_at` is set but `ended_at` remains null                                                   |
+| Partial/final/damaged return           | [return service](../borrowing/return_services.py): validate the entire selected set; one ReturnRecord per LoanUnit, end each returned allocation, update unit condition/status, and audit. DAMAGED creates OPEN MaintenanceRecord with `source_return_id` and a second audit in that transaction. Outstanding units keep the loan open; the last return sets `Loan.closed_at` and request RETURNED, even if maintenance is still open |
+| Maintenance and retirement             | [inventory services](../inventory/services.py): registration damage opens maintenance atomically; manual opening requires AVAILABLE; closing requires action and valid outcome. An AVAILABLE repair has GOOD/FAIR condition (a damaged unit defaults to GOOD if no repaired condition is supplied). RETIRED preserves history                                                                                                         |
+| Active-account/archival exception      | Actions require an active actor with the proper role. ADMIN returns can recover an existing issued loan after borrower deactivation or catalog archival; do not add an active-borrower/active-catalog prerequisite to the return arrow                                                                                                                                                                                                |
+| Active, closed and overdue loan labels | [loan progress queries](../borrowing/queries.py): outstanding = LoanUnits without a ReturnRecord; active if outstanding > 0; overdue if outstanding > 0 and due_date < Asia/Manila today; closed after final return. Due today is not overdue. These are derived read labels, not extra request or unit states                                                                                                                        |
+| Lock/constraint/audit boundary         | Use the [transaction and lock order above](#transaction-boundaries-and-lock-order) and [database constraints](db_design.md#indexes-and-enforcement-boundaries); represent shortages, repeats, invalid membership or state races as failure with rollback, never a partial approval/return                                                                                                                                             |
+
+**Editable workflow sources/exports:** pending Kenneth/Ellyssa conversion and team review. Link the request and unit/maintenance pages here when available. The [HTTP contract](api_spec.md) owns action routes and error/redirect semantics; [T22](manual-test-guide.md#module-21--automated-system-acceptance-t22) and [T24](operational-verification.md) retain executed verification evidence and its limits.
 
 ## Reads, reporting, and privacy
 
@@ -137,4 +195,4 @@ Optional catalog photos use Django's storage API: local `MEDIA_ROOT/equipment/` 
 
 Use timezone-aware timestamps and Asia/Manila calendar dates for due dates. Quantity/duration limits are persisted SystemSetting values, not duplicated environment variables. A single local database-backed demonstration is sufficient; high availability and hosting are outside this design.
 
-PostgreSQL is required to validate the selected locking strategy. SQLite-only tests cannot establish row-lock correctness. Shared locks are implemented in [operations/locking.py](../operations/locking.py), audit writes in [operations/audit.py](../operations/audit.py), settings reads/changes in [operations/queries.py](../operations/queries.py) and [operations/services.py](../operations/services.py), and pure limit/date rules in [operations/validation.py](../operations/validation.py). Foundation integration evidence is in [the backlog](tasks.md#verified-task-evidence). T13 uses these helpers. [T14 integration tests](../borrowing/tests/test_approval_concurrency.py) now observe real PostgreSQL lock waits and verify last-unit exclusivity and no partial multi-item reservation through the actual approval service; the tests are integrated through PR #37 at `5381c83`. See [integration evidence](../handoffs/t14-publication-main-integration-and-t15-readiness-10-20-2026.md). T17's 21 integrated tests include partial/damaged/final return, audit rollback and observed overlapping duplicate/disjoint-return races; the merged source passes all 294 PostgreSQL tests in 107.414s. Reporting, performance and backup/restore remain unverified.
+PostgreSQL is required to validate the selected locking strategy. SQLite-only tests cannot establish row-lock correctness. Shared locks are implemented in [operations/locking.py](../operations/locking.py), audit writes in [operations/audit.py](../operations/audit.py), settings reads/changes in [operations/queries.py](../operations/queries.py) and [operations/services.py](../operations/services.py), and pure limit/date rules in [operations/validation.py](../operations/validation.py). Foundation integration evidence is in [the backlog](tasks.md#verified-task-evidence). T13 uses these helpers. [T14 integration tests](../borrowing/tests/test_approval_concurrency.py) now observe real PostgreSQL lock waits and verify last-unit exclusivity and no partial multi-item reservation through the actual approval service; the tests are integrated through PR #37 at `5381c83`. See [integration evidence](../handoffs/t14-publication-main-integration-and-t15-readiness-10-20-2026.md). T17's 21 integrated tests include partial/damaged/final return, audit rollback and observed overlapping duplicate/disjoint-return races; the merged source passes all 294 PostgreSQL tests in 107.414s. Reporting is integrated through T19; [T24](operational-verification.md) records actual performance and backup/restore verification and its local-lab limits.
