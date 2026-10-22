@@ -2029,7 +2029,7 @@ The local import ran atomically after a private database backup. Before commit, 
 
 ## Module 21 — Automated system acceptance (T22)
 
-T22 validates the integrated workflows using PostgreSQL and actual Django HTTP requests. T14/T19/T20/T21 prerequisites are integrated; T21 source `e3402bf` and publication receipt `ae6b147` are included in PR #53 at main `b828945`. The local `jerome` checkout was fast-forwarded to that merge before this work. [DEV.md](../DEV.md#t22-automated-system-acceptance) owns the complete, focused, concurrency and saved-output commands. T22 source `a7ce0a2` is committed and pushed on `jerome`, Not integrated into main; see [publication receipt](../handoffs/t22-automated-acceptance-publication-10-22-2026.md).
+T22 validates the integrated workflows using PostgreSQL and actual Django HTTP requests. T14/T19/T20/T21 prerequisites are integrated; T21 source `e3402bf` and publication receipt `ae6b147` are included in PR #53 at main `b828945`. The local `jerome` checkout was fast-forwarded to that merge before this work. [DEV.md](../DEV.md#t22-automated-system-acceptance) owns the complete, focused, concurrency and saved-output commands. T22 source `a7ce0a2` and publication `7d0043d` are integrated through PR #54 at fetched main `6e6f594`; merge/publication tree equality is verified. The earlier [publication receipt](../handoffs/t22-automated-acceptance-publication-10-22-2026.md) retains its historical state; [T23 preparation](../handoffs/ralph-t23-usability-session-preparation-10-22-2026.md) records the fresh integration check.
 
 ### T22-01: Run complete automated acceptance
 
@@ -2074,6 +2074,57 @@ The focused command runs its own fictional fixtures; these values are not instru
 **T22 is Done and published on `jerome` at `a7ce0a2`, Not integrated into main.** All **339 PostgreSQL tests passed in 96.345s**; the documented three-test focused command passed in 1.470s and eight-test concurrency command in 3.319s. The [T22 handoff](../handoffs/t22-automated-system-acceptance-10-22-2026.md) records the branch/revision, failures corrected and checks not run. The photo-download test now uses temporary media and consumes its streaming response, preventing leftover files and Windows file-lock cleanup errors. Formatting that owned test also resolves its earlier mixed-line-ending finding. Remaining unrelated formatting findings are reported separately.
 
 No browser, keyboard, phone, screen-reader, spreadsheet-opening or real participant session is implied by these automated HTTP checks. T23 still requires actual users and feedback; T24 still requires measurements and a demonstrated restore. T22 completion does not complete those tasks or authorize new commits/main integration.
+
+## Module 22 — Participant usability sessions (T23)
+
+**Status: In progress, preparation only.** This walkthrough has not been executed by participants. Record actual sessions, observations, findings and the required enhancement in [the canonical T23 record](usability-acceptance.md); the generic result checklist below is for manual feature cases. T20/T21 prerequisites are integrated into fetched main `6e6f594`; automated/browser test results do not prove participant acceptance.
+
+### T23-01: Prepare the session
+
+Use the [read-only local setup snapshot](usability-acceptance.md#local-setup-checked-before-sessions). It differs from Module 20's separate demonstration: local accounts are `auth_demo_user` and `auth_demo_admin`, with passwords provided privately. Recheck eligibility and use a disposable session copy for write exercises. Begin each participant at the role home, with the app running through [DEV startup](../DEV.md#everyday-startup). Apply the [existing consent/feedback guidance](user-needs-evidence-guide.md#collecting-feedback), record the real environment and clearly label proxy users.
+
+### T23-02: Borrower tasks
+
+Give the goal before helping with the navigation. The routes and expected results below are facilitator references, not a script to read as a step-by-step answer.
+
+| Task / participant goal | Facilitator reference and expected behavior |
+| --- | --- |
+| B1: Find an item you could borrow and explain its availability | From `/portal/`, find Equipment and search by name/category; detail shows catalog description and availability without internal administration data |
+| B2: Request one item for a class, then explain what happens next | Use the concrete inputs below on `/portal/requests/new/`; success creates a Pending request and a review confirmation. Do not promise collection before approval/release |
+| B3: Find the new request's status and due date; decide whether to keep or cancel it | Use own history/detail; on a writable session copy try Keep request before confirming cancellation. Only Pending/Approved may cancel; no existing eligible cancellation was found during preparation |
+| B4: Explain what equipment is still due and what has already been returned | Inspect own loans 1 and 2 only if the copied dataset still matches the checked snapshot; loan 1 is closed, loan 2 has two outstanding overdue units on October 22 |
+| B5: Complete a navigation task using keyboard or a compact device, then sign out | Focus remains visible; tables scroll locally; role navigation/profile stay usable; logout uses the existing POST form |
+
+| Request field | October 22, 2026 example |
+| --- | --- |
+| Purpose | `T23 classroom usability exercise` |
+| Desired return date | `2026-10-24`; recompute as campus today + 2, within the current maximum |
+| Catalog item | Nokia, item 2, category Camera; recheck active flags and stock before use |
+| Quantity | `1`; the checked local availability is 1 |
+| Other rows | Leave blank |
+| Validation exercise, if attempted | Leave purpose empty or use a date equal to today; expect associated errors without creating a request. Then correct the input |
+
+### T23-03: Administrator tasks
+
+Run the request/release exercise on a separate participant request from the cancellation exercise. Use the writable session copy and inspect the actual IDs created; do not reuse another borrower's records as if owned by this participant.
+
+| Task / participant goal | Facilitator reference and expected behavior |
+| --- | --- |
+| A1: Find the participant's request and decide whether it can be approved | Queue/detail shows purpose, quantity, dates and current availability. Approval/rejection requires a reason; e.g. `T23 classroom exercise reviewed`. A confirmation GET/back-out must not change the request |
+| A2: Prepare equipment collection and review the slip | Approved request has reserved units; release confirmation creates one loan once. Explain asset codes and due date using the existing slip |
+| A3: Record a return and explain its effect | For the new single-unit loan, a Good final return closes it. After B4, copied loan 2 can support a partial/final return if its two outstanding units still exist; follow Module 16 for the condition/problem inputs. Current Nokia stock cannot support a new two-unit issue. Do not alter the preserved original loan merely for this exercise |
+| A4: Find overdue equipment and export a report for a date range | Use `/manage/reports/loans/` and `/manage/reports/overdue/`; try October 1 through October 22 only on that date, otherwise use actual current dates. Note whether filtering/export/status text is understandable |
+| A5: Recover from an error and sign out | Try an invalid report date range without mutation, explain the message, clear/correct it, and use native logout |
+
+Record tasks not attempted because of stock, account or environment setup as Not attempted, with that reason. Do not mark a setup limitation as a completed partial-return session or a product usability defect without an actual observation.
+
+### T23-04: Debrief and required follow-up
+
+Ask what was clear/confusing, what the participant expected and what they would change. Record their own words or a labeled paraphrase, task outcome and assistance. Link actionable observations to requirements, choose a real feedback-driven improvement, implement it within scope, run relevant checks and ask the participant to retry the affected task. Use the [session and enhancement registers](usability-acceptance.md#session-register); leave results pending until actually observed.
+
+**Executed in this preparation:** read-only local data/settings/account checks, prerequisite/main ancestry checks and runtime preflight only. **Not run:** participant tasks B1-B5/A1-A5, interviews, participant satisfaction measurements, feedback-driven enhancement and participant recheck. This packet does not complete T23.
+
+**Subsequent user report, October 22:** the user confirmed that both borrower and administrator flows are working. [Report R01](usability-acceptance.md#r01-user-reported-functional-confirmation) preserves that statement; individual task outcomes, browser/device and assistance were not specified. No actionable improvement or rating was supplied, so enhancement implementation/verification and participant recheck remain pending. The earlier preparation checks above remain separately attributed.
 
 ## Recording manual results
 
@@ -2128,7 +2179,7 @@ The coordinator-only photo importer was exercised against actual Neon storage: 2
 
 ## Remaining validation and demonstration work
 
-T01-T21 are integrated; PR #53 at `b828945` contains the August-October dataset. T22 automated SRS minimum-scenario acceptance is published on `jerome` at `a7ce0a2` with 339 passing PostgreSQL tests, including the complete HTTP repair lifecycle; see Module 21 for executed evidence. T23 prerequisites are satisfied but actual participant sessions/feedback remain pending. T24 awaits T22 main integration and measured operational evidence. Earlier browser coverage remains attributed to Module 19; screen-reader evaluation, Firefox/Safari, spreadsheet opening and complete browser maintenance-lifecycle checks remain unrun follow-ups.
+T01-T21 are integrated; PR #53 at `b828945` contains the August-October dataset. T22 automated SRS minimum-scenario acceptance is published on `jerome` at `a7ce0a2` with 339 passing PostgreSQL tests, including the complete HTTP repair lifecycle; see Module 21 for executed evidence. T23 session preparation is In progress; actual participant sessions/feedback and the required enhancement remain pending. T24's T22 integration gate is satisfied; measurements and restore remain Not started. Earlier browser coverage remains attributed to Module 19; screen-reader evaluation, Firefox/Safari, spreadsheet opening and complete browser maintenance-lifecycle checks remain unrun follow-ups.
 
 ---
 
