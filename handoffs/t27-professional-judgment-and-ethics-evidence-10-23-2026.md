@@ -37,7 +37,7 @@
 - [Canonical T27 record](../docs/professional-judgment-and-ethics.md)
 - [T27 consumer handoff](../DEV.md#t27-readiness-and-consumer-handoff)
 - [Submission evidence map and package checklist](../SUBMISSION.md#part-5-and-part-6-evidence-readiness)
-- [README Part 6 readiness](../README.md#part-6-professional-evidence-and-delivery)
+- [README Part 6 readiness](../README.md#part-6-submission-and-presentation)
 - [T27 backlog evidence](../docs/tasks.md#verified-task-evidence)
 - [Current project handoff](../HANDOFF.md)
 - [Ralph's preserved technical contribution](ralph-t17-per-unit-returns-and-overdue-10-20-2026.md#ralphs-t27-technical-contribution)
