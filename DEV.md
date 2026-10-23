@@ -892,6 +892,21 @@ Read the [Part 6 requirement](docs/Project-Requirements.txt), [T27 acceptance](d
 
 T25 diagrams and other delivery tasks continue separately. T27 is complete only when the [completion gate](docs/professional-judgment-and-ethics.md#completion-gate-and-member-review) has actual evidence and team review. Follow the [project handoff convention](.agents/skills/project-handoff/SKILL.md); this record does not authorize an application change, external message, policy certification, or data operation.
 
+## T29 user manual and remaining technical work
+
+The [combined basic-user/admin manual](docs/user-manual-guides.md) explains everyday actions with 19 existing system
+screenshots. It covers both role journeys, equipment maintenance, status meanings and common problems. It is separate
+from the [manual testing guide](docs/manual-test-guide.md), which owns test cases and recorded execution evidence.
+T29 is **In progress**: the new manual is source/screenshot reviewed, while a fresh reader walkthrough is Not run.
+
+Ellyssa/Ralph review the borrower section and Margareth/Kenneth review the administrator section, recording actual
+outcomes and corrections in the [authoring handoff](handoffs/t29-combined-user-manual-with-screenshots-10-23-2026.md).
+Jerome/Alex retain technical setup and application-maintenance responsibility: complete verified maintenance/configuration
+instructions and the fictional catalog/maintenance replay described in [SUBMISSION](SUBMISSION.md#minimum-demonstration-data),
+then verify fresh local setup. Existing startup, migration, seed and backup/recovery instructions remain in their current
+sections; this manual request does not authorize seeding, cleanup or shared-database writes. Full T29 and T30 are not
+closed by writing or illustrating the role guide.
+
 ## Before handing over work
 
 Run the configured checks and any meaningful tests for your feature. The direct test command below assumes an isolated local configuration; with Neon active, substitute [the local child-process command](#isolated-tests-while-using-neon). Shared migrations are coordinator-owned.
