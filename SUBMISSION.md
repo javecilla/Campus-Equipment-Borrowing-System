@@ -1,7 +1,7 @@
 # Submission Checklist
 
 **IT401W WEB PROGRAMMING AND FRAMEWORKS — Final Project A**  
-Target date: Saturday, October 24, 2026 · Confirm exact section/group name with Jerome for the ZIP filename.
+Presentation: **Monday, October 26, 2026**, confirmed by Jerome. Exact upload/submission deadline not supplied. Retain the required ZIP filename below.
 
 Instructor confirmed: submit **source code + screenshots of the system** in a digital folder.
 No PPT/slides needed. Bring a **printed project rubric in two copies** on demo day.
@@ -28,7 +28,7 @@ Public repository access is source/documentation access. Running the application
 | 5   | Team participation and individual contribution evidence T28                                       | Everyone — rotate leadership                    | Done    |
 | 6   | Verified user / admin / technical guides T29                                                      | Ellyssa+Ralph / Margareth+Kenneth / Jerome+Alex | Done |
 | 7   | Screenshots of the system                                                                         | Jerome with Codex assistance                    | Done (72 PNGs) |
-| 8   | Submission ZIP assembled and clean-machine tested T30                                             | Everyone                                        | Not Started    |
+| 8 | Submission handoff T30 | Jerome packages/uploads/invites; Alex submits | Done (ownership agreed); delivery In progress |
 | 9   | Demo rehearsed; printed rubric ready T31                                                          | Everyone                                        | Not Started    |
 
 ---
@@ -169,6 +169,21 @@ These supplement the checklist with actual create/edit/detail, confirmation and 
 
 ## T30 — Submission ZIP checklist
 
+**Submission handoff: Done (ownership agreed).** Jerome will create the ZIP, upload it to a secure drive and invite
+Alex Enrico Cayanan. Alex will submit it through the dedicated channel given by the professor. These are planned
+manual actions; the upload, invitation/access and submission are not yet confirmed. Full T30 delivery is **In progress**,
+with the final-package/data-replay checks below still outstanding. The course brief requires an actual ZIP and separate
+demonstration credentials; assigning owners does not establish their delivery.
+
+- [x] Assign packaging/upload/invitation to Jerome and professor-channel submission to Alex.
+- [ ] Jerome creates the final ZIP and completes the content/verification checks below.
+- [ ] Jerome uploads the reviewed ZIP to the secure drive and invites Alex.
+- [ ] Alex confirms access and submits through the professor's dedicated channel.
+- [ ] Confirm submission receipt and delivery of demonstration credentials through the designated channel.
+
+Presentation is **Monday, October 26, 2026**. Coordinate the upload/submission deadline between Jerome and Alex;
+no exact deadline or secure-drive link is supplied here.
+
 ### ZIP filename (must be exact)
 
 - [ ] `IT401W_ProjectA_BSIT4EG1_Group2.zip` — confirm the exact Section and Group values with Jerome before assembling
@@ -240,7 +255,7 @@ These checkboxes record **inclusion and review in the final ZIP**, not whether a
 
 ### Demo segments — 12 minutes total
 
-Fill in the Presenter column and rehearse timing before October 24.
+Fill in the Presenter column and rehearse timing before Monday, October 26, 2026.
 Every member must have an identifiable part.
 
 | #   | Segment                     | What to show                                                                                  | Presenter | Target time |
