@@ -2,7 +2,9 @@
 
 ## Current state
 
-- **T30 submission handoff Done; package delivery In progress:** Jerome will create the ZIP, upload it to a secure drive and invite Alex; Alex submits through the professor's dedicated channel. Jerome confirms presentation on **Monday, October 26, 2026**. Actual ZIP/upload/access/submission, credential delivery and complete-data clean-machine replay remain unconfirmed. See the [delivery checklist](SUBMISSION.md#t30--submission-zip-checklist) and [handoff](handoffs/t30-submission-ownership-and-october-26-presentation-10-23-2026.md). This documentation update is uncommitted on `jerome` and Not integrated.
+- **Local presentation E2E guide reviewed:** [docs/e2eflow.md](docs/e2eflow.md) now matches the local `campus_equipment` snapshot, local media and implemented workflow/forms/routes. All 23 referenced photo files exist; critical routes resolve. Expected results remain separate from actual execution. See the [review/publication record](handoffs/t30-publication-and-local-e2e-flow-review-10-23-2026.md); no workflow or database write ran.
+
+- **T30 submission handoff Done; package delivery In progress:** Jerome will create the ZIP, upload it to a secure drive and invite Alex; Alex submits through the professor's dedicated channel. Jerome confirms presentation on **Monday, October 26, 2026**. Actual ZIP/upload/access/submission, credential delivery and complete-data clean-machine replay remain unconfirmed. See the [delivery checklist](SUBMISSION.md#t30--submission-zip-checklist) and [handoff](handoffs/t30-submission-ownership-and-october-26-presentation-10-23-2026.md). Source `edb2f916606e6d550bba641aafd415b59b0eb6d2` is pushed on `origin/jerome`, with fresh fetched equality and Codex credit verified; Not integrated. See the [publication and local E2E review](handoffs/t30-publication-and-local-e2e-flow-review-10-23-2026.md).
 
 - **T28 team and individual participation Done per Jerome:** on October 23, Jerome confirmed the meeting and every member's participation requirements are complete, all members agree to the system, and the team completed full end-to-end testing. The [completion record](handoffs/t28-team-participation-completion-10-23-2026.md) attributes this report and retains its evidence limits. Source `69d43888a5393e8abd1ad5a97193c85f99959908` is pushed on `origin/jerome`, with fresh fetched equality and Codex co-author credit verified in the [publication receipt](handoffs/t28-team-participation-publication-10-23-2026.md); Not integrated into main; T30 packaging and T31 presentation/Q&A remain separate.
 
@@ -115,6 +117,7 @@ Developers and AI agents write work snapshots in the project-root `handoffs/` fo
 
 | Date | Work | Author | Handoff |
 | --- | --- | --- | --- |
+| October 23, 2026 | Publish T30 handoff and review supplied E2E guide against local presentation database | Jerome authorization/local setup; Codex read-only review | [Publication and local E2E review](handoffs/t30-publication-and-local-e2e-flow-review-10-23-2026.md) |
 | October 23, 2026 | Agree T30 delivery owners and October 26 presentation date | Jerome instruction; Alex designated submitter; Codex documentation | [Submission handoff](handoffs/t30-submission-ownership-and-october-26-presentation-10-23-2026.md) |
 | October 23, 2026 | Publish T28 participation completion | Jerome authorization; Codex co-author credit | [T28 publication receipt](handoffs/t28-team-participation-publication-10-23-2026.md) |
 | October 23, 2026 | Reconcile T28 completion after team meeting and reported end-to-end testing | Jerome confirmation; all members retain contribution credit; Codex documentation | [T28 completion record](handoffs/t28-team-participation-completion-10-23-2026.md) |
