@@ -180,6 +180,13 @@ The detailed dependency and supplied-asset inventory remains canonical in
 
 ## AI and reuse disclosure
 
+**Disclosure record: complete for the assistance, dependencies and assets currently recorded.** The
+[record review](../handoffs/ai-reuse-disclosure-record-review-10-23-2026.md) checked source attribution, supplied evidence,
+asset-origin statements, dependency-table coverage and retained license notices. This status concerns the record's
+content; it does not establish university policy approval, exclusive image rights or every member's final confirmation.
+The [T27 completion/member review](#completion-gate-and-member-review) and final T30 package/asset checks retain their
+separate scope. Incorporate any additional assistance, source material or applicable instructions actually disclosed later.
+
 **Product behavior:** the application contains no AI model, prediction, scoring or automated approval feature. AI was
 used during development and asset preparation. Team members selected requirements and authorized/reviewed work where
 recorded; they remain responsible for understanding, verifying and defending the submitted result.

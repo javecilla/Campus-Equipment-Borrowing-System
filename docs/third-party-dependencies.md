@@ -194,4 +194,4 @@ Node/npm, Python/pip, Git, PostgreSQL, and the optional uv resolver are workstat
 
 ## Inventory coverage
 
-This snapshot contains 18 pinned Python distributions and 115 npm lock entries. Refresh names, versions, licenses, parent links, optional flags, and counts from actual locks/installed metadata after a dependency change. Check that direct selections have a README rationale and required browser notices remain in the built artifact.
+This inventory contains 26 pinned Python distributions (16 runtime and 10 development-only) and 115 npm lock entries, checked against the current lockfiles on October 23, 2026. Refresh names, versions, licenses, parent links, optional flags, and counts from actual locks/installed metadata after a dependency change. Check that direct selections have a README rationale and required browser notices remain in the built artifact.
