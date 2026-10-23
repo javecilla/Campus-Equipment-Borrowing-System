@@ -8,6 +8,10 @@ The system tracks individual physical units by asset code, preserves their trans
 
 **A working local demonstration is sufficient for assessment. Online deployment, paid hosting and external integrations are not required by the course brief.** The team uses Neon voluntarily as a centralized database so members can see the same records during end-to-end workflow testing. Evaluators can run the application entirely with local PostgreSQL and local file storage, without a Neon account or shared credentials. Application workflows, the database switch and [72 system screenshots](docs/system-screenshots.md) are integrated. The user/admin manual and technical/maintenance guidance are documented and reviewed under T29. Final diagrams, professional/team evidence, packaging and rehearsal remain incomplete; [SUBMISSION.md](SUBMISSION.md) is the delivery checklist and [the backlog](docs/tasks.md#course-evidence-and-delivery) owns status.
 
+## Promotional demo
+
+https://github.com/user-attachments/assets/ba3472fd-2295-4bfa-9bbc-13121d1831ad
+
 ## Run locally
 
 Run these PowerShell commands from the extracted project root. They start the application with your own local database. The final ZIP has **not yet passed a clean-machine rehearsal**; reconstructing the complete current dataset also needs the catalog/maintenance fixture described under [seed setup](#5-seed-the-demonstration-data).
