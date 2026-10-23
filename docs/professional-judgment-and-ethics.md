@@ -1,6 +1,6 @@
 # T27 Professional Judgment, Ethics, Privacy, and Reuse Record
 
-- **Status:** In progress
+- **Status:** Done (documented coursework assessment; policy compliance unverified)
 - **Coordinating owner:** Alex Enrico Cayanan; every member contributes and must be able to defend the final decisions
 - **Evidence date:** October 23, 2026, Asia/Manila
 - **Scope:** Course prototype, its repository, demonstration data, development practices, and proposed campus use
@@ -184,8 +184,9 @@ The detailed dependency and supplied-asset inventory remains canonical in
 [record review](../handoffs/ai-reuse-disclosure-record-review-10-23-2026.md) checked source attribution, supplied evidence,
 asset-origin statements, dependency-table coverage and retained license notices. This status concerns the record's
 content; it does not establish university policy approval, exclusive image rights or every member's final confirmation.
-The [T27 completion/member review](#completion-gate-and-member-review) and final T30 package/asset checks retain their
-separate scope. Incorporate any additional assistance, source material or applicable instructions actually disclosed later.
+The [T27 completion assessment and member follow-up](#completion-gate-and-member-review) distinguish the completed
+written record from pending team/defense evidence and final T30 package/asset checks. Incorporate any additional
+assistance, source material or applicable instructions actually disclosed later.
 
 **Product behavior:** the application contains no AI model, prediction, scoring or automated approval feature. AI was
 used during development and asset preparation. Team members selected requirements and authorized/reviewed work where
@@ -233,8 +234,14 @@ any actual policy/instructor instruction obtained; do not invent a policy, an ap
 
 ### Coursework submission evidence
 
-T27 remains **In progress** pending the final member review below. This reassessment concerns the fictional-data
-coursework prototype; it neither changes application behavior nor authorizes real-data deployment.
+T27 is **Done for the documented coursework assessment**, based on the [acceptance review](../handoffs/t27-professional-judgment-record-closure-review-10-23-2026.md).
+The supplied brief requires documented analysis and defensible decisions; it does not require a separate all-member
+meeting or sign-off to complete this record. Actual peer feedback and individual defense remain T28/T31 responsibilities,
+using this document as evidence. The planned review below remains unperformed in the available record.
+
+This status does not certify university AI policy compliance: the policy text remains unavailable, and applicable
+instructions must be clarified and incorporated when obtained. It neither changes application behavior nor authorizes
+real-data deployment. Material new instructions or findings require reassessing the affected decisions.
 
 - [x] Stakeholders, duties, relevant sources, risks, decisions, safeguards, accountable owners and prototype limitations
       are documented across this record.
@@ -246,8 +253,6 @@ coursework prototype; it neither changes application behavior nor authorizes rea
 - [x] The available AI disclosure instruction is recorded from the course brief and Jerome's report that no separate
       format/instruction has been supplied. University policy compliance remains unverified and must be raised at final
       review; any further applicable instruction must be incorporated when supplied.
-- [ ] Members review the final decisions/assistance and record actual corrections, unresolved concerns and ability to
-      explain their respective work. The scheduled meeting below is not yet a completed review.
 
 ### Conditional controls before real-data use
 
@@ -265,6 +270,9 @@ require institutional deployment approval, an approved records schedule or full 
 No approval, retention period or deployment permission is inferred here. Keep operational demonstration data fictional.
 
 ### Planned member review
+
+This is pending T28 peer-feedback and T31 defense preparation, rather than an additional T27 document-completion gate.
+Record actual corrections in this decision record when the review occurs.
 
 Jerome reports a team meeting scheduled for **October 23, 2026, 8:00 PM onwards, Asia/Manila**. Planned discussion covers
 each member's module decisions, privacy/access and public-welfare risks, AI/reuse/asset disclosure, evidence limitations,
