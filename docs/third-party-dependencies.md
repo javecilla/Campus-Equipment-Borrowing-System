@@ -167,9 +167,26 @@ All declared dependency and optional-dependency references in this application l
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | DM Sans                 | [Supplied OFL notice](../static/fonts/DM_Sans/OFL.txt)                                                                                                                                    | Local typography; supplied static/variable font files                                                  |
 | Poppins                 | [Supplied OFL notice](../static/fonts/Poppins/OFL.txt)                                                                                                                                    | Local typography; supplied weights/styles                                                              |
-| Default role avatars    | [Admin image](../static/images/default-profile-admin.jpg), [basic-user image](../static/images/default-profile-user.jpg); supplied by the user, original source/license not provided      | Local account-menu/profile artwork; no claim of team authorship or MIT coverage of third-party artwork |
-| Default equipment photo | [WebP](../static/images/default-photo-equipment-270x360.webp) and [PNG](../static/images/default-photo-equipment-270x360.png); supplied by the user, original source/license not provided | Catalog placeholder; no claim of team authorship or third-party MIT coverage                           |
+| Project logo | [Logo](../static/images/logo.jpg); Jerome confirmed Gemini generation on October 23, 2026 | Project branding; reported AI origin, without a verified exclusive-rights or trademark-clearance claim |
+| Default role avatars | [Admin image](../static/images/default-profile-admin.jpg), [basic-user image](../static/images/default-profile-user.jpg); Jerome confirmed Gemini generation on October 23, 2026 | Account/profile artwork; retain AI-origin disclosure and final content review |
+| Default equipment image | [WebP](../static/images/default-photo-equipment-270x360.webp) and [PNG](../static/images/default-photo-equipment-270x360.png); Jerome confirmed Gemini generation on October 23, 2026 | Illustrative catalog placeholder; no claim that it depicts actual campus equipment |
+| Demo equipment images | Jerome's October 23 answer to the asset-origin question identifies the equipment images as Gemini-generated too; existing media/storage evidence remains in the linked project handoffs | Illustrative demonstration inventory; review the final included set for personal/confidential content and third-party material |
+| GitHub contribution screenshots | [Contributors](../static/images/gh-contributors.png), [main commits](../static/images/gh-team-commits.png), [T26 commit](../static/images/gh-commit.png); supplied by Jerome and visually inspected on October 23 | Screenshots of this repository's GitHub interface; GitHub branding and account identities remain attributed; not Gemini-generated artwork |
 | @bytebase/dbhub 1.5.0   | MIT; [versioned npm metadata](https://registry.npmjs.org/@bytebase%2Fdbhub/1.5.0) and [upstream repository](https://github.com/bytebase/dbhub)                                            | Optional read-only MCP tool in npm execution cache, outside application locks                          |
+
+The image-origin entries are attributed to Jerome's confirmation, not independently verified generation records.
+Exact Gemini model, generation dates, prompts and reference inputs were not supplied. Do not invent them or relabel
+an internet download as AI-generated. Google's [Terms of Service](https://policies.google.com/terms?hl=en), reviewed
+October 23, state that Google does not claim ownership of original content generated through its services; this does
+not establish exclusive rights, trademark clearance or permission for third-party reference material.
+
+For any actual internet-sourced image included later, record its creator/source and applicable license, permission or
+other documented permitted-use basis. A source credit alone is not permission; IPOPHL explains the distinction in its
+[photography guidance](https://www.ipophil.gov.ph/news/ipophl-answers-faqs-on-photography-and-copyright/) and
+[attribution guidance](https://www.ipophil.gov.ph/news/ipophl-answers-8-most-common-questions-on-ctto-sharing-and-uploading-on-social-media/).
+Keep license-required notices and do not extend the team's MIT notice to third-party material. Final T30 packaging
+must check the actual included assets against this inventory. The [T27 record](professional-judgment-and-ethics.md#ai-and-reuse-disclosure)
+owns the explanation of how AI assisted development and the pending member review.
 
 DBHub's published 1.5.0 manifest declares zod ^4.2.0, ssh2 ^1.16.0, dotenv ^16.4.7, express ^4.18.2, ssh-config ^5.0.3, @iarna/toml ^2.2.5, @modelcontextprotocol/node ^2.0.0, and @modelcontextprotocol/server ^2.0.0. Its execution-cache resolution is separate from package-lock.json; this document does not invent resolved versions or a complete lock for that optional tool. Use its linked published dependency/license declarations and DEV.md's pinned launch. It is not bundled with the application.
 
