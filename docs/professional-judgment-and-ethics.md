@@ -236,8 +236,9 @@ any actual policy/instructor instruction obtained; do not invent a policy, an ap
 
 T27 is **Done for the documented coursework assessment**, based on the [acceptance review](../handoffs/t27-professional-judgment-record-closure-review-10-23-2026.md).
 The supplied brief requires documented analysis and defensible decisions; it does not require a separate all-member
-meeting or sign-off to complete this record. Actual peer feedback and individual defense remain T28/T31 responsibilities,
-using this document as evidence. The planned review below remains unperformed in the available record.
+meeting or sign-off to complete this record. Jerome confirms T28 participation and the team meeting are complete; see the
+[completion record](../handoffs/t28-team-participation-completion-10-23-2026.md). Individual presentation/Q&A remains T31,
+using this document as evidence.
 
 This status does not certify university AI policy compliance: the policy text remains unavailable, and applicable
 instructions must be clarified and incorporated when obtained. It neither changes application behavior nor authorizes
@@ -271,21 +272,12 @@ No approval, retention period or deployment permission is inferred here. Keep op
 
 ### Planned member review
 
-This is pending T28 peer-feedback and T31 defense preparation, rather than an additional T27 document-completion gate.
-Record actual corrections in this decision record when the review occurs.
+The previously planned review is now **complete per Jerome's October 23, 2026 confirmation**: the team has met,
+every member has completed their participation requirements, all members agree to the system, and the team completed
+full end-to-end testing. The [T28 completion record](../handoffs/t28-team-participation-completion-10-23-2026.md)
+records that coordinator report alongside existing contribution evidence.
 
-Jerome reports a team meeting scheduled for **October 23, 2026, 8:00 PM onwards, Asia/Manila**. Planned discussion covers
-each member's module decisions, privacy/access and public-welfare risks, AI/reuse/asset disclosure, evidence limitations,
-corrections and remaining owners/actions. Attendance, feedback, decisions and completion will be recorded only after
-they occur; the following table is preparation, not meeting minutes or sign-off.
-
-| Member | Required review/defense evidence | Current record |
-| --- | --- | --- |
-| Jerome S. Avecilla | Delivery/integration, database/audit/settings, hosting/recovery, final package decisions | Not recorded for final T27 review |
-| Alex Enrico Cayanan | T27 coordination, accounts/security, dashboard/reports, privacy/access decisions | Source-backed draft prepared; final coursework policy/member review pending |
-| Kenneth T. Cortez | Inventory/maintenance, equipment-photo content/rights/safety | Not recorded for final T27 review |
-| Ralph Andre F. Giga | Requests/tracking, T17 return/privacy/access/atomicity contribution | Technical contribution recorded; final policy/team review pending |
-| Margareth Raine H. Ignacio | Approval/release/returns, reasons/discretion/custody/safety | Not recorded for final T27 review |
-| Ma. Ellyssa Bianca Regodon | Registration/profile/catalog portal, data minimization/accessibility | Not recorded for final T27 review |
-
-Record only reviews that actually occur. Do not convert this table into signatures or approvals by assumption.
+This confirmation covers Jerome S. Avecilla, Alex Enrico Cayanan, Kenneth T. Cortez, Ralph Andre F. Giga,
+Margareth Raine H. Ignacio and Ma. Ellyssa Bianca Regodon. Detailed individual feedback, meeting minutes, exact
+meeting/test times and a new test execution log were not supplied in this update; no specific comments or signatures
+are inferred. T31 presentation/Q&A and the policy/real-data limits above remain separate.
