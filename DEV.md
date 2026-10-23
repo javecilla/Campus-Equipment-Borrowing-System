@@ -872,7 +872,7 @@ Stop the dedicated portable cluster after inspection using the same verified dat
 | Performance/recovery/limits        | [T24 record](docs/operational-verification.md), [Module 23](docs/manual-test-guide.md#module-23--performance-and-recovery-t24)                                                     | Retain hardware/workload/results, current database/photo recovery and local/cloud/atomicity limits; private artifacts remain excluded                                                                         |
 | Dependencies/professional evidence | [Dependencies](docs/third-party-dependencies.md), [coding standards](docs/coding-standards.md), [T26 guide](docs/user-needs-evidence-guide.md), backlog T26-T28                    | Reference real licenses/tooling/decisions and available team/professional evidence; T25 does not invent or finish those separate tasks                                                                        |
 
-T25 is Done only after reviewed diagrams/traceability match implementation, real editable sources/exports are linked, evidence/constraints/limitations are covered and the dated handoff is finalized. Mermaid reference review alone does not complete T25. T29 prerequisites are satisfied but it is not started by this request; T30 retains all original evidence/submission prerequisites.
+T25 is Done only after reviewed diagrams/traceability match implementation, real editable sources/exports are linked, evidence/constraints/limitations are covered and the dated handoff is finalized. Mermaid reference review alone does not complete T25. T29 guide coverage is now accepted in its closure audit; T30 retains all original evidence/submission prerequisites.
 
 ## T27 readiness and consumer handoff
 
@@ -894,18 +894,43 @@ T25 diagrams and other delivery tasks continue separately. T27 is complete only 
 
 ## T29 user manual and remaining technical work
 
-The [combined basic-user/admin manual](docs/user-manual-guides.md) explains everyday actions with 19 existing system
-screenshots. It covers both role journeys, equipment maintenance, status meanings and common problems. It is separate
-from the [manual testing guide](docs/manual-test-guide.md), which owns test cases and recorded execution evidence.
-T29 is **In progress**: the new manual is source/screenshot reviewed, while a fresh reader walkthrough is Not run.
+**T29 is Done on the reviewed guide/documentation scope.** The [combined basic-user/admin manual](docs/user-manual-guides.md)
+contains both role journeys, 19 existing screenshots, statuses and troubleshooting. README/DEV already supply technical
+setup, configuration, tested dependency pins, migration/seed/start instructions and application-maintenance guidance.
+The [closure audit](handoffs/t29-guide-coverage-and-documentation-closure-10-23-2026.md) maps every acceptance clause to
+those documents and existing verification evidence; it does not claim a new installation, browser/user walkthrough or
+member sign-off. The historical [authoring handoff](handoffs/t29-combined-user-manual-with-screenshots-10-23-2026.md)
+retains its earlier pending state.
 
-Ellyssa/Ralph review the borrower section and Margareth/Kenneth review the administrator section, recording actual
-outcomes and corrections in the [authoring handoff](handoffs/t29-combined-user-manual-with-screenshots-10-23-2026.md).
-Jerome/Alex retain technical setup and application-maintenance responsibility: complete verified maintenance/configuration
-instructions and the fictional catalog/maintenance replay described in [SUBMISSION](SUBMISSION.md#minimum-demonstration-data),
-then verify fresh local setup. Existing startup, migration, seed and backup/recovery instructions remain in their current
-sections; this manual request does not authorize seeding, cleanup or shared-database writes. Full T29 and T30 are not
-closed by writing or illustrating the role guide.
+### Guide coverage and maintenance reference
+
+Use the existing instructions below rather than a second maintenance manual or duplicate command list.
+
+| Task or maintenance need | Canonical instructions and evidence |
+| --- | --- |
+| Basic-user/admin operation | [User manual](docs/user-manual-guides.md); source/form/template review and inspection of all 19 embedded images are recorded in its authoring handoff |
+| Install, configure and start | [README local setup](README.md#run-locally), [first-time setup](#first-time-setup), [everyday startup](#everyday-startup) and [configuration troubleshooting](#troubleshooting) |
+| Choose the correct database and media | [Local/shared switching](#switch-between-local-and-shared-databases), [shared safety](AGENTS.md#shared-database-and-media-safety) and [equipment photos](#equipment-photos-and-local-media); both connection modes were checked in the integrated [switch/capture record](handoffs/local-database-switch-and-submission-screenshots-10-22-2026.md) |
+| Maintain dependencies, migrations and assets | [Dependency updates](#updating-dependencies), [migrations](#working-with-migrations), [frontend assets](#frontend-assets-tailwind-and-page-scripts) and [verification commands](#before-handing-over-work); retain pinned locks and required notices |
+| Prepare or reset fictional local data | [Seed/cleanup runbook](#demo-command-runbook), its documented prerequisites and preservation scopes, and the [executed isolated tooling checks](handoffs/demo-seed-and-cleanup-command-runbook-10-22-2026.md); do not run purges or seeds on shared data |
+| Back up or recover | [Matched database/media backup](#back-up-the-populated-demonstration-before-cleanup), [T24 recovery replay](#t24-current-databasemedia-recovery-replay) and [measured recovery limits](docs/operational-verification.md#backup-and-recovery-demonstration) |
+| Diagnose an operational problem | [Troubleshooting](#troubleshooting), role/record guidance in the user manual and the recorded [maintenance limitations](docs/operational-verification.md#maintenance-and-limitations); report the actual error without credentials/private data |
+
+Before schema/data maintenance, verify the real target and preserve a matched database/media backup. Shared changes
+remain coordinator-owned under the existing safety rules. After an authorized code/dependency change, use the existing
+checks/build/test instructions and review migration/asset requirements. Recovery must use a separate suitable local
+restore target and compatible PostgreSQL tools as documented; a successful old rehearsal is not a guarantee for every
+future backup. The existing role-guide owners maintain the audience instructions, and Jerome/Alex retain technical
+maintenance ownership.
+
+### Remaining T30 package work
+
+T30 must still assemble and inspect the final ZIP, supply/review its complete fictional demonstration-data preparation,
+and verify the actual package on a clean local setup. The current seeds do not recreate the entire manually prepared
+catalog/maintenance/image set; see [SUBMISSION's data-replay gap](SUBMISSION.md#minimum-demonstration-data). T29 closure
+accepts accurate guide coverage and the recorded verification; it does not claim that full package replay succeeded.
+A new participant session or fresh post-authoring walkthrough is not an extra T29 gate specified by the supplied brief.
+Further reader checks remain useful, and any actual instruction defect found must be corrected in the guide.
 
 ## Before handing over work
 
