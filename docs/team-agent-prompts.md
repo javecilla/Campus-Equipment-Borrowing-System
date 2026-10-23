@@ -2,7 +2,7 @@
 
 Open this repository in your coding agent, then copy your entire member prompt below. Alex, Ralph and Jerome use implementation prompts; Kenneth, Ellyssa and Margareth use validation/documentation/manual-testing prompts under the [current ownership decision](tasks.md#current-ownership-and-support-responsibilities). Sending a prompt authorizes only its stated scope under [PLAN.md](../PLAN.md). Task ownership and acceptance remain in [tasks.md](tasks.md), with branches defined in [Project-Members.txt](Project-Members.txt).
 
-Use the same prompt again after prerequisites merge or to resume unfinished work. The agent reads current evidence each time, so you do not need to maintain a task list inside the prompt. Creating this guide does not start another member's work or release the diagram standby gate.
+Use the same prompt again after prerequisites merge or to resume unfinished work. The agent reads current evidence each time, so you do not need to maintain a task list inside the prompt. Creating this guide does not start another member's work; diagram delivery and integration status follow the current backlog.
 
 ## Copy your prompt
 
@@ -23,7 +23,7 @@ I am Kenneth T. Cortez (@corkenneth), assigned branch kenneth.
 
 Work on my validation, documentation and manual-testing responsibilities from docs/tasks.md. Read AGENTS.md, PLAN.md, HANDOFF.md, and docs/team-agent-prompts.md, then follow its Support workflow.
 
-Check available implemented flows, record actual results, update documentation and report defects to the assigned feature owner. Do not implement reassigned features. Keep MTV/database/workflow diagram conversion on standby until the system is fully finished and Jerome explicitly gives the go signal, with T25 prerequisites satisfied. Complete the required handoff for file changes. Leave changes uncommitted for my review; do not push, open a PR, or merge into main.
+Check available implemented flows, record actual results, update documentation and report defects to the assigned feature owner. Do not implement reassigned features. T25 diagram delivery is Done locally under Jerome's acceptance; maintain the linked editable Mermaid sources and supplied PDF exports, following current backlog/integration evidence. Complete the required handoff for file changes. Leave changes uncommitted for my review; do not push, open a PR, or merge into main.
 ```
 
 ### Ellyssa
@@ -33,7 +33,7 @@ I am Ma. Ellyssa Bianca Regodon (@ellieebeann), assigned branch elly.
 
 Work on my validation, documentation and manual-testing responsibilities from docs/tasks.md. Read AGENTS.md, PLAN.md, HANDOFF.md, and docs/team-agent-prompts.md, then follow its Support workflow.
 
-Check available implemented flows, record actual results, update documentation and report defects to the assigned feature owner. Do not implement reassigned features. Keep MTV/database/workflow diagram conversion on standby until the system is fully finished and Jerome explicitly gives the go signal, with T25 prerequisites satisfied. Complete the required handoff for file changes. Leave changes uncommitted for my review; do not push, open a PR, or merge into main.
+Check available implemented flows, record actual results, update documentation and report defects to the assigned feature owner. Do not implement reassigned features. T25 diagram delivery is Done locally under Jerome's acceptance; maintain the linked editable Mermaid sources and supplied PDF exports, following current backlog/integration evidence. Complete the required handoff for file changes. Leave changes uncommitted for my review; do not push, open a PR, or merge into main.
 ```
 
 ### Ralph
@@ -53,7 +53,7 @@ I am Margareth Raine H. Ignacio (@raifun), assigned branch marga.
 
 Work on my validation, documentation and manual-testing responsibilities from docs/tasks.md. Read AGENTS.md, PLAN.md, HANDOFF.md, and docs/team-agent-prompts.md, then follow its Support workflow.
 
-Check available implemented flows, record actual results, update documentation and report defects to the assigned feature owner. Do not implement reassigned features. Keep MTV/database/workflow diagram conversion on standby until the system is fully finished and Jerome explicitly gives the go signal, with T25 prerequisites satisfied. Complete the required handoff for file changes. Leave changes uncommitted for my review; do not push, open a PR, or merge into main.
+Check available implemented flows, record actual results, update documentation and report defects to the assigned feature owner. Do not implement reassigned features. T25 diagram delivery is Done locally under Jerome's acceptance; maintain the linked editable Mermaid sources and supplied PDF exports, following current backlog/integration evidence. Complete the required handoff for file changes. Leave changes uncommitted for my review; do not push, open a PR, or merge into main.
 ```
 
 ### Jerome
@@ -68,9 +68,9 @@ Start implementing ready work now and continue with other ready tasks assigned t
 
 ## Support workflow
 
-Follow the [current support responsibilities and diagram gate](tasks.md#current-ownership-and-support-responsibilities). Establish your assigned branch, inspect Git status and preserve existing work using [DEV.md](../DEV.md#assigned-branches-and-main-integration). Read the current handoff, relevant backlog entries and [manual test guide](manual-test-guide.md); check available implemented flows and document actual revision, inputs, results and defects. Unavailable workflows remain Not run, and partial checks do not complete T22/T23/T25/T29 or their missing prerequisites. Coordinate defects with Jerome for T15/T16, Ralph for T17/T20 and Alex for T18/T19; do not take over their implementation.
+Follow the [current support responsibilities and diagram delivery guidance](tasks.md#current-ownership-and-support-responsibilities). Establish your assigned branch, inspect Git status and preserve existing work using [DEV.md](../DEV.md#assigned-branches-and-main-integration). Read the current handoff, relevant backlog entries and [manual test guide](manual-test-guide.md); check available implemented flows and document actual revision, inputs, results and defects. Unavailable workflows remain Not run, and partial checks do not override the recorded acceptance/integration status of T22/T23/T25/T29. Coordinate defects with Jerome for T15/T16, Ralph for T17/T20 and Alex for T18/T19; do not take over their implementation.
 
-For documentation changes, check links and consistency. For Django/frontend review, load the relevant skills required by AGENTS.md. Complete the [project-handoff skill](../.agents/skills/project-handoff/SKILL.md) after file-changing work, preserve historical credit and leave changes uncommitted. Do not create or convert diagrams before Jerome's explicit go signal after system completion; once given, recheck T25 prerequisites and use its existing design drafts as sources for editable tool-based diagrams.
+For documentation changes, check links and consistency. For Django/frontend review, load the relevant skills required by AGENTS.md. Complete the [project-handoff skill](../.agents/skills/project-handoff/SKILL.md) after file-changing work, preserve historical credit and leave changes uncommitted. T25 diagram delivery is Done locally; preserve its accepted Mermaid/PDF source-export pairs and recorded limitations, and check current main-integration evidence before dependent work.
 
 ## Implementation workflow
 

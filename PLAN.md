@@ -23,7 +23,7 @@ Keep task status in the backlog and current readiness in HANDOFF.md. Update this
 
 ## Current starting point
 
-Select the next task from the [backlog](docs/tasks.md#verified-task-evidence) and [current handoff](HANDOFF.md), which own current status, blockers and integration evidence. For the existing UI interfaces and prerequisite checks consumed by T20, use [DEV.md's consumer handoff](DEV.md#t20-readiness-and-consumer-handoff). For the course-evidence stage, use [DEV.md's T25 consumer/source checklist](DEV.md#t25-readiness-and-consumer-handoff) to verify the integration and diagram authorization gates. This plan defines sequencing and handoff gates rather than maintaining a second status board.
+Select the next task from the [backlog](docs/tasks.md#verified-task-evidence) and [current handoff](HANDOFF.md), which own current status, blockers and integration evidence. For the existing UI interfaces and prerequisite checks consumed by T20, use [DEV.md's consumer handoff](DEV.md#t20-readiness-and-consumer-handoff). For the course-evidence stage, use [DEV.md's T25 consumer/source checklist](DEV.md#t25-readiness-and-consumer-handoff) to verify diagram delivery and integration evidence. This plan defines sequencing and handoff gates rather than maintaining a second status board.
 
 The original T01–T03 local-batch exception is completed and does not relax later integration gates. A merged implementation with an unresolved acceptance failure does not satisfy a prerequisite. Branch instructions and [repository access for members and evaluators](DEV.md#repository-access-and-professor-review) remain in DEV.md. Documentation review does not authorize implementation or publication.
 
@@ -48,7 +48,7 @@ The task links below lead to canonical acceptance criteria. A stage can hand ove
 
 Within each stage, follow each task's exact prerequisites and acceptance in the backlog. This table groups work for coordination; it does not relax those dependencies, reassign feature ownership, or make a shared module exclusively owned by one member.
 
-Follow the October 20 [current ownership and support responsibilities](docs/tasks.md#current-ownership-and-support-responsibilities): Kenneth, Margareth and Ellyssa now focus on validation, documentation and manual testing. They can check available implemented flows now without closing gated system-acceptance tasks. Their T25 MTV/database/workflow diagram conversion requires integrated T22-T24 and Jerome's explicit go signal; the [current handoff](HANDOFF.md) records the satisfied gates and ongoing work. T25's delivery/review criteria still apply. Preserve earlier contributions and original member/branch records.
+Follow the October 20 [current ownership and support responsibilities](docs/tasks.md#current-ownership-and-support-responsibilities): Kenneth, Margareth and Ellyssa now focus on validation, documentation and manual testing. They can check available implemented flows now without closing gated system-acceptance tasks. T25's prerequisite/go-signal gates were satisfied, and Jerome accepted five PDF exports paired with editable Mermaid definitions on October 23. [Current readiness](HANDOFF.md) and the [T25 delivery record](handoffs/t25-pdf-diagram-delivery-and-documentation-closure-10-23-2026.md) distinguish Done locally from pending publication/main integration. Preserve earlier contributions and original member/branch records.
 
 ## Select the next task in a new session
 

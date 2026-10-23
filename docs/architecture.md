@@ -2,7 +2,7 @@
 
 ## Status and implemented stack
 
-This architecture describes the implemented application through T24. The [backlog](tasks.md#verified-task-evidence) owns acceptance/integration evidence. Behavioral authority is [SRS.md](SRS.md); persistence is in [db_design.md](db_design.md) and actual models/migrations. [Coding standards](coding-standards.md) define MTV boundaries and review rules. The MTV and workflow references below were reconciled against main `e2c3f61` (PR #59, including T24 PR #58) on October 22, 2026 for Jerome's authorized T25 documentation preparation. They are the drawing basis for Kenneth and Ellyssa; editable tool sources/exports and team review remain pending. Use [the T25 consumer checklist](../DEV.md#t25-readiness-and-consumer-handoff).
+This architecture describes the implemented application through T24. The [backlog](tasks.md#verified-task-evidence) owns acceptance/integration evidence. Behavioral authority is [SRS.md](SRS.md); persistence is in [db_design.md](db_design.md) and actual models/migrations. [Coding standards](coding-standards.md) define MTV boundaries and review rules. The MTV and workflow references below were reconciled against main `e2c3f61` (PR #59, including T24 PR #58) on October 22, 2026 for Jerome's authorized T25 documentation preparation. Jerome accepted the supplied PDF exports for T25 on October 23, 2026; the Mermaid blocks remain the editable sources. Delivery is Done locally and not yet integrated; export links and display limits are recorded below. Use [the T25 consumer checklist](../DEV.md#t25-readiness-and-consumer-handoff).
 
 The application is one server-rendered Django monolith using Python 3.13, Django 5.2 LTS, PostgreSQL and Psycopg 3. Exact pins belong in [requirements.txt](../requirements.txt). Local regression tests use PostgreSQL 17; normal team configuration selects shared Neon PostgreSQL and private Object Storage, while standalone evaluation uses local PostgreSQL/media. T24 used a separate PostgreSQL 18.6 recovery lab; see [measured configurations and limits](operational-verification.md). These are configurations of the same application.
 
@@ -82,7 +82,7 @@ For Lucidchart, keep the Model, Template and View boundaries visible; forms, ser
 
 Draw no generated Django admin, separate REST API, third role, background worker or direct browser-to-database/bucket connection. Chart.js renders server-provided aggregates. Photo reads pass through protected Django views. PostgreSQL transaction rollback does not roll back object storage; the photo services use cleanup and commit callbacks.
 
-**Editable MTV source/export:** pending Kenneth/Ellyssa conversion and team review. Add the real editable document link and readable export here when available; the Mermaid block is the current reference.
+**Delivered MTV diagram:** [PDF export](Model-template-view%20structure.pdf), supplied October 23, 2026 and accepted by Jerome for T25. The Mermaid block above is the editable source. PDF metadata identifies Mermaid Diagram Designer / MermaidEditor.io. Kenneth/Ellyssa's diagram responsibility and original implementation credit are retained; no separate editor-project file or all-member review approval is inferred.
 
 ## Implemented modules and ownership
 
@@ -100,7 +100,7 @@ The config directory, four feature apps, shared `static/`, and role/feature temp
 | `templates/` | Shared document/role layouts, navigation/messages and implemented T05–T13/T16 pages plus integrated T15 release/date/loan/slip pages, T17 returns, T18 dashboard and T19 loan/overdue report pages; T20 borrower home and shared fields/statuses/pagination/empty states | Feature owners; Ralph owns T20 integration; Ellyssa supports validation/documentation/manual testing |
 | `static/` | Source fonts/images/CSS/JavaScript and ignored generated `build/` assets; discovered through STATICFILES_DIRS | Feature owners |
 
-Current task/support assignments follow [the backlog ownership decision](tasks.md#current-ownership-and-support-responsibilities). Jerome authorized preparation of these drawing references; Kenneth/Ellyssa's editable-tool conversion and review remain to be recorded. Original implementation credit is preserved.
+Current task/support assignments follow [the backlog ownership decision](tasks.md#current-ownership-and-support-responsibilities). Jerome accepted the supplied PDF diagrams for T25; Kenneth/Ellyssa's diagram responsibility and Margareth's validation/documentation support remain credited. Original implementation credit is preserved.
 
 Each Django app keeps models, forms, function-based views, URLs, service/query functions, migrations, and tests close to its feature. Split further only when actual file size or responsibility warrants it. Avoid a generic CRUD framework or unnecessary repository abstraction over Django ORM.
 
@@ -179,7 +179,7 @@ Use separate request and physical-unit state pages so a Returned request is not 
 | Active, closed and overdue loan labels | [loan progress queries](../borrowing/queries.py): outstanding = LoanUnits without a ReturnRecord; active if outstanding > 0; overdue if outstanding > 0 and due_date < Asia/Manila today; closed after final return. Due today is not overdue. These are derived read labels, not extra request or unit states                                                                                                                        |
 | Lock/constraint/audit boundary         | Use the [transaction and lock order above](#transaction-boundaries-and-lock-order) and [database constraints](db_design.md#indexes-and-enforcement-boundaries); represent shortages, repeats, invalid membership or state races as failure with rollback, never a partial approval/return                                                                                                                                             |
 
-**Editable workflow sources/exports:** pending Kenneth/Ellyssa conversion and team review. Link the request and unit/maintenance pages here when available. The [HTTP contract](api_spec.md) owns action routes and error/redirect semantics; [T22](manual-test-guide.md#module-21--automated-system-acceptance-t22) and [T24](operational-verification.md) retain executed verification evidence and its limits.
+**Delivered workflow diagrams:** [request/loan workflow PDF](Workflow%20view.pdf) and [physical-unit/maintenance workflow PDF](Physical-unit%20and%20maintenance%20workflow.pdf), supplied October 23, 2026 and accepted by Jerome for T25. Their Mermaid blocks above remain the editable sources. The [HTTP contract](api_spec.md) owns action routes and error/redirect semantics; [T22](manual-test-guide.md#module-21--automated-system-acceptance-t22) and [T24](operational-verification.md) retain executed verification evidence and its limits. See the [T25 delivery record](../handoffs/t25-pdf-diagram-delivery-and-documentation-closure-10-23-2026.md) for review scope and export limitations.
 
 ## Reads, reporting, and privacy
 
