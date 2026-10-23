@@ -400,5 +400,7 @@ and [DEV](../DEV.md); those tasks are separate from equipment repair in the admi
 
 Guide reviewed against application source and the existing screenshots on **October 23, 2026, Asia/Manila**. Instructions
 describe the implemented forms, labels and workflow restrictions. The [authoring handoff](../handoffs/t29-combined-user-manual-with-screenshots-10-23-2026.md)
-records source checks, evidence limits and remaining T29 validation. A fresh user walkthrough of this edition is pending;
-the presence of a screenshot does not establish execution of every action described above.
+records the source/screenshot checks and their evidence limits. The [guide coverage audit](../handoffs/t29-guide-coverage-and-documentation-closure-10-23-2026.md)
+accepts T29 using that review and the existing technical/operational records. No new reader/browser walkthrough was run
+for this edition; a screenshot alone does not establish execution of every described action. The final ZIP and complete
+fresh-machine demonstration remain separate T30 checks.
