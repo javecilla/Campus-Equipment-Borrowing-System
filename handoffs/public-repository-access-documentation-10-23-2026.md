@@ -1,0 +1,11 @@
+# Public repository access documentation
+
+Date: October 23, 2026 (Asia/Manila). Jerome requested documentation review before changing repository visibility for professor access. Codex updated documentation on `jerome`, starting at `34492f864079654ad5ea527ac367b24811cc130e`. Changes are uncommitted and Not integrated.
+
+[DEV's access section](../DEV.md#repository-access-and-professor-review) is the canonical access/setup reference. [README](../README.md), [CONTRIBUTING](../CONTRIBUTING.md) and [PLAN](../PLAN.md) remove current private-repository assumptions; CONTRIBUTING also reflects GitHub's public/private CODEOWNERS availability. [SUBMISSION](../SUBMISSION.md#github-access-for-professor-review) tracks signed-out source/screenshot/video checks and the intended review branch. The [backlog](../docs/tasks.md) records this GIT-01 follow-up without changing completed or pending task statuses. Historical handoffs and initial visibility/access evidence are preserved.
+
+GitHub's [visibility documentation](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility) and [CODEOWNERS documentation](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) were reviewed. Unauthenticated repository retrieval returned HTTP 404; public visibility is not confirmed. No repository setting, access grant, issue, application behavior, credential, database or media storage was changed. This was an access-documentation review; repository history/secrets and asset rights were not audited.
+
+Verification: changed documentation links/anchors, consistent planned-public wording and `git diff --check` pass. Application tests and database commands were not run; the database was not used. Signed-out repository browsing and video playback remain Not run pending the visibility change.
+
+Next action: Jerome changes GitHub visibility, completes the [submission access checks](../SUBMISSION.md#github-access-for-professor-review) and confirms the intended review branch. Public source access does not deploy the application or supply shared-service/demo credentials. No commit, push, PR or main merge was performed for this review.

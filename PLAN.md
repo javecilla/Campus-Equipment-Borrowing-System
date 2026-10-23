@@ -25,7 +25,7 @@ Keep task status in the backlog and current readiness in HANDOFF.md. Update this
 
 Select the next task from the [backlog](docs/tasks.md#verified-task-evidence) and [current handoff](HANDOFF.md), which own current status, blockers and integration evidence. For the existing UI interfaces and prerequisite checks consumed by T20, use [DEV.md's consumer handoff](DEV.md#t20-readiness-and-consumer-handoff). For the course-evidence stage, use [DEV.md's T25 consumer/source checklist](DEV.md#t25-readiness-and-consumer-handoff) to verify the integration and diagram authorization gates. This plan defines sequencing and handoff gates rather than maintaining a second status board.
 
-The original T01–T03 local-batch exception is completed and does not relax later integration gates. A merged implementation with an unresolved acceptance failure does not satisfy a prerequisite. Branch and private-repository access instructions remain in DEV.md. Documentation review does not authorize implementation or publication.
+The original T01–T03 local-batch exception is completed and does not relax later integration gates. A merged implementation with an unresolved acceptance failure does not satisfy a prerequisite. Branch instructions and [repository access for members and evaluators](DEV.md#repository-access-and-professor-review) remain in DEV.md. Documentation review does not authorize implementation or publication.
 
 ## Delivery stages and handoff gates
 

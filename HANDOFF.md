@@ -2,6 +2,8 @@
 
 ## Current state
 
+- **Public repository access documentation published on `origin/jerome`:** Jerome plans to make the repository public for professor review. README, DEV, CONTRIBUTING, PLAN and SUBMISSION now distinguish public reading/cloning, collaborator write access and private service credentials. Source `2ecbd968806f447ee8fedc32ade735afcd1e7fd2` is pushed, with fresh fetched remote equality and Codex co-author credit verified. The visibility change and signed-out page/video checks remain unverified; main integration is not claimed. See the [publication receipt](handoffs/public-repository-access-publication-10-23-2026.md) and [access review](handoffs/public-repository-access-documentation-10-23-2026.md).
+
 - **README promotional demo published on `origin/jerome`:** the [README demo section](README.md#promotional-demo) uses Jerome's GitHub video attachment URL on its own line for inline playback, replacing the original file link. Source `a3aef85b34897e4100fad65fd6b569a920283216` includes the supplied MP4 and handoffs; fresh fetched remote equality and Codex co-author credit are verified. Authenticated GitHub playback is not yet verified; main integration is not claimed. See the [publication receipt](handoffs/promotional-demo-publication-10-23-2026.md).
 
 - **Supplementary 30-second promotional video delivered:** [MP4 and editable source](handoffs/campus-equipment-promotional-video-10-23-2026.md) use actual system screenshots, original 120 BPM music and synthesized English narration. The 1080p/30 fps export is exactly 30 seconds; layout/contrast/media checks pass and exported scenes/transitions were reviewed. The MP4 is published at `static/videos/campus-equipment-promo.mp4` on `origin/jerome`; editable artifacts remain in ignored `output/campus-promo/`, with a portable source ZIP supplied for sharing. This separate promo does not complete T30 packaging or T31's live team rehearsal.
@@ -107,6 +109,8 @@ Developers and AI agents write work snapshots in the project-root `handoffs/` fo
 
 | Date | Work | Author | Handoff |
 | --- | --- | --- | --- |
+| October 23, 2026 | Publish professor repository-access documentation | Jerome authorization; Codex co-author credit | [Access publication receipt](handoffs/public-repository-access-publication-10-23-2026.md) |
+| October 23, 2026 | Prepare repository access guidance for public professor review | Jerome request; Codex documentation review | [Public access documentation](handoffs/public-repository-access-documentation-10-23-2026.md) |
 | October 23, 2026 | Publish promotional MP4, README embed and handoffs | Jerome authorization; Codex co-author credit | [Publication receipt](handoffs/promotional-demo-publication-10-23-2026.md) |
 | October 23, 2026 | Replace README video link with GitHub attachment embed | Jerome supplied upload; Codex documentation update | [README video embed](handoffs/readme-promotional-demo-embed-10-23-2026.md) |
 | October 23, 2026 | Link supplied promotional MP4 from README | Jerome request; Codex documentation update | [README demo link](handoffs/readme-promotional-demo-link-10-23-2026.md) |

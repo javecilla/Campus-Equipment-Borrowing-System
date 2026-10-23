@@ -2,7 +2,7 @@
 
 A Python/Django system for borrowing and managing campus equipment. Basic users browse equipment, submit requests and track their own requests and loans. Administrators manage accounts, categories, catalog items, individual physical units, approvals, release, partial/damaged returns, maintenance, reports and audit history through custom pages.
 
-Private team repository: [javecilla/Campus-Equipment-Borrowing-System](https://github.com/javecilla/Campus-Equipment-Borrowing-System). Member branches and the main integration workflow are documented in [DEV.md](DEV.md#assigned-branches-and-main-integration).
+Project repository: [javecilla/Campus-Equipment-Borrowing-System](https://github.com/javecilla/Campus-Equipment-Borrowing-System). See [repository access and professor review](DEV.md#repository-access-and-professor-review) for the planned public access and evaluator setup. Member branches and the main integration workflow are documented in [DEV.md](DEV.md#assigned-branches-and-main-integration).
 
 The system tracks individual physical units by asset code, preserves their transaction history, and prevents the same unit from being reserved or issued to multiple borrowers simultaneously.
 
