@@ -12,6 +12,14 @@ For where to add views, models, forms, URLs, and page templates, use [Project Fo
 
 Copy your member prompt from [Team AI work prompts](docs/team-agent-prompts.md) for your current assignment. Alex, Ralph and Jerome use implementation prompts; Kenneth, Margareth and Ellyssa focus on validation, documentation and manual testing. Follow the [current ownership and diagram delivery guidance](docs/tasks.md#current-ownership-and-support-responsibilities); all changes stay uncommitted for review.
 
+## Repository access and professor review
+
+Jerome plans to change [the repository](https://github.com/javecilla/Campus-Equipment-Borrowing-System) from private to public for professor/evaluator review. The visibility change and signed-out access have not yet been verified. After the change, anyone can browse the source, documentation and committed screenshots or clone the repository without a collaborator invitation. See [GitHub's visibility documentation](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility).
+
+Professors and evaluators can start with [README](README.md), the [screenshot gallery](docs/system-screenshots.md) and the [submission checklist](SUBMISSION.md#github-access-for-professor-review). The default `main` branch shows integrated work; [HANDOFF](HANDOFF.md) identifies member-branch deliveries awaiting integration. To run the application, follow [README's local setup](README.md#run-locally) with your own PostgreSQL database and local media storage; GitHub visibility does not deploy the Django application or provide demonstration accounts.
+
+Public read access does not grant write access to the team remote or access to the shared Neon database, private stored photos, ignored `.env.local`, backups or editable video project. Members who push their assigned branches still need collaborator write access arranged by Jerome. Demonstration credentials remain separately supplied through the instructor-designated channel. [GitHub-hosted video attachments](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files) follow their repository's access permissions; check the README player after the visibility change using [the submission checklist](SUBMISSION.md#github-access-for-professor-review).
+
 ## First-time setup
 
 Follow these steps once, in order. Keep an existing environment, database, or private configuration. For shared Neon development, prepare Python/frontend dependencies below, then use [the Neon steps](#shared-neon-database-and-photos); skip local database creation unless you also need isolated tests.
@@ -29,7 +37,7 @@ Open a new terminal after installation. Check `git --version`, `py -3.13 --versi
 
 ### Open your copy of the project
 
-Accept your invitation to the private team repository, then clone it:
+Clone the project repository. Once it is public, no invitation is needed to clone it; while it remains private, accept Jerome's invitation and authenticate with an account that has access:
 
 ```powershell
 git clone https://github.com/javecilla/Campus-Equipment-Borrowing-System.git

@@ -8,6 +8,15 @@ No PPT/slides needed. Bring a **printed project rubric in two copies** on demo d
 
 ---
 
+## GitHub access for professor review
+
+Repository: [javecilla/Campus-Equipment-Borrowing-System](https://github.com/javecilla/Campus-Equipment-Borrowing-System). Jerome plans to make it public; the visibility change and signed-out access are not yet verified. [DEV.md](DEV.md#repository-access-and-professor-review) owns access and evaluator setup guidance.
+
+- [ ] After changing visibility, open the repository while signed out or in a private browser window and verify README, documentation, screenshot images and the promotional video player are accessible.
+- [ ] Confirm the professor's review branch contains the intended submission; the default `main` branch may not include deliveries still recorded on member branches in [HANDOFF.md](HANDOFF.md).
+
+Public repository access is source/documentation access. Running the application follows [README's local setup](README.md#run-locally); demonstration credentials still use the [separate instructor channel](#demo-credentials-submit-separately--not-in-the-zip). T30 packaging and clean-machine checks remain separate.
+
 ## Quick status overview
 
 | #   | Item                                                                                              | Owner                                           | Status         |
