@@ -24,14 +24,18 @@ a privacy-impact-assessment approval, an accessibility-conformance claim, or per
 4. **Use WCAG 2.2 Level AA as the evaluation target, not a conformance claim.** Automated, responsive, keyboard, and
    status-label evidence exists, but complete screen-reader, disability-user, and whole-system conformance evaluation
    has not been performed.
-5. **Resolve unknown asset rights before submission.** Font and Chart.js notices exist. The default avatars and default
-   equipment artwork have no recorded source/license and must be replaced with team-created or clearly licensed assets,
-   or supported by written permission. Uploaded equipment photos must also have documented rights and contain no people,
-   IDs, screens, labels, or other unnecessary personal/confidential information.
-6. **Disclose AI assistance without delegating accountability.** Codex assistance is identified in handoffs and relevant
-   commit trailers. The application does not contain an AI feature. Real personal data, credentials, private database
-   values, and confidential campus material must not be submitted to an AI service. The actual BulSU AI Policy and
-   instructor disclosure instructions remain required before T27 can be marked Done.
+5. **Record actual asset origins and review the final package.** Jerome confirmed on October 23 that the project logo,
+   default role avatars, default equipment image and equipment images were generated with Gemini. This is attributed
+   contributor evidence, not independent verification or a guarantee of exclusive rights. The
+   [canonical asset inventory](third-party-dependencies.md#supplied-assets-and-optional-inspection-tooling) records the
+   disclosure and terms boundary. Keep font/Chart.js notices; review final images for personal/confidential content and
+   third-party material, and record the actual source/license if any internet-sourced image is included later.
+6. **Disclose AI assistance without delegating accountability.** Codex and Kiro assistance is identified in handoffs and
+   commit trailers; Gemini image generation is now recorded from Jerome's confirmation. The application does not contain
+   an AI feature. Real personal data, credentials, private database
+   values, and confidential campus material must not be submitted to an AI service. Apply the supplied course brief's
+   disclosure requirement and reconcile any additional applicable BulSU/instructor instructions when obtained; no policy
+   approval or unrestricted permission is inferred from existing use.
 
 ## Evidence boundary
 
@@ -68,10 +72,12 @@ at the point of submission or before any real-data pilot.
 
 ### Institutional sources still required
 
-The course brief requires disclosure under the **BulSU AI Policy and instructor instructions**. Neither the actual policy
-text nor the instructor's permitted-use/disclosure instructions were supplied in the repository, and an authoritative
-public policy text was not located in the official BulSU pages reviewed on October 23. The team must obtain the exact
-current document or written instruction, record its title/version/date and source, and reconcile this record with it.
+The course brief requires disclosure under the **BulSU AI Policy and instructor instructions**. Jerome reports on
+October 23 that no separate disclosure format or additional instruction has been supplied; the available instruction is
+the course brief's requirement to disclose AI use. The actual university policy text is not in the repository, and the
+official-site search did not locate it. This record supplies the disclosure under the available brief, while university
+policy compliance remains unverified. Alex/Jerome should clarify applicable rules during final review and reconcile any
+actual policy/instructor instruction obtained, retaining its title/version/date and source.
 The team must also obtain project-specific privacy/records decisions from the appropriate BulSU office before real-data
 use. Absence of a located public document is not evidence that no rule exists.
 
@@ -114,8 +120,8 @@ institutional owner defines how data-subject rights and official-record duties a
 | Unauthorized access or inactive accounts | Active-role decorators, owner-scoped queries, 404/403 behavior, audit tests | Preserve `BASIC_USER`/`ADMIN`, active-account checks, owner scoping, CSRF/session controls, and no generic status update | Operational admin assignment, periodic access review, MFA/password/session policy, and incident response are unverified | Alex/account owner and institutional system owner before pilot |
 | Indefinite history, backups, or exports | Protected foreign keys, deactivation, audit records, CSV, backup/recovery evidence | Do not invent a period or delete records ad hoc; keep demo artifacts controlled | Records officer/DPO must classify each record, set retention/disposal and backup/export handling, and define deletion/anonymization | Institutional records owner/DPO before real data and recheck annually or after change |
 | Photo privacy, confidentiality, or unsafe upload | Authenticated delivery, validation, metadata-stripping re-encode, private/no-store response | Equipment-only images; exclude people, IDs, screens, asset labels deemed confidential, location clues, and unrelated surroundings | Human content review, rights evidence, approved storage, removal process, and retention remain required | Uploading admin plus institutional owner; team checks all submission images |
-| Asset copyright or misleading ownership | Dependency inventory, OFL/MIT notices, supplied default images with unknown source | Preserve notices and contributor credit; do not represent third-party/instructor assets as MIT-covered team work | Replace or document permission/source/license for default avatars/equipment art and every submitted photo | Alex coordinates inventory; asset contributor and Jerome verify before T30 |
-| Inaccessible interaction or communication | Semantic templates, native forms, keyboard focus, responsive checks, text status, T23 limitations | Maintain non-color status text, labels, focus visibility, keyboard use, responsive layout, and WCAG 2.2 AA target | Complete whole-system keyboard/screen-reader/zoom/error review with actual users where feasible; log failures and fixes | UI owners/every member before T30/demo; evaluator receives limitations |
+| Asset copyright or misleading ownership | Dependency inventory, OFL/MIT notices, Jerome's Gemini-origin confirmation | Preserve notices and AI/contributor credit; do not imply verified exclusive rights or extend MIT to third-party/instructor material | Review the final image set; disclose any reference material or later internet assets with actual source and permitted-use evidence | Alex coordinates inventory; asset contributor and Jerome verify before T30 |
+| Inaccessible interaction or communication | Ralph's T20 responsive/keyboard/error checks, theme contrast checks, T23 limitations | Maintain non-color status text, labels, focus visibility, keyboard use, responsive layout, and WCAG 2.2 AA target | Present the recorded evidence and untested screen-reader/zoom/user limits; further evaluation is recommended before adoption, without a conformance claim | UI owners/every member explain limits at submission/demo; institutional owner before adoption |
 | Bias or unfair treatment | Exactly two roles, same business rules, state-machine decisions, free-text admin reasons | Apply availability, quantity, duration, order, and workflow rules consistently; retain actor/reason; no hidden scoring or AI decisions | Admin discretion and unequal device/connectivity/accessibility effects remain; define review/appeal and monitor outcomes if deployed | Institutional process owner; team explains prototype limits at demo |
 | Conflict of interest or credit distortion | Member allocations, Git/handoffs, source/merge evidence, co-author records | Review by evidence, preserve every contributor's work, disclose AI/reuse, do not let branch ownership imply sole authorship | Every member must verify their record and disclose unrecorded reuse/assistance | All members before submission; Jerome coordinates final package |
 | Operational/public-welfare harm from incorrect inventory or downtime | Atomic workflows, audit logs, tests, T24 performance/recovery limits | Keep validation/locking/audit/recovery guidance; no unverified production claim; manual custodian check remains necessary | No production SLA, backup owner, disaster plan, or support process; wrong status could deny access or lose accountability | Institutional owner before adoption; maintainers after material change |
@@ -138,6 +144,24 @@ institutional owner defines how data-subject rights and official-record duties a
   could harm borrowers and custodians. The prototype therefore favors validated transitions, conservative data use,
   honest limitations, and a manual institutional decision before deployment.
 
+### Recorded accessibility evidence and disposition
+
+Ralph's work supplies actual evidence; this review does not repeat those browser checks or replace them with a claim
+of certification. Historical implementation handoffs retain their original publication state; the
+[T20 merged-source review](../handoffs/t20-main-integration-review-and-documentation-10-21-2026.md) and backlog establish
+later integration.
+
+| Evidence | Recorded result and scope | Remaining limitation |
+| --- | --- | --- |
+| [Ralph's T20 verification](../handoffs/ralph-t20-role-workspace-integration-10-21-2026.md#actual-verification) | 17 routes at 1440/1024/768/390/320px; document bounds, headings/navigation, linked field errors, keyboard skip link/focus, overdue anchor and keyboard table scrolling passed in the recorded Chromium run | Screen-reader evaluation and Firefox/Safari were Not run; responsive widths do not by themselves establish zoom/reflow conformance |
+| Same T20 record and [Module 19](manual-test-guide.md#module-19--integrated-role-workspaces-t20) | Nine configured theme text-role pairs passed the 4.5:1 contrast check; native validation and JavaScript-disabled empty-state navigation were exercised | The palette check is not an audit of every rendered component or every WCAG criterion |
+| [Ralph's T17 contribution](../handoffs/ralph-t17-per-unit-returns-and-overdue-10-20-2026.md) and [dashboard/workspace review](../handoffs/dashboard-and-workspace-publication-review-10-20-2026.md) | Scoped form labels, keyboard focus, responsive views and accessible chart-table alternatives are recorded | These checks do not demonstrate whole-system screen-reader coverage or a disability-user study |
+
+**Coursework disposition:** retain these results, explain the untested limits and avoid a WCAG conformance claim.
+The supplied brief requires accessibility analysis and defensible safeguards; it does not explicitly require WCAG
+certification, a disability-user study or every browser/assistive-technology combination as a T27 completion gate.
+No new accessibility feature or full evaluation is inferred from this document update.
+
 ## Intellectual property and asset disposition
 
 | Material | Current evidence | Submission decision |
@@ -146,8 +170,9 @@ institutional owner defines how data-subject rights and official-record duties a
 | Django/Python/npm packages | Pinned locks, license inventory, direct-dependency rationale | Retain lockfiles and required notices; recheck after dependency changes |
 | DM Sans and Poppins | Local SIL Open Font License files | Include the font license files with distributed assets |
 | Chart.js and `@kurkle/color` | Bundled MIT notice in `static/licenses/chartjs-MIT.txt` | Keep the notice with the static bundle/submission |
-| Default role avatars and default equipment artwork | Files are present; original source/license is not recorded | **Blocked for final submission unless replaced or supported by source/license/permission evidence** |
-| Uploaded/demo equipment photographs | Technical storage/protection evidence exists; creator/subject/property permission is not centrally recorded | Include only reviewed equipment-only images with contributor/source, permission or license, and no personal/confidential content |
+| Project logo, default role avatars and default equipment artwork | Jerome confirmed Gemini generation on October 23; see the canonical asset inventory | Disclose the reported AI origin; retain the terms boundary and final content review instead of claiming an unknown internet source or exclusive rights |
+| Uploaded/demo equipment images | Jerome's answer to the asset-origin question also identifies these as Gemini-generated | Describe them as illustrative demonstration images, not proof of real campus inventory; review final content and keep their AI-origin disclosure |
+| GitHub evidence screenshots | Jerome supplied three repository screenshots, visually inspected for this record | Retain repository/GitHub attribution; use them as contribution/disclosure evidence, not a measurement of human effort or instructor approval |
 | Instructor/course materials | Supplied requirements and rubric-related records | Reference for coursework only; do not claim project MIT ownership over them |
 
 The detailed dependency and supplied-asset inventory remains canonical in
@@ -155,47 +180,94 @@ The detailed dependency and supplied-asset inventory remains canonical in
 
 ## AI and reuse disclosure
 
-- **Product behavior:** no AI model, prediction, recommendation, scoring, or automated decision component is integrated.
-- **Development assistance:** Codex assisted with repository analysis, implementation, verification, research, and
-  documentation in the specifically recorded handoffs/commit trailers. Team members selected requirements, authorized
-  work, reviewed results where recorded, and remain responsible for understanding and defending submitted work.
-- **Other reuse:** Django, Python packages, npm packages, fonts, Chart.js, and other dependencies are declared in the
-  dependency inventory. Existing member work and contributor credit must remain intact when integrating changes.
-- **Data handling:** prompts and tools must exclude real personal data, credentials, private connection strings, private
-  database/media contents, and confidential campus materials. Use fictional/minimized examples and the least access
-  needed for the task.
-- **Service controls:** Codex documentation states that the authentication route determines which data policies and
-  settings apply. The repository does not prove the active user's account/workspace controls, MFA, retention choices, or
-  organization API settings. Verify and record only the controls actually used if required by the instructor.
-- **Unresolved rule:** obtain and apply the current BulSU AI Policy and the instructor's permitted-use, citation,
-  disclosure, and defense instructions. Existing co-author credit is evidence of disclosure practice, not proof of policy
-  compliance.
+**Product behavior:** the application contains no AI model, prediction, scoring or automated approval feature. AI was
+used during development and asset preparation. Team members selected requirements and authorized/reviewed work where
+recorded; they remain responsible for understanding, verifying and defending the submitted result.
+
+| Tool | Recorded assistance | Evidence and boundary |
+| --- | --- | --- |
+| Codex | Repository analysis, implementation, tests/checks, research and documentation in the attributed work records | Handoffs and commit trailers identify individual deliveries. The [T26 commit](https://github.com/javecilla/Campus-Equipment-Borrowing-System/commit/25e83ef45036f0a0541b74daa7fffbb57972a4b7) is one documented example, not a claim that every contribution used AI |
+| Kiro | Workspace UI changes subsequently reviewed with the Chart.js/dashboard delivery | [Combined source](https://github.com/javecilla/Campus-Equipment-Borrowing-System/commit/f3d42bae5d907652e3f0b12b1ec4290321fec08d) retains both Kiro and Codex trailers; the [publication review](../handoffs/dashboard-and-workspace-publication-review-10-20-2026.md) attributes their respective work |
+| Gemini | Project logo, default role avatars, equipment placeholder and illustrative equipment images | Jerome confirmed the origin on October 23. Exact generation dates, model versions, prompts and reference inputs were not supplied; they are not invented. See the [asset inventory](third-party-dependencies.md#supplied-assets-and-optional-inspection-tooling) |
+
+Other reused packages, fonts and Chart.js remain declared in the dependency inventory with their notices. Retain human
+contributor credit as well as AI disclosure. Prompts/tools must exclude real personal data, credentials, private
+database/media contents and confidential campus material. Actual account/workspace controls are not established by
+this record; document only controls verified for the service used if the instructor requires them.
+
+### GitHub evidence
+
+Jerome supplied the following screenshots; they have been visually inspected and are retained at their existing paths.
+Contributor graphs and commit/co-author records support transparent attribution. Commit counts do not establish each
+person's effort, understanding, leadership or policy compliance. The Kiro source above supplements these screenshots,
+which do not themselves show Kiro's trailer.
+
+![GitHub contributors snapshot supplied by Jerome](../static/images/gh-contributors.png)
+
+The contributors view is a snapshot of GitHub's displayed accounts/counts, including Codex and the six team accounts.
+
+![GitHub main commit history snapshot supplied by Jerome](../static/images/gh-team-commits.png)
+
+The main-history snapshot includes member/AI attribution and PR #68. Integration is verified separately through Git.
+
+![T26 commit with Codex co-author trailer](../static/images/gh-commit.png)
+
+The T26 commit screenshot shows a concrete description of assisted documentation work and the Codex co-author line.
+
+**AI policy evidence is a separate input.** These screenshots plus the explanation above document what assistance was
+used. The actual BulSU/instructor rule establishes what assistance is permitted and how to disclose it. The course
+brief explicitly refers to that rule; neither a contributor graph nor this team's own explanation can replace it.
+Jerome reports no separate format/instruction has been supplied beyond the course brief. The disclosure above therefore
+uses the available instruction. The university policy text remains unavailable in the reviewed records and official-site
+search, so policy compliance is unverified rather than assumed. Clarify that limitation at final member review and apply
+any actual policy/instructor instruction obtained; do not invent a policy, an approval or a required template.
 
 ## Completion gate and member review
 
-T27 remains **In progress** until every item below has evidence. Technical tests alone cannot close it.
+### Coursework submission evidence
 
-- [ ] The instructor/BulSU AI instruction is attached or linked with title, version/date, permitted use, required
-      disclosure, and any prohibited data/content; this document is reconciled to it.
-- [ ] The accountable BulSU process/system owner, DPO/privacy contact, and records owner are identified for any proposed
-      real-data use.
-- [ ] The approved purpose, lawful basis, privacy notice, PIA outcome, access review, hosting/processor/data-sharing
-      decision, incident path, and data-subject request process are recorded.
-- [ ] A record-by-record retention, archive, deletion/anonymization, backup, export, and secure-disposal schedule is
-      approved; the application gap is accepted or implemented under a separately authorized task.
-- [ ] Default avatars/equipment artwork and every included photograph have source/license/permission evidence or are
-      replaced with reviewed assets.
-- [ ] Final accessibility review records keyboard, zoom/reflow, screen-reader, form/error, contrast, and user limitations;
-      no unsupported WCAG conformance claim is made.
-- [ ] Admin discretion, review/appeal, accommodation, equipment-safety, downtime/recovery, and support responsibilities
-      are accepted by the relevant owner or clearly presented as prototype limitations.
-- [ ] Every member reviews the final record, adds any unrecorded reuse/AI assistance, and can explain their own decisions,
-      risks, safeguards, evidence, and limitations.
+T27 remains **In progress** pending the final member review below. This reassessment concerns the fictional-data
+coursework prototype; it neither changes application behavior nor authorizes real-data deployment.
+
+- [x] Stakeholders, duties, relevant sources, risks, decisions, safeguards, accountable owners and prototype limitations
+      are documented across this record.
+- [x] Codex/Kiro assistance is attributed to existing source records; Gemini asset origin is recorded from Jerome's
+      confirmation, with the supplied GitHub screenshots and explanations.
+- [x] Asset provenance is disclosed at the evidence level actually supplied. Font/library notices are retained and final
+      package image/content review remains an explicit T30 responsibility; no blanket rights guarantee is claimed.
+- [x] Existing accessibility results and untested limits are consolidated above without a conformance claim.
+- [x] The available AI disclosure instruction is recorded from the course brief and Jerome's report that no separate
+      format/instruction has been supplied. University policy compliance remains unverified and must be raised at final
+      review; any further applicable instruction must be incorporated when supplied.
+- [ ] Members review the final decisions/assistance and record actual corrections, unresolved concerns and ability to
+      explain their respective work. The scheduled meeting below is not yet a completed review.
+
+### Conditional controls before real-data use
+
+These remain unresolved deployment safeguards, rather than additional approval requirements invented for a fictional
+coursework prototype. The supplied course brief asks for analysis and defensible recommendations; it does not explicitly
+require institutional deployment approval, an approved records schedule or full WCAG certification for T27 submission.
+
+- Identify the accountable BulSU process/system owner, DPO/privacy contact and records owner.
+- Obtain institutional decisions on purpose/lawful basis, notice, PIA, access, hosting/processor/data-sharing, incident
+  response and data-subject requests.
+- Approve retention, archive, deletion/anonymization, backups/exports and secure disposal for the actual records.
+- Resolve operational appeal/accommodation, equipment-safety, support and continuity responsibilities; evaluate
+  remaining accessibility risks for the intended users before adoption.
+
+No approval, retention period or deployment permission is inferred here. Keep operational demonstration data fictional.
+
+### Planned member review
+
+Jerome reports a team meeting scheduled for **October 23, 2026, 8:00 PM onwards, Asia/Manila**. Planned discussion covers
+each member's module decisions, privacy/access and public-welfare risks, AI/reuse/asset disclosure, evidence limitations,
+corrections and remaining owners/actions. Attendance, feedback, decisions and completion will be recorded only after
+they occur; the following table is preparation, not meeting minutes or sign-off.
 
 | Member | Required review/defense evidence | Current record |
 | --- | --- | --- |
 | Jerome S. Avecilla | Delivery/integration, database/audit/settings, hosting/recovery, final package decisions | Not recorded for final T27 review |
-| Alex Enrico Cayanan | T27 coordination, accounts/security, dashboard/reports, privacy/access decisions | Source-backed draft prepared; final institutional inputs/review pending |
+| Alex Enrico Cayanan | T27 coordination, accounts/security, dashboard/reports, privacy/access decisions | Source-backed draft prepared; final coursework policy/member review pending |
 | Kenneth T. Cortez | Inventory/maintenance, equipment-photo content/rights/safety | Not recorded for final T27 review |
 | Ralph Andre F. Giga | Requests/tracking, T17 return/privacy/access/atomicity contribution | Technical contribution recorded; final policy/team review pending |
 | Margareth Raine H. Ignacio | Approval/release/returns, reasons/discretion/custody/safety | Not recorded for final T27 review |
