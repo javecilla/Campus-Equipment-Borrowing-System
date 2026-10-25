@@ -31,7 +31,10 @@ database/media operation, backup/restore, browser session, upload/submission or 
 
 ## Integration and next action
 
-This source is Not integrated into main; the fetched main reference during publication is
-`61945a2a87227a92b557c1e6d526878230c966c1`. No PR or main merge was performed. Jerome reviews later integration;
-everyone continues T31 preparation for Monday, October 26. T27/T30 coursework completion and reported delivery do not
+The first publication fetch showed main at `61945a2a87227a92b557c1e6d526878230c966c1`. The final fetch
+subsequently verified user-merged PR #82 at `28596736f81a7a547df845d7762ce4c58017946b`, with source `2ebb916`
+as its second parent and exact source/merge-tree equality (`277b07f106da22257734a2a3aff91f1b0ba11596`).
+The main documentation source is therefore integrated. Receipt commit `62cab22` and this integration-label follow-up
+remain member-branch documentation at this check. No PR or main merge was performed by Codex.
+Everyone continues T31 preparation for Monday, October 26. T27/T30 coursework completion and reported delivery do not
 imply university AI policy approval, real-data deployment authorization or a new package replay.
