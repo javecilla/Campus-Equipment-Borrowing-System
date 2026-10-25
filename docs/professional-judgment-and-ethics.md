@@ -72,11 +72,11 @@ at the point of submission or before any real-data pilot.
 
 ### Institutional sources still required
 
-The course brief requires disclosure under the **BulSU AI Policy and instructor instructions**. Jerome reports on
-October 23 that no separate disclosure format or additional instruction has been supplied; the available instruction is
-the course brief's requirement to disclose AI use. The actual university policy text is not in the repository, and the
-official-site search did not locate it. This record supplies the disclosure under the available brief, while university
-policy compliance remains unverified. Alex/Jerome should clarify applicable rules during final review and reconcile any
+The course brief requires disclosure under the **BulSU AI Policy and instructor instructions**. On October 25, Jerome
+supplied the professor's instruction: "AI disclosure: Prepare a simple statement disclosing how AI was used, following
+examples from journal AI-use declarations." The [AI use declaration](#ai-use-declaration) follows that instruction.
+The actual university policy text is not in the repository, and the previously recorded official-site search did not
+locate it. University policy compliance remains unverified. Alex/Jerome should clarify applicable rules during final review and reconcile any
 actual policy/instructor instruction obtained, retaining its title/version/date and source.
 The team must also obtain project-specific privacy/records decisions from the appropriate BulSU office before real-data
 use. Absence of a located public document is not evidence that no rule exists.
@@ -180,12 +180,27 @@ The detailed dependency and supplied-asset inventory remains canonical in
 
 ## AI and reuse disclosure
 
+### AI use declaration
+
+During the development and documentation of the Campus Equipment Borrowing System, the team used Codex to assist with
+code implementation, debugging, testing, research, and documentation, and Kiro to assist with workspace interface
+improvements. Gemini was used to generate the project logo, default avatars, equipment placeholder, and illustrative
+equipment images. The team reviewed and revised AI-assisted outputs and verified system behavior through testing.
+The team takes responsibility for the final submitted code, documentation, assets, and project decisions.
+
+This statement follows the tool, purpose, human-review and responsibility structure of
+[Elsevier's journal AI-use declaration guidance](https://www.elsevier.com/about/policies-and-standards/generative-ai-policies-for-journals),
+adapted to this software project. The evidence and limits below support the declaration.
+
+### Disclosure evidence and scope
+
 **Disclosure record: complete for the assistance, dependencies and assets currently recorded.** The
 [record review](../handoffs/ai-reuse-disclosure-record-review-10-23-2026.md) checked source attribution, supplied evidence,
 asset-origin statements, dependency-table coverage and retained license notices. This status concerns the record's
 content; it does not establish university policy approval, exclusive image rights or every member's final confirmation.
 The [T27 completion assessment and member follow-up](#completion-gate-and-member-review) distinguish the completed
-written record from pending team/defense evidence and final T30 package/asset checks. Incorporate any additional
+written record from pending presentation/defense evidence. Final T30 package/asset checks are complete per Jerome's
+October 25 [submission confirmation](../handoffs/submission-completion-and-demo-readiness-10-25-2026.md). Incorporate any additional
 assistance, source material or applicable instructions actually disclosed later.
 
 **Product behavior:** the application contains no AI model, prediction, scoring or automated approval feature. AI was
@@ -225,9 +240,10 @@ The T26 commit screenshot shows a concrete description of assisted documentation
 **AI policy evidence is a separate input.** These screenshots plus the explanation above document what assistance was
 used. The actual BulSU/instructor rule establishes what assistance is permitted and how to disclose it. The course
 brief explicitly refers to that rule; neither a contributor graph nor this team's own explanation can replace it.
-Jerome reports no separate format/instruction has been supplied beyond the course brief. The disclosure above therefore
-uses the available instruction. The university policy text remains unavailable in the reviewed records and official-site
-search, so policy compliance is unverified rather than assumed. Clarify that limitation at final member review and apply
+Jerome supplied the professor's instruction on October 25 to prepare a simple statement following journal AI-use
+declarations. The declaration above follows that format and retains the supporting evidence. The university policy text
+remains unavailable in the reviewed records and previously recorded official-site search, so policy compliance is
+unverified rather than assumed. Clarify that limitation at final member review and apply
 any actual policy/instructor instruction obtained; do not invent a policy, an approval or a required template.
 
 ## Completion gate and member review
@@ -248,11 +264,11 @@ real-data deployment. Material new instructions or findings require reassessing 
       are documented across this record.
 - [x] Codex/Kiro assistance is attributed to existing source records; Gemini asset origin is recorded from Jerome's
       confirmation, with the supplied GitHub screenshots and explanations.
-- [x] Asset provenance is disclosed at the evidence level actually supplied. Font/library notices are retained and final
-      package image/content review remains an explicit T30 responsibility; no blanket rights guarantee is claimed.
+- [x] Asset provenance is disclosed at the evidence level actually supplied. Font/library notices are retained; final
+      package image/content review is complete per Jerome's October 25 confirmation; no blanket rights guarantee is claimed.
 - [x] Existing accessibility results and untested limits are consolidated above without a conformance claim.
-- [x] The available AI disclosure instruction is recorded from the course brief and Jerome's report that no separate
-      format/instruction has been supplied. University policy compliance remains unverified and must be raised at final
+- [x] The course brief and professor's instruction to follow journal AI-use declaration examples are recorded, with
+      a simple statement and supporting evidence. University policy compliance remains unverified and must be raised at final
       review; any further applicable instruction must be incorporated when supplied.
 
 ### Conditional controls before real-data use

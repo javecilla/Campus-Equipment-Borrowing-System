@@ -3,6 +3,8 @@
 **IT401W WEB PROGRAMMING AND FRAMEWORKS — Final Project A**  
 Presentation: **Monday, October 26, 2026**, confirmed by Jerome. Exact upload/submission deadline not supplied. Retain the required ZIP filename below.
 
+**Completion confirmed by Jerome on October 25, 2026:** all non-presentation checklist items are complete, including repository access, the final package and verification, upload/submission and separate demo credentials. Only the October 26 presentation/demo remains pending. These delivery results are coordinator-reported; this documentation review does not independently inspect the final ZIP, external submission receipt or clean-machine run. See the [completion record](handoffs/submission-completion-and-demo-readiness-10-25-2026.md).
+
 Instructor confirmed: submit **source code + screenshots of the system** in a digital folder.
 No PPT/slides needed. Bring a **printed project rubric in two copies** on demo day.
 
@@ -10,12 +12,12 @@ No PPT/slides needed. Bring a **printed project rubric in two copies** on demo d
 
 ## GitHub access for professor review
 
-Repository: [javecilla/Campus-Equipment-Borrowing-System](https://github.com/javecilla/Campus-Equipment-Borrowing-System). Jerome plans to make it public; the visibility change and signed-out access are not yet verified. [DEV.md](DEV.md#repository-access-and-professor-review) owns access and evaluator setup guidance.
+Repository: [javecilla/Campus-Equipment-Borrowing-System](https://github.com/javecilla/Campus-Equipment-Borrowing-System). Jerome confirms public repository access and the review-branch/access checks are complete as of October 25. [DEV.md](DEV.md#repository-access-and-professor-review) owns access and evaluator setup guidance.
 
-- [ ] After changing visibility, open the repository while signed out or in a private browser window and verify README, documentation, screenshot images and the promotional video player are accessible.
-- [ ] Confirm the professor's review branch contains the intended submission; the default `main` branch may not include deliveries still recorded on member branches in [HANDOFF.md](HANDOFF.md).
+- [x] After changing visibility, open the repository while signed out or in a private browser window and verify README, documentation, screenshot images and the promotional video player are accessible.
+- [x] Confirm the professor's review branch contains the intended submission; the default `main` branch may not include deliveries still recorded on member branches in [HANDOFF.md](HANDOFF.md).
 
-Public repository access is source/documentation access. Running the application follows [README's local setup](README.md#run-locally); demonstration credentials still use the [separate instructor channel](#demo-credentials-submit-separately--not-in-the-zip). T30 packaging and clean-machine checks remain separate.
+Public repository access is source/documentation access. Running the application follows [README's local setup](README.md#run-locally); demonstration credentials still use the [separate instructor channel](#demo-credentials-submit-separately--not-in-the-zip). T30 packaging and clean-machine checks are complete per Jerome; their results are distinct from this source-document review.
 
 ## Quick status overview
 
@@ -28,7 +30,7 @@ Public repository access is source/documentation access. Running the application
 | 5   | Team participation and individual contribution evidence T28                                       | Everyone — rotate leadership                    | Done    |
 | 6   | Verified user / admin / technical guides T29                                                      | Ellyssa+Ralph / Margareth+Kenneth / Jerome+Alex | Done |
 | 7   | Screenshots of the system                                                                         | Jerome with Codex assistance                    | Done (72 PNGs) |
-| 8 | Submission handoff T30 | Jerome packages/uploads/invites; Alex submits | Done (ownership agreed); delivery In progress |
+| 8 | Submission handoff T30 | Jerome packages/uploads/invites; Alex submits | Done (Jerome-confirmed October 25) |
 | 9   | Demo rehearsed; printed rubric ready T31                                                          | Everyone                                        | Not Started    |
 
 ---
@@ -59,24 +61,24 @@ The dashboard cards summarize current work; they are not the complete dataset co
 | Active loans     | 4              | At least one unit remains outstanding: 3 Issued requests and 1 Partially returned request. Another 16 loans are fully returned, so **20 loans have been issued in total**. |
 | Overdue loans    | 2              | A subset of those 4 active loans, past their agreed due dates. This count changes with the actual calendar date.                                                           |
 
-**T30 final-package/data-replay gap:** `seed_demo_data` creates the nine accounts only. `seed_demo_units` needs an existing catalog; `seed_demo_transactions` needs the exact named items, serviceable stock, and an empty borrowing history. The importer adds only one damaged-return maintenance record; the other nine maintenance records and the catalog were prepared separately. Before claiming repeatable full minimum-data setup from the ZIP, provide a reviewed fictional catalog/maintenance fixture or equivalent seed and verify it on a fresh local database. No private database dump should be packaged as a shortcut. [README seed steps](README.md#5-seed-the-demonstration-data) and [DEV's runbook](DEV.md#demo-command-runbook) explain current commands and prerequisites. Do not reseed the current populated database to increase dashboard counters.
+**T30 package/data preparation: complete per Jerome on October 25.** His confirmation covers the final-package content and complete-data/clean-machine checks below. The repository commands retain their existing scopes: `seed_demo_data` creates accounts, `seed_demo_units` needs an existing catalog, and `seed_demo_transactions` needs the named items, serviceable stock and empty borrowing history. This status update adds no catalog/maintenance fixture or seed implementation to the checkout and does not independently reproduce the reported package result. [README seed steps](README.md#5-seed-the-demonstration-data) and [DEV runbook](DEV.md#demo-command-runbook) remain the command references.
 
 ## Part 5 and Part 6 evidence readiness
 
 [README Part 5](README.md#part-5-business-rules-and-technical-implementation) explains each of the six business rules, their purpose, source and tests; it also maps the required Django implementation, PostgreSQL concurrency strategy and limitations. [README local setup](README.md#run-locally) gives dependency, environment, migration, seed and server commands. A working local demonstration is sufficient. The team voluntarily uses Neon for centralized records during end-to-end testing; online deployment and external integrations are not course requirements.
 
-Use the following evidence groups when assembling the documentation/evidence folder. Available source/evidence does not close outstanding human reviews or individual records.
+Use the following evidence groups when assembling the documentation/evidence folder. Documentation and delivery items are complete under the existing evidence limits and Jerome's October 25 confirmation; live presentation/Q&A remains T31.
 
 | Evidence group        | Available references                                                                                                                                                                                                                                                                                                                                | Required completion before submission                                                                                                                                                                                                                           |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| User needs            | [Requirements](docs/SRS.md), [personas](docs/PRD.md#users-and-stakeholders), [T26 options/recommendation](docs/user-needs-evidence-guide.md), [acceptance, resolved issue and enhancement](docs/usability-acceptance.md)                                                                                                                            | Retain the limited proxy-feedback evidence honestly and the reviewed maintenance guidance indexed in DEV under T29. T26 is Done/integrated; T29 guide closure does not claim final package replay. |
-| System | [MTV/workflow sources and PDFs](docs/architecture.md), [database sources and PDFs](docs/db_design.md), [manual/automated acceptance](docs/manual-test-guide.md), [operational results](docs/operational-verification.md), [screenshots](docs/system-screenshots.md) | T25 Done locally on Jerome-accepted PDF exports and editable Mermaid definitions, with existing source/test evidence and recorded export limits. Main integration remains pending; retain separate T27/T28 evidence and final-ZIP checks. |
+| User needs            | [Requirements](docs/SRS.md), [personas](docs/PRD.md#users-and-stakeholders), [T26 options/recommendation](docs/user-needs-evidence-guide.md), [acceptance, resolved issue and enhancement](docs/usability-acceptance.md)                                                                                                                            | Retain the limited proxy-feedback evidence honestly and the reviewed maintenance guidance indexed in DEV under T29. T26 is Done/integrated; Final-package replay is separately confirmed by Jerome on October 25. |
+| System | [MTV/workflow sources and PDFs](docs/architecture.md), [database sources and PDFs](docs/db_design.md), [manual/automated acceptance](docs/manual-test-guide.md), [operational results](docs/operational-verification.md), [screenshots](docs/system-screenshots.md) | T25 Done locally on Jerome-accepted PDF exports and editable Mermaid definitions, with existing source/test evidence and recorded export limits. Package inclusion is confirmed by Jerome; Git main integration remains a separate recorded fact. Retain T27/T28 evidence and export limits. |
 | Technology            | [Django implementation map](README.md#required-django-implementation), [package justifications](README.md#third-party-packages-and-assets), [dependency inventory](docs/third-party-dependencies.md), Git/handoffs/test/configuration records, [emerging-technology evaluation](docs/user-needs-evidence-guide.md#evaluate-one-emerging-technology) | Keep effectiveness, compatibility, security, user-needs analysis and conditional adoption recommendation. Retain T27 policy/account limitations; clarify actual applicable instructions without claiming formal clearance.                                                                                               |
-| Professional judgment | [Canonical T27 record](docs/professional-judgment-and-ethics.md), [consumer handoff](DEV.md#t27-readiness-and-consumer-handoff), [Ralph's technical contribution](handoffs/ralph-t17-per-unit-returns-and-overdue-10-20-2026.md#ralphs-t27-technical-contribution)                                                                                       | Required topic analysis, Codex/Kiro/Gemini disclosure, asset-origin evidence and accessibility results/limits are recorded. T27 documented assessment is complete; T28 participation is complete per Jerome; presentation/Q&A remains T31. University AI policy compliance remains unverified and applicable instructions must be clarified. Institutional real-data approvals remain conditional adoption controls. |
+| Professional judgment | [AI use declaration and T27 record](docs/professional-judgment-and-ethics.md#ai-use-declaration), [consumer handoff](DEV.md#t27-readiness-and-consumer-handoff), [Ralph's technical contribution](handoffs/ralph-t17-per-unit-returns-and-overdue-10-20-2026.md#ralphs-t27-technical-contribution)                                                                                       | Required topic analysis, Codex/Kiro/Gemini disclosure, asset-origin evidence and accessibility results/limits are recorded. T27 documented assessment is complete; T28 participation is complete per Jerome; presentation/Q&A remains T31. University AI policy compliance remains unverified and applicable instructions must be clarified. Institutional real-data approvals remain conditional adoption controls. |
 | Team                  | [Original allocations](docs/Project-Members.txt), [current ownership](docs/tasks.md#current-ownership-and-support-responsibilities), [collaboration records](handoffs/)                                                                                                                                                                             | T28 Done per Jerome's October 23 confirmation that every member's participation requirements and the team meeting are complete, everyone agrees to the system, and full end-to-end testing is complete. See the [completion record](handoffs/t28-team-participation-completion-10-23-2026.md).                                                 |
-| Communication         | [Basic-user/admin manual](docs/user-manual-guides.md), [technical setup](README.md#run-locally), [development guide](DEV.md), [demo plan](#t31--demo-day-checklist) | T29 guide scope is Done on source/screenshot review and existing technical/maintenance verification evidence; final-ZIP inclusion and fresh complete-data replay remain T30. Each member still needs a presentation segment, Q&A participation and recorded feedback/actions under T31. |
+| Communication         | [Basic-user/admin manual](docs/user-manual-guides.md), [technical setup](README.md#run-locally), [development guide](DEV.md), [demo plan](#t31--demo-day-checklist) | T29 guide scope is Done on source/screenshot review and existing technical/maintenance verification evidence; final-ZIP inclusion and complete-data replay are confirmed by Jerome on October 25. Each member still needs a presentation segment, Q&A participation and recorded feedback/actions under T31. |
 
-The rubric assesses **all four indicators** for each of **PO-d, PO-e, PO-g, PO-h, PO-j and PO-n**, using the application, evidence, demo and Q&A. Every member needs identifiable individual evidence. T30 still depends on completed T22, T23 and T25-T29; screenshot completion alone does not satisfy packaging readiness.
+The rubric assesses **all four indicators** for each of **PO-d, PO-e, PO-g, PO-h, PO-j and PO-n**, using the application, evidence, demo and Q&A. Every member needs identifiable individual evidence. T30 is Done on Jerome's October 25 delivery confirmation; the live October 26 demonstration and Q&A remain pending under T31.
 
 ## Screenshots checklist
 
@@ -169,76 +171,71 @@ These supplement the checklist with actual create/edit/detail, confirmation and 
 
 ## T30 — Submission ZIP checklist
 
-**Submission handoff: Done (ownership agreed).** Jerome will create the ZIP, upload it to a secure drive and invite
-Alex Enrico Cayanan. Alex will submit it through the dedicated channel given by the professor. These are planned
-manual actions; the upload, invitation/access and submission are not yet confirmed. Full T30 delivery is **In progress**,
-with the final-package/data-replay checks below still outstanding. The course brief requires an actual ZIP and separate
-demonstration credentials; assigning owners does not establish their delivery.
+**Submission delivery: Done per Jerome on October 25, 2026.** Jerome confirms that packaging/content review, complete-data and clean-machine checks, secure-drive upload/Alex access, professor-channel submission and separate credential delivery are complete. The checkmarks below record that confirmation, rather than new automated or external verification by this review. No private drive URL, receipt or credentials are copied into this public document.
 
 - [x] Assign packaging/upload/invitation to Jerome and professor-channel submission to Alex.
-- [ ] Jerome creates the final ZIP and completes the content/verification checks below.
-- [ ] Jerome uploads the reviewed ZIP to the secure drive and invites Alex.
-- [ ] Alex confirms access and submits through the professor's dedicated channel.
-- [ ] Confirm submission receipt and delivery of demonstration credentials through the designated channel.
+- [x] Jerome creates the final ZIP and completes the content/verification checks below.
+- [x] Jerome uploads the reviewed ZIP to the secure drive and invites Alex.
+- [x] Alex confirms access and submits through the professor's dedicated channel.
+- [x] Confirm submission receipt and delivery of demonstration credentials through the designated channel.
 
-Presentation is **Monday, October 26, 2026**. Coordinate the upload/submission deadline between Jerome and Alex;
-no exact deadline or secure-drive link is supplied here.
+Presentation is **Monday, October 26, 2026**. Submission is confirmed complete; the exact upload/submission deadline and private secure-drive link are not reproduced here.
 
 ### ZIP filename (must be exact)
 
-- [ ] `IT401W_ProjectA_BSIT4EG1_Group2.zip` — confirm the exact Section and Group values with Jerome before assembling
+- [x] `IT401W_ProjectA_BSIT4EG1_Group2.zip` — filename/Section/Group confirmed by Jerome
 
 ### Required contents
 
-- [ ] All application source code (`accounts/`, `borrowing/`, `inventory/`, `operations/`, `config/`, `templates/`, `static/`)
-- [ ] `scripts/` required by the npm asset build, plus `LICENSE` and third-party notices
-- [ ] `migrations/` folders (inside each app)
-- [ ] `requirements.txt` and `requirements-dev.txt`
-- [ ] `package.json` and `package-lock.json`
-- [ ] `README.md` — setup instructions for a clean machine
-- [ ] `DEV.md` — team and technical setup guide
-- [ ] `manage.py`, `pyproject.toml` and `.python-version` (the actual project configuration files)
-- [ ] `.env.example` — configuration key template (no real values)
-- [ ] All existing account/unit/history seed commands and their prerequisites, following [README](README.md#5-seed-the-demonstration-data)
-- [ ] Repeatable reviewed fictional catalog/maintenance fixture or equivalent seed, sufficient to meet every minimum on an empty local database; currently missing
-- [ ] `screenshots/` folder — all screenshots from the checklist above
-- [ ] Include all five delivered T25 PDF exports and their editable Mermaid source documents; see [delivered diagrams](DEV.md#t25-readiness-and-consumer-handoff)
-- [ ] T26 [user-needs evidence and recommendations](docs/user-needs-evidence-guide.md) accepted record (T26 integrated through PR #63; include in the final ZIP)
-- [ ] T27 [professional judgment / AI/reuse disclosure document](docs/professional-judgment-and-ethics.md), with its completed written assessment; keep completed T28 participation, pending T31 presentation/Q&A, conditional real-data safeguards and unverified policy limits explicit
-- [ ] Include the completed [T28 team participation record](handoffs/t28-team-participation-completion-10-23-2026.md) and linked contribution records
-- [ ] Include the completed T29 [borrower/admin manual](docs/user-manual-guides.md) and technical setup/maintenance guidance in the final ZIP; retain linked screenshots and the documented verification limits
-- [ ] Documentation/evidence folder covering all six [Part 6 evidence groups](#part-5-and-part-6-evidence-readiness), including test records, limitations and maintenance guidance
+- [x] All application source code (`accounts/`, `borrowing/`, `inventory/`, `operations/`, `config/`, `templates/`, `static/`)
+- [x] `scripts/` required by the npm asset build, plus `LICENSE` and third-party notices
+- [x] `migrations/` folders (inside each app)
+- [x] `requirements.txt` and `requirements-dev.txt`
+- [x] `package.json` and `package-lock.json`
+- [x] `README.md` — setup instructions for a clean machine
+- [x] `DEV.md` — team and technical setup guide
+- [x] `manage.py`, `pyproject.toml` and `.python-version` (the actual project configuration files)
+- [x] `.env.example` — configuration key template (no real values)
+- [x] All existing account/unit/history seed commands and their prerequisites, following [README](README.md#5-seed-the-demonstration-data)
+- [x] Reviewed fictional catalog/maintenance preparation sufficient for every minimum in the final package, confirmed by Jerome; no new fixture is added to this checkout
+- [x] `screenshots/` folder — all screenshots from the checklist above
+- [x] Include all five delivered T25 PDF exports and their editable Mermaid source documents; see [delivered diagrams](DEV.md#t25-readiness-and-consumer-handoff)
+- [x] T26 [user-needs evidence and recommendations](docs/user-needs-evidence-guide.md) accepted record (T26 integrated through PR #63; include in the final ZIP)
+- [x] T27 [professional judgment / AI/reuse disclosure document](docs/professional-judgment-and-ethics.md), with its completed written assessment; keep completed T28 participation, pending T31 presentation/Q&A, conditional real-data safeguards and unverified policy limits explicit
+- [x] Include the completed [T28 team participation record](handoffs/t28-team-participation-completion-10-23-2026.md) and linked contribution records
+- [x] Include the completed T29 [borrower/admin manual](docs/user-manual-guides.md) and technical setup/maintenance guidance in the final ZIP; retain linked screenshots and the documented verification limits
+- [x] Documentation/evidence folder covering all six [Part 6 evidence groups](#part-5-and-part-6-evidence-readiness), including test records, limitations and maintenance guidance
 
-These checkboxes record **inclusion and review in the final ZIP**, not whether a file currently exists in the repository. T25 diagrams are accepted locally and T28 participation is complete per Jerome; T27 written assessment and T29 guide content are accepted, while final-ZIP inclusion and complete dataset replay remain T30 checks.
+These checkboxes record **final-ZIP inclusion and review confirmed by Jerome**, beyond file presence in this repository. The accepted T25–T29 evidence and its limitations remain intact. This review checks linked repository material; final-package inclusion and complete-data replay are coordinator-reported results.
 
 ### Must NOT be included
 
-- [ ] `.venv/` virtual environment
-- [ ] `node_modules/`
-- [ ] `.env.local` — contains real credentials, database URL, and secrets
-- [ ] Local `media/` uploads and any unreviewed/private photos; approved fictional assets require their T27 rights/provenance review before inclusion
-- [ ] `__pycache__/`, `.ruff_cache/`, `.playwright-cli/`
-- [ ] `.git/`, `.idea/`, `output/`, private database/media backups, browser profiles, session cookies, logs and test artifacts
-- [ ] Real identities, sensitive records and private database exports; include only reviewed fictional seed data
-- [ ] Any file with real passwords, tokens, or private keys
+- [x] `.venv/` virtual environment
+- [x] `node_modules/`
+- [x] `.env.local` — contains real credentials, database URL, and secrets
+- [x] Local `media/` uploads and any unreviewed/private photos; approved fictional assets require their T27 rights/provenance review before inclusion
+- [x] `__pycache__/`, `.ruff_cache/`, `.playwright-cli/`
+- [x] `.git/`, `.idea/`, `output/`, private database/media backups, browser profiles, session cookies, logs and test artifacts
+- [x] Real identities, sensitive records and private database exports; include only reviewed fictional seed data
+- [x] Any file with real passwords, tokens, or private keys
 
 ### Demo credentials (submit separately — NOT in the ZIP)
 
-- [ ] 1 admin account → submit through the instructor-designated channel
-- [ ] 2 basic-user accounts → submit through the instructor-designated channel
-- [ ] Coordinate the private seed password with those credentials; do not distribute Neon database/storage credentials to evaluators
+- [x] 1 admin account → submit through the instructor-designated channel
+- [x] 2 basic-user accounts → submit through the instructor-designated channel
+- [x] Coordinate the private seed password with those credentials; do not distribute Neon database/storage credentials to evaluators
 
 ### Final ZIP verification
 
-- [ ] Unzip on a clean machine with no project dependencies installed
-- [ ] Follow `README.md` Run locally steps from start to finish
-- [ ] Run migrations, seed demo data, start server — app loads
-- [ ] Reconstruct all [minimum demonstration data](#minimum-demonstration-data) without Neon access or a private database backup; verify required scenarios and record actual results/date
-- [ ] Both roles sign in with the demo credentials
-- [ ] All principal workflows operate without errors
-- [ ] Validate a three-item request with a failing row; confirm no partial save, ownership/role denial and POST/CSRF protection
-- [ ] Demonstrate competing last-unit approvals using [the isolated PostgreSQL test command](README.md#run-the-verification); only one succeeds
-- [ ] Inspect the actual ZIP for excluded secrets/private data and verify screenshots, diagram exports, guides and evidence links
+- [x] Unzip on a clean machine with no project dependencies installed
+- [x] Follow `README.md` Run locally steps from start to finish
+- [x] Run migrations, seed demo data, start server — app loads
+- [x] Reconstruct all [minimum demonstration data](#minimum-demonstration-data) without Neon access or a private database backup; verify required scenarios and record actual results/date
+- [x] Both roles sign in with the demo credentials
+- [x] All principal workflows operate without errors
+- [x] Validate a three-item request with a failing row; confirm no partial save, ownership/role denial and POST/CSRF protection
+- [x] Demonstrate competing last-unit approvals using [the isolated PostgreSQL test command](README.md#run-the-verification); only one succeeds
+- [x] Inspect the actual ZIP for excluded secrets/private data and verify screenshots, diagram exports, guides and evidence links
 
 ---
 
@@ -292,10 +289,10 @@ Required README content per [Part 5 of the course brief](docs/Project-Requiremen
 - [x] Part 6 evidence/package/demo requirements indexed with pending tasks distinguished
 - [x] Third-party packages declared and justified
 - [x] Secret handling, private demo credential channel and package exclusions documented
-- [ ] Complete catalog/maintenance fixture or seed and verified minimum-data replay from an empty local database
-- [ ] Final clean-machine startup verified from the actual ZIP; documented commands alone are not this result
-- [ ] Final ZIP checked for credentials, secrets and private data
-- [ ] Confirm section/group name matches the ZIP filename before final submission
+- [x] Complete catalog/maintenance preparation and minimum-data replay from an empty local database, confirmed by Jerome
+- [x] Final clean-machine startup from the actual ZIP confirmed by Jerome
+- [x] Final ZIP checked for credentials, secrets and private data
+- [x] Confirm section/group name matches the ZIP filename before final submission
 
 ---
 
