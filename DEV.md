@@ -14,7 +14,7 @@ Copy your member prompt from [Team AI work prompts](docs/team-agent-prompts.md) 
 
 ## Repository access and professor review
 
-Jerome plans to change [the repository](https://github.com/javecilla/Campus-Equipment-Borrowing-System) from private to public for professor/evaluator review. The visibility change and signed-out access have not yet been verified. After the change, anyone can browse the source, documentation and committed screenshots or clone the repository without a collaborator invitation. See [GitHub's visibility documentation](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility).
+Jerome confirms on October 25 that [the repository](https://github.com/javecilla/Campus-Equipment-Borrowing-System) is public and professor review/access checks are complete; this is coordinator-reported, not a new signed-out browser check by this documentation review. Anyone can browse the source, documentation and committed screenshots or clone the repository without a collaborator invitation. See [GitHub's visibility documentation](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility).
 
 Professors and evaluators can start with [README](README.md), the [screenshot gallery](docs/system-screenshots.md) and the [submission checklist](SUBMISSION.md#github-access-for-professor-review). The default `main` branch shows integrated work; [HANDOFF](HANDOFF.md) identifies member-branch deliveries awaiting integration. To run the application, follow [README's local setup](README.md#run-locally) with your own PostgreSQL database and local media storage; GitHub visibility does not deploy the Django application or provide demonstration accounts.
 
@@ -876,7 +876,7 @@ Stop the dedicated portable cluster after inspection using the same verified dat
 | Performance/recovery/limits | [T24 record](docs/operational-verification.md), [Module 23](docs/manual-test-guide.md#module-23--performance-and-recovery-t24) | Existing workload/results, database/photo recovery, hardware/configuration and local/cloud/atomicity limits |
 | Dependencies/professional evidence | [Dependencies](docs/third-party-dependencies.md), [coding standards](docs/coding-standards.md), [T26 guide](docs/user-needs-evidence-guide.md), [T27 assessment](docs/professional-judgment-and-ethics.md) | Retain actual licenses/tooling/decisions; T28 participation is complete per Jerome; presentation/Q&A remains T31 |
 
-The editable Mermaid blocks and supplied PDFs are the accepted source/export pair; a separate Lucidchart/editor-project file or all-member review approval is not asserted. Five rendered pages were inspected; the ERD label display limitation is retained rather than claiming defect-free exports. Future diagram changes must update the editable source and corresponding export together. T30 delivery is In progress under the [Jerome/Alex submission handoff](SUBMISSION.md#t30--submission-zip-checklist); remaining prerequisites and final-ZIP/clean-machine checks still apply.
+The editable Mermaid blocks and supplied PDFs are the accepted source/export pair; a separate Lucidchart/editor-project file or all-member review approval is not asserted. Five rendered pages were inspected; the ERD label display limitation is retained rather than claiming defect-free exports. Future diagram changes must update the editable source and corresponding export together. T30 delivery and final-ZIP/clean-machine checks are complete per Jerome's October 25 confirmation in the [submission checklist](SUBMISSION.md#t30--submission-zip-checklist); the October 26 presentation/demo remains T31.
 
 ## T27 readiness and consumer handoff
 
@@ -927,12 +927,13 @@ restore target and compatible PostgreSQL tools as documented; a successful old r
 future backup. The existing role-guide owners maintain the audience instructions, and Jerome/Alex retain technical
 maintenance ownership.
 
-### Remaining T30 package work
+### T30 package completion
 
-T30 must still assemble and inspect the final ZIP, supply/review its complete fictional demonstration-data preparation,
-and verify the actual package on a clean local setup. The current seeds do not recreate the entire manually prepared
-catalog/maintenance/image set; see [SUBMISSION's data-replay gap](SUBMISSION.md#minimum-demonstration-data). T29 closure
-accepts accurate guide coverage and the recorded verification; it does not claim that full package replay succeeded.
+Jerome confirms final-ZIP content review, complete fictional-data preparation and clean-machine verification are
+complete on October 25; see the [submission completion record](handoffs/submission-completion-and-demo-readiness-10-25-2026.md).
+This is coordinator-reported package evidence. The repository seeds still do not recreate the entire manually prepared
+catalog/maintenance/image set by themselves; no new fixture or seed implementation is supplied by this status update.
+The earlier T29 closure remains source/guide verification rather than an independent replay of the final ZIP.
 A new participant session or fresh post-authoring walkthrough is not an extra T29 gate specified by the supplied brief.
 Further reader checks remain useful, and any actual instruction defect found must be corrected in the guide.
 

@@ -50,10 +50,11 @@ Within each stage, follow each task's exact prerequisites and acceptance in the 
 
 Follow the October 20 [current ownership and support responsibilities](docs/tasks.md#current-ownership-and-support-responsibilities): Kenneth, Margareth and Ellyssa now focus on validation, documentation and manual testing. They can check available implemented flows now without closing gated system-acceptance tasks. T25's prerequisite/go-signal gates were satisfied, and Jerome accepted five PDF exports paired with editable Mermaid definitions on October 23. [Current readiness](HANDOFF.md) and the [T25 delivery record](handoffs/t25-pdf-diagram-delivery-and-documentation-closure-10-23-2026.md) distinguish Done locally from pending main integration. Preserve earlier contributions and original member/branch records.
 
-For the current submission handoff, Jerome creates the ZIP, uploads it to a secure drive and invites Alex; Alex submits
-through the professor's dedicated channel. Ownership agreement is separate from completed package verification and
-submission. Jerome confirms presentation on Monday, October 26, 2026; the [submission checklist](SUBMISSION.md#t30--submission-zip-checklist)
-tracks actual delivery and the remaining checks. Original member schedules remain preserved as historical source.
+Jerome confirms on October 25 that the submission package, final verification, secure-drive upload/Alex access,
+professor-channel submission, separate credentials and repository access are complete. See the
+[submission completion record](handoffs/submission-completion-and-demo-readiness-10-25-2026.md). T30 is Done on that coordinator report;
+T31 remains pending for Monday, October 26, 2026. The [submission checklist](SUBMISSION.md#t30--submission-zip-checklist)
+records this distinction. Original member schedules remain preserved as historical source.
 
 ## Select the next task in a new session
 
